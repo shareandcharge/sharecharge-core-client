@@ -7,7 +7,9 @@ describe('Core Client', function() {
     let client;
    
     beforeEach(async function() {
-        client = new Client(config);
+        const id = '123';
+        const pass = '123';
+        client = new Client(config, id, pass);
     });
 
     it('should initialise core client with correct plugin', function(done) {

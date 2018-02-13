@@ -1,8 +1,6 @@
 import { Plugin } from './plugin';
 
 export interface Config {
-    prod: boolean;
-    id: string,
-    pass: string,
+    test?: boolean;
     plugin: Plugin;
 }

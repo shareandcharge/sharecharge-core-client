@@ -10,12 +10,15 @@ export class Client {
     private readonly config: Config;
     private plugin: Plugin;
     private sc: ShareAndCharge;
+    private readonly id: string;
+    private readonly pass: string;
 
-    constructor(config: Config) {
+    constructor(config: Config, id: string, pass: string) {
         this.config = config;
         this.plugin = this.config.plugin;
-        const contract = config.prod ? new PoleContract(config.pass) : new TestContract();
-        // const contract = new PoleContract(config.pass);
+        this.id = id;
+        this.pass = pass;
+        const contract = !config.test ? new PoleContract(this.pass) : new TestContract();
         this.sc = new ShareAndCharge(contract);
     }
 
@@ -45,7 +48,7 @@ export class Client {
     }
     
     private filter(params): boolean {
-        return params.clientId === this.config.id;
+        return params.clientId === this.id;
     }
 
     private subscribeToStartRequests(): void {
