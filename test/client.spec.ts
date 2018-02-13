@@ -10,11 +10,10 @@ describe('Core Client', function() {
         client = new Client(config);
     });
 
-    it('should initialise core client with correct plugin', function() {
+    it('should initialise core client with correct plugin', function(done) {
         const plugin = client.pluginName;
         expect(plugin).to.equal('test1');
+        done();
     });
-
-    it('should handle start request events and call start on CPO backend');
 
 });

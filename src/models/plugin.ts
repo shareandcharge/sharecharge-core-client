@@ -1,8 +1,8 @@
 export interface Plugin {
     name: string;
     health(): Promise<boolean>;
-    start(metadata: StartParameters): Promise<Result>;
-    stop(parameters: StopParameters): Promise<Result>;
+    start(StartParameters: any): Promise<Result>;
+    stop(parameters: any): Promise<Result>;
 }
 
 export interface StartParameters {
