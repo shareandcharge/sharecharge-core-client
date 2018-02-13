@@ -13,7 +13,7 @@ export class Test2 implements Plugin {
     }
 
     async start(parameters: any): Promise<any> {
-        return { data: '123' };
+        throw Error('Could not start');
     }
 
     async stop(parameteres: any): Promise<any> {

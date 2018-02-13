@@ -22,23 +22,19 @@ export class Client {
     get pluginName(): string {
         return this.plugin.name;
     }
-
-    private filter(params): boolean {
-        return params.clientId === this.config.id;
-    }
-
+    
     start(): void {
         this.checkHealth()
-            .then(() => {
-                this.subscribeToStartRequests();
-                this.subscribeToStopRequests();
-                this.logOnStart();
-            }).catch(() => {
-                logger.info('Backend not healthy! Exiting...');
-                process.exit(1)
-            });
+        .then(() => {
+            this.subscribeToStartRequests();
+            this.subscribeToStopRequests();
+            this.logOnStart();
+        }).catch(() => {
+            logger.info('Backend not healthy! Exiting...');
+            process.exit(1)
+        });
     }
-
+    
     private async checkHealth(): Promise<void> {
         await this.plugin.health();
     }
@@ -46,6 +42,10 @@ export class Client {
     private logOnStart(): void {
         logger.info(`Core Client connected to ${this.pluginName} bridge`)
         logger.info('Listening for events...');
+    }
+    
+    private filter(params): boolean {
+        return params.clientId === this.config.id;
     }
 
     private subscribeToStartRequests(): void {

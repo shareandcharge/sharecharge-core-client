@@ -4,6 +4,7 @@
   "description": "Share & Charge Core Client for Charge Point Operators",
   "main": "index.js",
   "scripts": {
+    "client": "ts-node main.ts",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "geth-dev": "geth --dev --datadir=.chaindata --dev.period 1 --rpc --rpcaddr 0.0.0.0 --ws --wsaddr 0.0.0.0 --wsorigins=*"
   },
