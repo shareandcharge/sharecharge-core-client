@@ -1,6 +1,6 @@
-import { Plugin } from './plugin';
+import { Bridge } from './bridge';
 
 export interface Config {
     test?: boolean;
-    plugin: Plugin;
+    bridge: Bridge;
 }

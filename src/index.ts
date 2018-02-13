@@ -1,5 +1,5 @@
 import { Config } from './models/config';
-import { Plugin } from './models/plugin';
+import { Bridge } from './models/bridge';
 import { ShareAndCharge } from './lib/src/index';
 import { PoleContract } from './lib/src/models/pole-contract';
 import { TestContract } from './lib/test/test-contract';
@@ -8,22 +8,22 @@ import { logger } from './utils/logger';
 export class Client {
 
     private readonly config: Config;
-    private plugin: Plugin;
+    private bridge: Bridge;
     private sc: ShareAndCharge;
     private readonly id: string;
     private readonly pass: string;
 
     constructor(config: Config, id: string, pass: string) {
         this.config = config;
-        this.plugin = this.config.plugin;
+        this.bridge = this.config.bridge;
         this.id = id;
         this.pass = pass;
         const contract = !config.test ? new PoleContract(this.pass) : new TestContract();
         this.sc = new ShareAndCharge(contract);
     }
 
-    get pluginName(): string {
-        return this.plugin.name;
+    private get bridgeName(): string {
+        return this.bridge.name;
     }
     
     start(): void {
@@ -38,12 +38,12 @@ export class Client {
         });
     }
     
-    private async checkHealth(): Promise<void> {
-        await this.plugin.health();
+    private async checkHealth(): Promise<boolean> {
+        return this.bridge.health();
     }
     
     private logOnStart(): void {
-        logger.info(`Core Client connected to ${this.pluginName} bridge`)
+        logger.info(`Core Client connected to ${this.bridgeName} bridge`)
         logger.info('Listening for events...');
     }
     
@@ -56,7 +56,7 @@ export class Client {
             if (this.filter(request.params)) {
                 try {
                     logger.info(`Starting charge on ${request.params.connectorId}`);
-                    const res = await this.plugin.start(request.params);
+                    const res = await this.bridge.start(request.params);
                     logger.info('Bridge start response: ' + res.data);
                     const receipt = await request.success();
                     logger.info('Start confirmation receipt: ' + JSON.stringify(receipt));
@@ -74,7 +74,7 @@ export class Client {
             if (this.filter(request.params)) {
                 try {
                     logger.info(`Stopping charge on ${request.params.connectorId}`);
-                    const res = await this.plugin.stop(request.params);
+                    const res = await this.bridge.stop(request.params);
                     logger.info('Bridge stop response: ' + res.data);
                     const receipt = await request.success();
                     logger.info('Stop confirmation receipt: ' + JSON.stringify(receipt));

@@ -1,6 +1,6 @@
-import { Plugin } from '../src/models/plugin';
+import { Bridge } from '../src/models/bridge';
 
-export class Test1 implements Plugin {
+export class Test1 implements Bridge {
 
     constructor() {}
 

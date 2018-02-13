@@ -1,4 +1,4 @@
-export interface Plugin {
+export interface Bridge {
     name: string;
     health(): Promise<boolean>;
     start(StartParameters: any): Promise<Result>;
