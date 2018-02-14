@@ -1,7 +1,8 @@
 import { Observable } from 'rxjs';
 
 export interface Bridge {
-    status$: Observable<(string | Error)[]>;
+    status$: Observable<StatusObject>;
+    name: string;
     health(): Promise<boolean>;
     start(metadata: any): Promise<Result>;
     stop(parameters: any): Promise<Result>;
@@ -16,10 +17,11 @@ export interface StartParameters {
     plug: string;
 }
 
-export interface StopParameters {
-    user: string;
-}
-
 export interface Result {
     data;
+}
+
+export interface StatusObject {
+    points: string[];
+    errors: Error[];
 }

@@ -32,6 +32,7 @@ describe('Core Client', function() {
         expect(healthy).to.equal(true);
     });
 
+    it('should ')
 
 
 

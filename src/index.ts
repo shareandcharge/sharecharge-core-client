@@ -1,7 +1,7 @@
 import { Config } from './models/config';
 import { Bridge } from './models/bridge';
 import { ShareAndCharge } from './lib/src/index';
-import { PoleContract } from './lib/src/models/pole-contract';
+import { Contract } from './lib/src/services/contract';
 import { TestContract } from './lib/test/test-contract';
 import { logger } from './utils/logger';
 
@@ -18,24 +18,12 @@ export class Client {
         this.bridge = this.config.bridge;
         this.id = id;
         this.pass = pass;
-        const contract = !config.test ? new PoleContract(this.pass) : new TestContract();
+        const contract = !config.test ? new Contract(this.pass) : new TestContract();
         this.sc = new ShareAndCharge(contract);
     }
 
     private get bridgeName(): string {
         return this.bridge.name;
-    }
-    
-    start(): void {
-        this.checkHealth()
-        .then(() => {
-            this.subscribeToStartRequests();
-            this.subscribeToStopRequests();
-            this.logOnStart();
-        }).catch(() => {
-            logger.info('Backend not healthy! Exiting...');
-            process.exit(1)
-        });
     }
     
     private async checkHealth(): Promise<boolean> {
@@ -50,8 +38,8 @@ export class Client {
     private filter(params): boolean {
         return params.clientId === this.id;
     }
-
-    private subscribeToStartRequests(): void {
+    
+    private handleStartRequests(): void {
         this.sc.start$.subscribe(async request => {
             if (this.filter(request.params)) {
                 try {
@@ -68,8 +56,8 @@ export class Client {
             }
         });
     }
-
-    private subscribeToStopRequests(): void {
+    
+    private handleStopRequests(): void {
         this.sc.stop$.subscribe(async request => {
             if (this.filter(request.params)) {
                 try {
@@ -87,4 +75,34 @@ export class Client {
         });
     }
 
+    private handleStatusUpdates(): void {
+        this.bridge.status$.subscribe(async update => {
+            update.errors.forEach(err => logger.warn('Status update error: ' + err.message));
+            try {
+                const receipt = await this.sc.updateStatus(update.points, this.id);
+                logger.info(JSON.stringify(receipt));
+            } catch (err) {
+                logger.warn(err.message);
+            }
+        });
+    }
+    
+    start(): void {
+        this.checkHealth()
+            .then(() => {
+                logger.info('Configured to update every ' + this.config.statusUpdateInterval + 'ms');
+                this.bridge.startUpdater(this.config.statusUpdateInterval);
+                this.handleStartRequests();
+                this.handleStopRequests();
+                // this.handleStatusUpdates()
+                this.logOnStart();
+            }).catch(() => {
+                logger.info('Backend not healthy! Exiting...');
+                process.exit(1)
+            });
+    }
+
+    stopUpdater(): void {
+        this.bridge.stopUpdater();
+    }
 }
