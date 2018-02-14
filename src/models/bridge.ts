@@ -1,8 +1,12 @@
+import { Observable } from 'rxjs';
+
 export interface Bridge {
-    name: string;
+    status$: Observable<(string | Error)[]>;
     health(): Promise<boolean>;
-    start(StartParameters: any): Promise<Result>;
+    start(metadata: any): Promise<Result>;
     stop(parameters: any): Promise<Result>;
+    startUpdater(interval?: number): void;
+    stopUpdater(): void;
 }
 
 export interface StartParameters {
