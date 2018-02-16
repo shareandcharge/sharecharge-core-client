@@ -1,8 +1,8 @@
-import {Contract} from "./lib/src/services/contract";
-import {TestContract} from "./lib/test/test-contract";
+import { Contract } from "./lib/src/services/contract";
+import { TestContract } from "./lib/test/test-contract";
 import * as commander from "commander";
 
-import {config} from "../config";
+import { config } from "../config";
 
 const ID = process.env.ID || '';
 const PASS = process.env.PASS || '';

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Client } from '../src/index';
+import { Client } from '../src/client';
 import { config } from './testConfig';
 
 describe('Core Client', function() {
