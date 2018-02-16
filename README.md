@@ -55,5 +55,33 @@ The environment variables `ID` and `PASS` are necessary for the core client to f
 ID=0x01234 PASS=123 npm run client
 ```
 
+Command Line Interface
+----------------------
+
+To install the cli you have to use
+
+```
+npm link
+```
+
+Usage:
+
+```
+Usage: sc [command] [options]
+
+
+Options:
+
+-V, --version  output the version number
+-h, --help     output usage information
+
+
+Commands:
+
+cp-status <id>   Returns the current status of the Chargingpole with given id
+cp-enable <id>   Enables the Chargingpole with given id
+cp-disable <id>  Disables the Chargingpole with given id
+```
+
 ### Coming Soon:
 - docker setup

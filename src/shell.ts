@@ -6,10 +6,11 @@ import {config} from "../config";
 
 commander
     .version("0.1.0")
-    .usage("sc");
+    .usage("sc [command] [options]");
 
 commander
     .command("cp-status <id>")
+    .description("Returns the current status of the Chargingpole with given id")
     .action(function (id) {
         console.log("cp-status", id);
         callContract();
@@ -18,6 +19,7 @@ commander
 
 commander
     .command("cp-enable <id>")
+    .description("Enables the Chargingpole with given id")
     .action(function (id) {
         console.log("cp-enable", id);
         callContract();
@@ -26,6 +28,7 @@ commander
 
 commander
     .command("cp-disable <id>")
+    .description("Disables the Chargingpole with given id")
     .action(function (id) {
         console.log("cp-disable", id);
         callContract();
