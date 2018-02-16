@@ -78,9 +78,9 @@ Options:
 
 Commands:
 
-cp-status <id>   Returns the current status of the Chargingpole with given id
-cp-enable <id>   Enables the Chargingpole with given id
-cp-disable <id>  Disables the Chargingpole with given id
+cp-status <address>   Returns the current status of the Chargingpole with given address
+cp-enable <address>   Enables the Chargingpole with given address
+cp-disable <address>  Disables the Chargingpole with given address
 ```
 
 ### Coming Soon:
