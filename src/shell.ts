@@ -4,7 +4,9 @@ import * as commander from "commander";
 
 import {config} from "../config";
 
-const contract = config.test ? new TestContract() : new Contract(config.pass);
+const ID = process.env.ID || '';
+const PASS = process.env.PASS || '';
+
 
 commander
     .version("0.1.0")
@@ -16,7 +18,7 @@ commander
     .action(function (address) {
         console.log("Getting status for Chargingpoint with address:", address);
 
-        contract.queryState("isAvailable", address)
+        wrapContractCall("isAvailable", address)
             .then(result => {
                 console.log("Is Available:", result);
                 process.exit(0);
@@ -27,17 +29,42 @@ commander
     .command("cp-enable <address>")
     .description("Enables the Chargingpole with given address")
     .action(function (address) {
-        console.log("cp-enable", address);
-        process.exit(0);
+        console.log("Enabling CP at address:", address);
+
+        wrapContractCall("setAvailability", ID, address, true)
+            .then(result => {
+                console.log("Is Available:", result);
+                process.exit(0);
+            });
     });
 
 commander
     .command("cp-disable <address>")
     .description("Disables the Chargingpole with given address")
     .action(function (address) {
-        console.log("cp-disable", address);
-        process.exit(0);
+        console.log("Disabling CP at address:", address);
+
+        wrapContractCall("setAvailability", ID, address, false)
+            .then(result => {
+                console.log("Is Available:", result);
+                process.exit(0);
+            });
     });
+
+function wrapContractCall(...args) {
+
+    return new Promise((resolve, reject) => {
+
+        const contract = config.test ? new TestContract() : new Contract(PASS);
+
+        contract.queryState(...args)
+            .then((result) => resolve(result))
+            .catch(e => {
+                console.error(e.message);
+                process.exit(1);
+            })
+    });
+}
 
 commander.parse(process.argv);
 

@@ -83,5 +83,10 @@ cp-enable <address>   Enables the Chargingpole with given address
 cp-disable <address>  Disables the Chargingpole with given address
 ```
 
+Example:
+```
+ID=0x0123 PASS=123 sc cp-status 0x12
+```
+
 ### Coming Soon:
 - docker setup
