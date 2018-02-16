@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-export interface Bridge {
+export interface BridgeInterface {
     status$: Observable<StatusObject>;
     name: string;
     health(): Promise<boolean>;

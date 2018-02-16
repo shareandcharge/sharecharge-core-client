@@ -1,7 +1,7 @@
-import { Bridge } from './bridge';
+import { BridgeInterface } from './bridge';
 
 export interface Config {
     test?: boolean;
-    bridge: Bridge;
+    bridge: BridgeInterface;
     statusUpdateInterval?: number;
 }

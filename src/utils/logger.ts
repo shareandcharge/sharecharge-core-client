@@ -4,7 +4,8 @@ export const logger = new Logger({
     level: 'info',
     transports: [
         new transports.Console({
-            timestamp: true
+            timestamp: true,
+            colorize: true
         })
     ]
 });

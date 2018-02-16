@@ -1,10 +1,10 @@
 import { Subject } from 'rxjs';
-import { Bridge } from '../src/models/bridge';
+import { BridgeInterface, StatusObject } from '../src/models/bridge';
 
-export class Test2 implements Bridge {
+export class Bridge implements BridgeInterface {
 
     updater: any;
-    status = new Subject<(string | Error)[]>();
+    status = new Subject<StatusObject>();
     status$ = this.status.asObservable();
 
     constructor() {}
@@ -27,7 +27,10 @@ export class Test2 implements Bridge {
 
     startUpdater(interval?: number): void {
         this.updater = setInterval(async () => {
-            this.status.next([Error(JSON.stringify({ point: '456', error: 'charge point does not exist' }))]);
+            this.status.next({
+                points: [],
+                errors: []
+            });
         }, interval || 30000);
     }
 

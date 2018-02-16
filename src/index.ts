@@ -1,14 +1,14 @@
-import {Config} from './models/config';
-import {Bridge} from './models/bridge';
-import {ShareAndCharge} from './lib/src/index';
-import {Contract} from './lib/src/services/contract';
-import {TestContract} from './lib/test/test-contract';
-import {logger} from './utils/logger';
+import { Config } from './models/config';
+import { BridgeInterface } from './models/bridge';
+import { ShareAndCharge } from './lib/src/index';
+import { Contract } from './lib/src/services/contract';
+import { TestContract } from './lib/test/test-contract';
+import { logger } from './utils/logger';
 
 export class Client {
 
     private readonly config: Config;
-    private bridge: Bridge;
+    private bridge: BridgeInterface;
     private sc: ShareAndCharge;
     private readonly id: string;
     private readonly pass: string;
@@ -45,7 +45,9 @@ export class Client {
                 try {
                     logger.info(`Starting charge on ${request.params.connectorId}`);
                     const res = await this.bridge.start(request.params);
-                    logger.info('Bridge start response: ' + res.data);
+                    logger.info('Bridge start response: ' + JSON.stringify(res));
+                    const health = await this.bridge.health();
+                    logger.info('Bridge status following start:', health);
                     const receipt = await request.success();
                     logger.info('Start confirmation receipt: ' + JSON.stringify(receipt));
                 } catch (err) {
@@ -63,7 +65,9 @@ export class Client {
                 try {
                     logger.info(`Stopping charge on ${request.params.connectorId}`);
                     const res = await this.bridge.stop(request.params);
-                    logger.info('Bridge stop response: ' + res.data);
+                    logger.info('Bridge stop response: ' + JSON.stringify(res));
+                    const health = await this.bridge.health();
+                    logger.info('Bridge status following stop:', health);
                     const receipt = await request.success();
                     logger.info('Stop confirmation receipt: ' + JSON.stringify(receipt));
                 } catch (err) {
@@ -78,11 +82,18 @@ export class Client {
     private handleStatusUpdates(): void {
         this.bridge.status$.subscribe(async update => {
             update.errors.forEach(err => logger.warn('Status update error: ' + err.message));
-            try {
-                const receipt = await this.sc.updateStatus(update.points, this.id);
-                logger.info(JSON.stringify(receipt));
-            } catch (err) {
-                logger.warn(err.message);
+            if (update.points[0]) {
+                try {
+                    const receipt = await this.sc.updateStatus(update.points, this.id);
+                    if (receipt.points.length > 0) {
+                        logger.info('Updated status of: ' + receipt.points);
+                    }
+                    if (receipt.errors[0]) {
+                        logger.warn(receipt.errors[0].message);
+                    }
+                } catch (err) {
+                    logger.warn(err.message);
+                }
             }
         });
     }
@@ -90,12 +101,13 @@ export class Client {
     start(): void {
 
         this.checkHealth()
-            .then(() => {
+            .then(health => {
                 logger.info('Configured to update every ' + this.config.statusUpdateInterval + 'ms');
+                logger.info('Bridge status: ' + health);
                 this.bridge.startUpdater(this.config.statusUpdateInterval);
                 this.handleStartRequests();
                 this.handleStopRequests();
-                // this.handleStatusUpdates()
+                this.handleStatusUpdates();
                 this.logOnStart();
             }).catch(() => {
             logger.info('Backend not healthy! Exiting...');

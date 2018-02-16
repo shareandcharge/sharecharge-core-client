@@ -1,6 +1,6 @@
-import { Test1 } from './testPlugin1';
+import { Bridge } from './testBridge1';
 
 export const config = {
     test: true,
-    bridge: new Test1()
+    bridge: new Bridge()
 };
