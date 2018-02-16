@@ -1,5 +1,5 @@
 import { config } from './config';
-import { Client } from './src/index';
+import { Client } from './src/client';
 import { logger } from './src/utils/logger';
 import { Bridge } from './test/testBridge1';
 

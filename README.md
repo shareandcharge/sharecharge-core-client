@@ -15,7 +15,7 @@ npm install
 cd -
 ```
 
-#### Providing Bridge
+#### Connecting a bridge
 
 You can store bridges in the `src/bridges` directory.
 
@@ -23,30 +23,35 @@ You can store bridges in the `src/bridges` directory.
 git clone <bridge location> src/bridges/<bridge_name>
 ```
 
+You should then configure the client to use your desired bridge (e.g. in `./config.ts`):
+```ts
+import { Bridge } from './src/bridges/path/to/bridge';
+export const = {
+    ...,
+    bridge: new Bridge();
+}
+```
+
 #### Configuration
 
 Define a `config.ts` file to inject as a dependency when instantiating the Core Client class:
 
-If no bridge is specified, a default test bridge is provided.
 
 ```ts
-import { MyBridge } from '.src/bridges/myBridge';
+import { Bridge } from '.src/bridges/myBridge';
 
 export const config = {
-    bridge: new MyBridge();
+    test: false,
+    bridge: new Bridge(),
+    statusUpdateInterval: 5000
 }
 ```
 
-Use as follows:
+Default values exist:
+- test is false
+- bridge is configured to use a mock bridge implementation
+- statusUpdateInterval will default to 5 minutes
 
-```ts
-import { config } from './config';
-import { Client } from './src/index';
-
-const client = new Client(config);
-client.start();
-// client.bridgeName === 'myBridge'
-```
 
 ## Starting the core client:
 
@@ -87,6 +92,8 @@ Example:
 ```
 ID=0x0123 PASS=123 sc cp-status 0x12
 ```
+
+**NOTE**: Modbus does not appear to support simultaneous connections. If the core client is running, it is not possible to retrieve the charge point's status via the IoT Bridge from the shell. 
 
 ### Coming Soon:
 - docker setup

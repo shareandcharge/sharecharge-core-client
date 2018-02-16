@@ -25,6 +25,10 @@ export class Bridge implements BridgeInterface {
         return { data: 50 };
     }
 
+    async connectorStatus(id?: string): Promise<any> {
+        return true;
+    }
+
     startUpdater(interval?: number): void {
         this.updater = setTimeout(async () => {
             this.status.next({

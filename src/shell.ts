@@ -6,7 +6,7 @@ import { config } from "../config";
 
 const ID = process.env.ID || '';
 const PASS = process.env.PASS || '';
-
+const bridge = config.bridge;
 
 commander
     .version("0.1.0")
@@ -14,20 +14,26 @@ commander
 
 commander
     .command("cp-status <address>")
-    .description("Returns the current status of the Chargingpole with given address")
+    .description("Returns the current status of the Charge Point with given address")
     .action(function (address) {
-        console.log("Getting status for Chargingpoint with address:", address);
+        console.log("Getting status for Charge Point with address:", address);
 
         wrapContractCall("isAvailable", address)
-            .then(result => {
-                console.log("Is Available:", result);
-                process.exit(0);
-            })
+            .then(contractState => {
+                bridge.connectorStatus(address)
+                    .then(bridgeState => {
+                        console.log("EV Network:\t", contractState ? 'available' : 'unavailable');
+                        console.log("CPO Backend:\t", bridgeState);
+                        process.exit(0);
+                    });
+
+            });
+        
     });
 
 commander
     .command("cp-enable <address>")
-    .description("Enables the Chargingpole with given address")
+    .description("Enables the Charge Point with given address")
     .action(function (address) {
         console.log("Enabling CP at address:", address);
 
@@ -40,7 +46,7 @@ commander
 
 commander
     .command("cp-disable <address>")
-    .description("Disables the Chargingpole with given address")
+    .description("Disables the Charge Point with given address")
     .action(function (address) {
         console.log("Disabling CP at address:", address);
 
@@ -51,13 +57,13 @@ commander
             });
     });
 
-function wrapContractCall(...args) {
+function wrapContractCall(method, ...args) {
 
     return new Promise((resolve, reject) => {
 
         const contract = config.test ? new TestContract() : new Contract(PASS);
 
-        contract.queryState(...args)
+        contract.queryState(method, ...args)
             .then((result) => resolve(result))
             .catch(e => {
                 console.error(e.message);

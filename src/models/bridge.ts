@@ -8,6 +8,7 @@ export interface BridgeInterface {
     stop(parameters: any): Promise<Result>;
     startUpdater(interval?: number): void;
     stopUpdater(): void;
+    connectorStatus(id?: string): Promise<any>;
 }
 
 export interface StartParameters {
