@@ -32,6 +32,19 @@ export const = {
 }
 ```
 
+Bridges should implement the standard bridge interface:
+```ts
+interface BridgeInterface {
+    status$: Observable<StatusObject>;
+    health(): Promise<boolean>;
+    connectorStatus(id?: string): Promise<boolean>;
+    start(parameters: any): Promise<Result>;
+    stop(parameters: any): Promise<Result>;
+    startUpdater(interval?: number): void;
+    stopUpdater(): void;
+}
+```
+
 #### Configuration
 
 Define a `config.ts` file to inject as a dependency when instantiating the Core Client class:
