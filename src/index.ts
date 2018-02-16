@@ -1,9 +1,9 @@
-import { Config } from './models/config';
-import { Bridge } from './models/bridge';
-import { ShareAndCharge } from './lib/src/index';
-import { Contract } from './lib/src/services/contract';
-import { TestContract } from './lib/test/test-contract';
-import { logger } from './utils/logger';
+import {Config} from './models/config';
+import {Bridge} from './models/bridge';
+import {ShareAndCharge} from './lib/src/index';
+import {Contract} from './lib/src/services/contract';
+import {TestContract} from './lib/test/test-contract';
+import {logger} from './utils/logger';
 
 export class Client {
 
@@ -18,27 +18,27 @@ export class Client {
         this.bridge = this.config.bridge;
         this.id = id;
         this.pass = pass;
-        const contract = !config.test ? new Contract(this.pass) : new TestContract();
+        const contract = config.test ? new TestContract() : new Contract(this.pass);
         this.sc = new ShareAndCharge(contract);
     }
 
     private get bridgeName(): string {
         return this.bridge.name;
     }
-    
+
     private async checkHealth(): Promise<boolean> {
         return this.bridge.health();
     }
-    
+
     private logOnStart(): void {
         logger.info(`Core Client connected to ${this.bridgeName} bridge`)
         logger.info('Listening for events...');
     }
-    
+
     private filter(params): boolean {
         return params.clientId === this.id;
     }
-    
+
     private handleStartRequests(): void {
         this.sc.start$.subscribe(async request => {
             if (this.filter(request.params)) {
@@ -56,7 +56,7 @@ export class Client {
             }
         });
     }
-    
+
     private handleStopRequests(): void {
         this.sc.stop$.subscribe(async request => {
             if (this.filter(request.params)) {
@@ -86,8 +86,9 @@ export class Client {
             }
         });
     }
-    
+
     start(): void {
+
         this.checkHealth()
             .then(() => {
                 logger.info('Configured to update every ' + this.config.statusUpdateInterval + 'ms');
@@ -97,9 +98,9 @@ export class Client {
                 // this.handleStatusUpdates()
                 this.logOnStart();
             }).catch(() => {
-                logger.info('Backend not healthy! Exiting...');
-                process.exit(1)
-            });
+            logger.info('Backend not healthy! Exiting...');
+            process.exit(1)
+        });
     }
 
     stopUpdater(): void {
