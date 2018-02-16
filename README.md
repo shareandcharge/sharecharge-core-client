@@ -93,7 +93,7 @@ Example:
 ID=0x0123 PASS=123 sc cp-status 0x12
 ```
 
-**NOTE**: Modbus does not appear to support simultaneous connections. If the core client is running, it is not possible to retrieve the charge point's status via the IoT Bridge from the shell. 
+**NOTE**: ~~Modbus does not appear to support simultaneous connections. If the core client is running, it is not possible to retrieve the charge point's status via the IoT Bridge from the shell.~~ Could not reproduce! 
 
 ### Coming Soon:
 - docker setup
