@@ -51,8 +51,12 @@ const argv = yargs
                         .demand("id")
                 }, (argv) => {
 
-                    let result = {
-                        id: argv.id
+                    let result: any = {
+                        id: argv.id,
+                        state: {
+                            bridge: null,
+                            ev: null
+                        }
                     };
 
                     if (!argv.json) {
@@ -61,13 +65,12 @@ const argv = yargs
 
                     wrapContractCall("isAvailable", argv.id)
                         .then(contractState => {
+
                             bridge.connectorStatus(argv.id)
                                 .then(bridgeState => {
 
-                                    result.state = {
-                                        bridge: bridgeState,
-                                        ev: contractState ? "available" : "unavailable"
-                                    };
+                                    result.state.bridge = bridgeState;
+                                    result.state.ev = contractState ? "available" : "unavailable";
 
                                     if (argv.json) {
                                         console.log(JSON.stringify(result, null, 2));
@@ -80,7 +83,6 @@ const argv = yargs
                                     process.exit(0);
                                 });
                         });
-
                 });
 
         yargs
