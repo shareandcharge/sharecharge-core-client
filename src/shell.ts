@@ -19,7 +19,7 @@ const argv = yargs
 
         yargs
             .command("status [id]",
-                "Returns the current status of the Chargingpole with given id", (yargs) => {
+                "Returns the current status of the Charge Point with given id", (yargs) => {
                     yargs
                         .positional('id', {
                             describe: 'a unique identifier for the Charge Point',
@@ -29,7 +29,7 @@ const argv = yargs
 
                 }, (argv) => {
 
-                    console.log("Getting status for Chargingpoint with id:", argv.id);
+                    console.log("Getting status for Charge Point with id:", argv.id);
 
                     wrapContractCall("isAvailable", argv.id)
                         .then(contractState => {
@@ -50,7 +50,7 @@ const argv = yargs
                 "Disables the Charge Point with given id", (yargs) => {
                     yargs
                         .positional('id', {
-                            describe: 'a unique identifier for the charge pole',
+                            describe: 'a unique identifier for the Charge Point',
                             type: 'string'
                         })
                         .coerce('id', parseByte);
@@ -94,7 +94,7 @@ const argv = yargs
         yargs.showHelp();
         checkCommands(yargs, argv, 2);
     })
-    .demandCommand(1)
+    .demand(1)
     .argv;
 
 
