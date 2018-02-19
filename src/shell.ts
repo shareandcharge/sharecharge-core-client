@@ -8,9 +8,28 @@ const ID = process.env.ID || "";
 const PASS = process.env.PASS || "";
 const bridge = config.bridge;
 
-const parseByte = (optString) => {
-    const k = parseInt(optString, 10).toString(16);
-    return "0x" + k;
+const wrapContractCall = (method, ...args) => {
+
+    return new Promise((resolve, reject) => {
+
+        const contract = config.test ? new TestContract() : new Contract(PASS);
+
+        contract.queryState(method, ...args)
+            .then((result) => resolve(result))
+            .catch(e => {
+                console.error(e.message);
+                process.exit(1);
+            })
+    });
+};
+
+const checkCommands = (yargs, argv, numRequired) => {
+
+    if (argv._.length < numRequired) {
+        yargs.showHelp();
+    } else {
+        // check for unknown command
+    }
 };
 
 const argv = yargs
@@ -21,12 +40,12 @@ const argv = yargs
             .command("status [id]",
                 "Returns the current status of the Charge Point with given id", (yargs) => {
                     yargs
-                        .positional('id', {
-                            describe: 'a unique identifier for the Charge Point',
-                            type: 'string'
+                        .positional("id", {
+                            describe: "a unique identifier for the Charge Point",
+                            type: "string"
                         })
-                        .coerce('id', parseByte);
-
+                        .string("_")
+                        .demand("id")
                 }, (argv) => {
 
                     let result = {
@@ -44,7 +63,7 @@ const argv = yargs
 
                                     result.state = {
                                         bridge: bridgeState,
-                                        ev: contractState ? 'available' : 'unavailable'
+                                        ev: contractState ? "available" : "unavailable"
                                     };
 
                                     if (argv.json) {
@@ -59,19 +78,18 @@ const argv = yargs
                                 });
                         });
 
-                })
-            .demand("id");
+                });
 
         yargs
             .command("disable [id]",
                 "Disables the Charge Point with given id", (yargs) => {
                     yargs
-                        .positional('id', {
-                            describe: 'a unique identifier for the Charge Point',
-                            type: 'string'
+                        .positional("id", {
+                            describe: "a unique identifier for the Charge Point",
+                            type: "string"
                         })
-                        .coerce('id', parseByte);
-
+                        .string("_")
+                        .demand("id");
                 }, (argv) => {
 
                     console.log("Disabling CP with id:", argv.id);
@@ -81,19 +99,18 @@ const argv = yargs
                             console.log("Is Available:", result);
                             process.exit(0);
                         });
-                })
-            .demand("id");
+                });
 
         yargs
             .command("enable [id]",
                 "Enables the Charge Point with given id", (yargs) => {
                     yargs
-                        .positional('id', {
-                            describe: 'a unique identifier for the Charge Point',
-                            type: 'string'
+                        .positional("id", {
+                            describe: "a unique identifier for the Charge Point",
+                            type: "string"
                         })
-                        .coerce('id', parseByte);
-
+                        .string("_")
+                        .demand("id");
                 }, (argv) => {
 
                     console.log("Enabling CP with id:", argv.id);
@@ -105,41 +122,15 @@ const argv = yargs
                             process.exit(0);
                         });
                 })
-            .demand("id");
 
     }, (argv) => {
+        // this command has sub commands, exit
         yargs.showHelp();
-        checkCommands(yargs, argv, 2);
     })
-    .demand(1)
+    .demandCommand(1)
     .option("json", {
         describe: "generate json output"
     })
     .argv;
 
-
-function wrapContractCall(method, ...args) {
-
-    return new Promise((resolve, reject) => {
-
-        const contract = config.test ? new TestContract() : new Contract(PASS);
-
-        contract.queryState(method, ...args)
-            .then((result) => resolve(result))
-            .catch(e => {
-                console.error(e.message);
-                process.exit(1);
-            })
-    });
-}
-
 checkCommands(yargs, argv, 1);
-
-function checkCommands(yargs, argv, numRequired) {
-
-    if (argv._.length < numRequired) {
-        yargs.showHelp()
-    } else {
-        // check for unknown command
-    }
-}
