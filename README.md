@@ -85,25 +85,37 @@ npm link
 Usage:
 
 ```
-Usage: sc [command] [options]
-
-
-Options:
-
--V, --version  output the version number
--h, --help     output usage information
-
+ID=0x0123 PASS=123 sc --help
+Usage: sc <command> [options]
 
 Commands:
+  shell.ts cp  Charge Point commands
 
-cp-status <address>   Returns the current status of the Chargingpole with given address
-cp-enable <address>   Enables the Chargingpole with given address
-cp-disable <address>  Disables the Chargingpole with given address
+Options:
+  --json         generate json output
+  -v, --version  Show version number                                   [boolean]
+  -h, --help     Show help                                             [boolean]
+```
+
+```
+ID=0x0123 PASS=123 sc cp --help
+Charge Point commands
+
+Commands:
+  shell.ts cp status [id]   Returns the current status of the Charge Point with
+                            given id
+  shell.ts cp disable [id]  Disables the Charge Point with given id
+  shell.ts cp enable [id]   Enables the Charge Point with given id
+
+Options:
+  --json         generate json output
+  -v, --version  Show version number                                   [boolean]
+  -h, --help     Show help                                             [boolean]
 ```
 
 Example:
 ```
-ID=0x0123 PASS=123 sc cp-status 0x12
+ID=0x0123 PASS=123 sc cp status 0x12
 ```
 
 **NOTE**: ~~Modbus does not appear to support simultaneous connections. If the core client is running, it is not possible to retrieve the charge point's status via the IoT Bridge from the shell.~~ Could not reproduce! 

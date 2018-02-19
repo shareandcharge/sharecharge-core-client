@@ -34,6 +34,9 @@ const checkCommands = (yargs, argv, numRequired) => {
 
 const argv = yargs
     .usage("Usage: sc <command> [options]")
+    .version("0.0.1")
+    .alias("v", "version")
+    .alias("h", "help")
     .command("cp", "Charge Point commands", (yargs) => {
 
         yargs
