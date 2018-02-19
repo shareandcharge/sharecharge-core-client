@@ -29,17 +29,34 @@ const argv = yargs
 
                 }, (argv) => {
 
-                    console.log("Getting status for Charge Point with id:", argv.id);
+                    let result = {
+                        id: argv.id
+                    };
+
+                    if (!argv.json) {
+                        console.log("Getting status for Charge Point with id:", argv.id);
+                    }
 
                     wrapContractCall("isAvailable", argv.id)
                         .then(contractState => {
                             bridge.connectorStatus(argv.id)
                                 .then(bridgeState => {
-                                    console.log("EV Network:\t", contractState ? 'available' : 'unavailable');
-                                    console.log("CPO Backend:\t", bridgeState);
+
+                                    result.state = {
+                                        bridge: bridgeState,
+                                        ev: contractState ? 'available' : 'unavailable'
+                                    };
+
+                                    if (argv.json) {
+                                        console.log(JSON.stringify(result, null, 2));
+                                    }
+                                    else {
+                                        console.log("EV Network:\t", result.state.ev);
+                                        console.log("CPO Backend:\t", result.state.bridge);
+                                    }
+
                                     process.exit(0);
                                 });
-
                         });
 
                 })
@@ -95,6 +112,9 @@ const argv = yargs
         checkCommands(yargs, argv, 2);
     })
     .demand(1)
+    .option("json", {
+        describe: "generate json output"
+    })
     .argv;
 
 
