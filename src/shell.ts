@@ -31,11 +31,15 @@ const argv = yargs
 
                     console.log("Getting status for Chargingpoint with id:", argv.id);
 
-                    bridge.connectorStatus(argv.id)
-                        .then(bridgeState => {
-                            console.log("EV Network:\t", contractState ? 'available' : 'unavailable');
-                            console.log("CPO Backend:\t", bridgeState);
-                            process.exit(0);
+                    wrapContractCall("isAvailable", argv.id)
+                        .then(contractState => {
+                            bridge.connectorStatus(argv.id)
+                                .then(bridgeState => {
+                                    console.log("EV Network:\t", contractState ? 'available' : 'unavailable');
+                                    console.log("CPO Backend:\t", bridgeState);
+                                    process.exit(0);
+                                });
+
                         });
 
                 })
