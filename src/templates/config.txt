@@ -1,0 +1,7 @@
+import { {{bridge.name}} } from '{{bridge.path}}';
+
+export const config = {
+    test: {{test}},
+    bridge: new {{bridge.name}}(),
+    statusUpdateInterval: {{statusUpdateInterval}},
+}

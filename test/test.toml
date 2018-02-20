@@ -1,0 +1,7 @@
+statusUpdateInterval = 2000
+test = true
+
+[bridge]
+name = "Bridge"
+path = "./testBridge.ts"
+

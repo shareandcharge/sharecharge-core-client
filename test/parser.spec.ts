@@ -18,10 +18,16 @@ describe('Yaml parser', function(){
         expect(configStr.substr(0,3)).to.equal('---');
     });
     
-    it('should read the config string and translate to js object', function() {
+    it('should read the yaml config string and translate to js object', function() {
         const configString = parser.read(__dirname + '/test.yaml');
         const config = parser.translate(configString);
-        expect(config.status).to.equal(22);
+        expect(config.statusUpdateInterval).to.equal(2000);
+    });
+
+    it('should read the toml config string and translate to js object', function() {
+        const configString = parser.read(__dirname + '/test.toml');
+        const config = parser.translate(configString);
+        expect(config.statusUpdateInterval).to.equal(2000);
     });
 
     it('should write the config.ts file', function(done) {

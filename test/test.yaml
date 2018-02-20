@@ -2,6 +2,6 @@
   bridge:
     name: Bridge
     path: ./testBridge1
-  status: 22
+  statusUpdateInterval: 2000
   test: true
   
