@@ -1,7 +1,7 @@
-import {Contract} from "./lib/src/services/contract";
-import {TestContract} from "./lib/test/test-contract";
-//import {Contract} from "../../core-client-lib/src/services/contract";
-//import {TestContract} from "../../core-client-lib/test/test-contract";
+//import {Contract} from "./lib/src/services/contract";
+//import {TestContract} from "./lib/test/test-contract";
+import {Contract} from "../../core-client-lib/src/services/contract";
+import {TestContract} from "../../core-client-lib/test/test-contract";
 import * as yargs from "yargs";
 
 import {config} from "../config";
@@ -19,7 +19,7 @@ const contractQueryState = (method, ...args) => {
         contract.queryState(method, ...args)
             .then((result) => resolve(result))
             .catch(e => {
-                console.error(e.message);
+                console.error(e);
                 process.exit(1);
             })
     });
@@ -45,11 +45,19 @@ const argv = yargs
     .version("0.0.1")
     .alias("v", "version")
     .alias("h", "help")
+    .option("json", {
+        describe: "generate json output"
+    })
     .command("cp", "Charge Point commands", (yargs) => {
 
         yargs
+            .usage("Usage: sc cp <command> [options]")
+            .demandCommand(1);
+
+        yargs
             .command("status [id]",
-                "Returns the current status of the Charge Point with given id", (yargs) => {
+                "Returns the current status of the Charge Point with given id",
+                (yargs) => {
                     yargs
                         .positional("id", {
                             describe: "a unique identifier for the Charge Point",
@@ -95,7 +103,8 @@ const argv = yargs
 
         yargs
             .command("disable [id]",
-                "Disables the Charge Point with given id", (yargs) => {
+                "Disables the Charge Point with given id",
+                (yargs) => {
                     yargs
                         .positional("id", {
                             describe: "a unique identifier for the Charge Point",
@@ -139,7 +148,8 @@ const argv = yargs
 
         yargs
             .command("enable [id]",
-                "Enables the Charge Point with given id", (yargs) => {
+                "Enables the Charge Point with given id",
+                (yargs) => {
                     yargs
                         .positional("id", {
                             describe: "a unique identifier for the Charge Point",
@@ -186,12 +196,16 @@ const argv = yargs
         // this command has sub commands, exit
         yargs.showHelp();
     })
-    .demandCommand(1)
     .command("bridge", "Bridge commands", (yargs) => {
 
         yargs
+            .usage("Usage: sc bridge <command> [options]")
+            .demandCommand(1);
+
+        yargs
             .command("status",
-                "Returns the current status of the configured Bridge", {}, (argv) => {
+                "Returns the current status of the configured Bridge", {},
+                (argv) => {
 
                     let result: any = {
                         name: null,
@@ -225,7 +239,4 @@ const argv = yargs
         yargs.showHelp();
     })
     .demandCommand(1)
-    .option("json", {
-        describe: "generate json output"
-    })
     .argv;
