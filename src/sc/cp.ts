@@ -149,8 +149,8 @@ export default (yargs) => {
                     });
             })
 
-        .command("deploy [id]",
-            "Deploys the Charge Point with given id",
+        .command("register [id]",
+            "Registers a Charge Point with given id in the EV Nwtwork",
             (yargs) => {
                 yargs
                     .positional("id", {
@@ -174,7 +174,7 @@ export default (yargs) => {
                 };
 
                 if (!argv.json) {
-                    console.log("Deploying CP with id:", cp.id);
+                    console.log("Registering CP with id:", cp.id);
                 }
 
                 contractSendTx("registerConnector",

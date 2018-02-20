@@ -89,11 +89,11 @@ ID=0x0123 PASS=123 sc cp --help
 Usage: sc cp <command> [options]
 
 Commands:
-  sc.ts cp status [id]   Returns the current status of the Charge Point with
-                         given id
-  sc.ts cp disable [id]  Disables the Charge Point with given id
-  sc.ts cp enable [id]   Enables the Charge Point with given id
-  sc.ts cp deploy [id]   Deploys the Charge Point with given id
+  sc.ts cp status [id]     Returns the current status of the Charge Point with
+                           given id
+  sc.ts cp disable [id]    Disables the Charge Point with given id
+  sc.ts cp enable [id]     Enables the Charge Point with given id
+  sc.ts cp register [id]   Deploys the Charge Point with given id
 
 Options:
   --json         generate json output
