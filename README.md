@@ -85,27 +85,29 @@ npm link
 Usage:
 
 ```
-ID=0x0123 PASS=123 sc --help
-Usage: sc <command> [options]
+ID=0x0123 PASS=123 sc cp --help
+Usage: sc cp <command> [options]
 
 Commands:
-  shell.ts cp  Charge Point commands
+  sc.ts cp status [id]   Returns the current status of the Charge Point with
+                         given id
+  sc.ts cp disable [id]  Disables the Charge Point with given id
+  sc.ts cp enable [id]   Enables the Charge Point with given id
+  sc.ts cp deploy [id]   Deploys the Charge Point with given id
 
 Options:
   --json         generate json output
   -v, --version  Show version number                                   [boolean]
   -h, --help     Show help                                             [boolean]
+
 ```
 
 ```
-ID=0x0123 PASS=123 sc cp --help
-Charge Point commands
+ID=0x0123 PASS=123 sc bridge --help
+Usage: sc bridge <command> [options]
 
 Commands:
-  shell.ts cp status [id]   Returns the current status of the Charge Point with
-                            given id
-  shell.ts cp disable [id]  Disables the Charge Point with given id
-  shell.ts cp enable [id]   Enables the Charge Point with given id
+  sc.ts bridge status  Returns the current status of the configured Bridge
 
 Options:
   --json         generate json output
