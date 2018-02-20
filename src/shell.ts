@@ -1,7 +1,7 @@
-//import {Contract} from "./lib/src/services/contract";
-//import {TestContract} from "./lib/test/test-contract";
-import {Contract} from "../../core-client-lib/src/services/contract";
-import {TestContract} from "../../core-client-lib/test/test-contract";
+import {Contract} from "./lib/src/services/contract";
+import {TestContract} from "./lib/test/test-contract";
+//import {Contract} from "../../core-client-lib/src/services/contract";
+//import {TestContract} from "../../core-client-lib/test/test-contract";
 import * as yargs from "yargs";
 
 import {config} from "../config";
