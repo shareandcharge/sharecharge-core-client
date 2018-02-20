@@ -31,7 +31,7 @@ export class Client {
     }
 
     private logOnStart(): void {
-        logger.info(`Core Client connected to ${this.bridgeName} bridge`)
+        logger.info(`Core Client connected to ${this.bridgeName} bridge`);
         logger.info('Listening for events...');
     }
 
