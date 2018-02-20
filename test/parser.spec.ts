@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-const fs = require('fs');
+import * as fs from 'fs';
 
 import { Parser} from '../src/utils/parser';
 import { Bridge } from '../test/testBridge1';
