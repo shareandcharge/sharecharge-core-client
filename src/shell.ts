@@ -1,5 +1,7 @@
 import {Contract} from "./lib/src/services/contract";
 import {TestContract} from "./lib/test/test-contract";
+//import {Contract} from "../../core-client-lib/src/services/contract";
+//import {TestContract} from "../../core-client-lib/test/test-contract";
 import * as yargs from "yargs";
 
 import {config} from "../config";
@@ -8,7 +10,7 @@ const ID = process.env.ID || "";
 const PASS = process.env.PASS || "";
 const bridge = config.bridge;
 
-const wrapContractCall = (method, ...args) => {
+const contractQueryState = (method, ...args) => {
 
     return new Promise((resolve, reject) => {
 
@@ -23,13 +25,19 @@ const wrapContractCall = (method, ...args) => {
     });
 };
 
-const checkCommands = (yargs, argv, numRequired) => {
+const contractSendTx = (method, ...args) => {
 
-    if (argv._.length < numRequired) {
-        yargs.showHelp();
-    } else {
-        // check for unknown command
-    }
+    return new Promise((resolve, reject) => {
+
+        const contract = config.test ? new TestContract() : new Contract(PASS);
+
+        contract.sendTx(method, ...args)
+            .then((result) => resolve(result))
+            .catch(e => {
+                console.error(e);
+                process.exit(1);
+            })
+    });
 };
 
 const argv = yargs
@@ -63,7 +71,7 @@ const argv = yargs
                         console.log("Getting status for Charge Point with id:", argv.id);
                     }
 
-                    wrapContractCall("isAvailable", argv.id)
+                    contractQueryState("isAvailable", argv.id)
                         .then(contractState => {
 
                             bridge.connectorStatus(argv.id)
@@ -97,11 +105,34 @@ const argv = yargs
                         .demand("id");
                 }, (argv) => {
 
-                    console.log("Disabling CP with id:", argv.id);
+                    let result: any = {
+                        id: argv.id,
+                        disabled: {
+                            txHash: null,
+                            block: null,
+                            success: null
+                        }
+                    };
 
-                    wrapContractCall("setAvailability", ID, argv.id, false)
-                        .then(result => {
-                            console.log("Is Available:", result);
+                    if (!argv.json) {
+                        console.log("Disabling CP with id:", argv.id);
+                    }
+
+                    contractSendTx("setAvailability", ID, argv.id, false)
+                        .then(contractResult => {
+
+                            result.disabled.success = contractResult.status === "mined";
+                            result.disabled.txHash = contractResult.txHash;
+                            result.disabled.block = contractResult.blockNumber;
+
+                            if (argv.json) {
+                                console.log(JSON.stringify(result, null, 2));
+                            } else {
+                                console.log("Success:", result.disabled.success);
+                                console.log("Tx:", result.disabled.txHash);
+                                console.log("Block:", result.disabled.success);
+                            }
+
                             process.exit(0);
                         });
                 });
@@ -118,15 +149,76 @@ const argv = yargs
                         .demand("id");
                 }, (argv) => {
 
-                    console.log("Enabling CP with id:", argv.id);
+                    let result: any = {
+                        id: argv.id,
+                        enabled: {
+                            txHash: null,
+                            block: null,
+                            success: null
+                        }
+                    };
 
-                    wrapContractCall("setAvailability", ID, argv.id, true)
-                        .then(result => {
+                    if (!argv.json) {
+                        console.log("Enabling CP with id:", argv.id);
+                    }
 
-                            console.log("Is Available:", result);
+                    contractSendTx("setAvailability", ID, argv.id, true)
+                        .then(contractResult => {
+
+                            result.enabled.success = contractResult.status === "mined";
+                            result.enabled.txHash = contractResult.txHash;
+                            result.enabled.block = contractResult.blockNumber;
+
+                            if (argv.json) {
+                                console.log(JSON.stringify(result, null, 2));
+
+                            } else {
+                                console.log("Success:", result.enabled.success);
+                                console.log("Tx:", result.enabled.txHash);
+                                console.log("Block:", result.enabled.block);
+                            }
+
                             process.exit(0);
                         });
                 })
+
+    }, (argv) => {
+        // this command has sub commands, exit
+        yargs.showHelp();
+    })
+    .demandCommand(1)
+    .command("bridge", "Bridge commands", (yargs) => {
+
+        yargs
+            .command("status",
+                "Returns the current status of the configured Bridge", {}, (argv) => {
+
+                    let result: any = {
+                        name: null,
+                        bridge: {
+                            isAvailable: null
+                        }
+                    };
+
+                    if (!argv.json) {
+                        console.log("Getting status of bridge.");
+                    }
+
+                    result.name = bridge.name;
+
+                    bridge.health()
+                        .then(isAvailable => {
+
+                            result.bridge.isAvailable = isAvailable;
+
+                            if (argv.json) {
+                                console.log(JSON.stringify(result, null, 2));
+                            } else {
+                                console.log("Bridge Available:", result.bridge.isAvailable);
+                                console.log("Bridge name:", result.name)
+                            }
+                        });
+                });
 
     }, (argv) => {
         // this command has sub commands, exit
@@ -137,5 +229,3 @@ const argv = yargs
         describe: "generate json output"
     })
     .argv;
-
-checkCommands(yargs, argv, 1);
