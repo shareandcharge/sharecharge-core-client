@@ -19,7 +19,7 @@ export class Client {
         this.id = id;
         this.pass = pass;
         const contract = config.test ? new TestContract() : new Contract(this.pass);
-        logger.info("Type of contract:", contract.constructor.name);
+        logger.debug("Type of contract:", contract.constructor.name);
         this.sc = new ShareAndCharge(contract);
     }
 
@@ -46,15 +46,15 @@ export class Client {
                 try {
                     logger.info(`Starting charge on ${request.params.connectorId}`);
                     const res = await this.bridge.start(request.params);
-                    logger.info('Bridge start response: ' + JSON.stringify(res));
+                    logger.debug('Bridge start response: ' + JSON.stringify(res));
                     const health = await this.bridge.health();
-                    logger.info('Bridge status following start:', health);
+                    logger.debug('Bridge status following start:', health);
                     const receipt = await request.success();
-                    logger.info('Start confirmation receipt: ' + JSON.stringify(receipt));
+                    logger.debug('Start confirmation receipt: ' + JSON.stringify(receipt));
                 } catch (err) {
                     logger.info(err.message);
                     const receipt = await request.failure();
-                    logger.info('Error receipt: ' + JSON.stringify(receipt));
+                    logger.debug('Error receipt: ' + JSON.stringify(receipt));
                 }
             }
         });
@@ -66,15 +66,15 @@ export class Client {
                 try {
                     logger.info(`Stopping charge on ${request.params.connectorId}`);
                     const res = await this.bridge.stop(request.params);
-                    logger.info('Bridge stop response: ' + JSON.stringify(res));
+                    logger.debug('Bridge stop response: ' + JSON.stringify(res));
                     const health = await this.bridge.health();
-                    logger.info('Bridge status following stop:', health);
+                    logger.debug('Bridge status following stop:', health);
                     const receipt = await request.success();
-                    logger.info('Stop confirmation receipt: ' + JSON.stringify(receipt));
+                    logger.debug('Stop confirmation receipt: ' + JSON.stringify(receipt));
                 } catch (err) {
                     logger.info(err.message);
                     const receipt = await request.failure();
-                    logger.info('Error receipt: ' + JSON.stringify(receipt));
+                    logger.debug('Error receipt: ' + JSON.stringify(receipt));
                 }
             }
         });
@@ -84,27 +84,25 @@ export class Client {
         this.bridge.status$.subscribe(async update => {
             update.errors.forEach(err => logger.warn('Status update error: ' + err.message));
             if (update.points[0]) {
-                try {
-                    const receipt = await this.sc.updateStatus(update.points, this.id);
-                    if (receipt.points.length > 0) {
-                        logger.info('Updated status of: ' + receipt.points);
+                update.points.forEach(async point => {
+                    try {
+                        const receipt = await this.sc.setUnavailable(point, this.id);
+                        if (receipt && receipt.blockNumber) {
+                            logger.info(`Updated ${point} to unavailable on contract`);
+                        }
+                    } catch (err) {
+                        logger.warn(`Error updating ${point}: ${err.message}`);
                     }
-                    if (receipt.errors[0]) {
-                        logger.warn(receipt.errors[0].message);
-                    }
-                } catch (err) {
-                    logger.warn(err.message);
-                }
+                });
             }
         });
     }
 
     start(): void {
-
         this.checkHealth()
             .then(health => {
                 logger.info('Configured to update every ' + this.config.statusUpdateInterval + 'ms');
-                logger.info('Bridge status: ' + health);
+                logger.debug('Bridge status: ' + health);
                 this.bridge.startUpdater(this.config.statusUpdateInterval);
                 this.handleStartRequests();
                 this.handleStopRequests();
