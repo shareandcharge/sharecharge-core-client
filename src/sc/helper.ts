@@ -16,8 +16,9 @@ export const contractQueryState = (method, ...args) => {
         contract.queryState(method, ...args)
             .then((result) => resolve(result))
             .catch(e => {
-                console.error(e);
-                process.exit(1);
+                console.error(e.message);
+                process.exit(0);
+                return reject(e);
             });
     });
 };
@@ -31,8 +32,9 @@ export const contractSendTx = (method, ...args) => {
         contract.sendTx(method, ...args)
             .then((result) => resolve(result))
             .catch(e => {
-                console.error(e);
-                process.exit(1);
+                console.error(e.message);
+                process.exit(0);
+                return reject(e);
             })
     });
 };
