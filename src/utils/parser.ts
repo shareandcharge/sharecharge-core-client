@@ -12,7 +12,7 @@ export class Parser {
     extension: string;
 
     constructor(test?: boolean) {
-        this.path = test ? '../../../test/' : '../../';
+        this.path = test ? '../../../test/' : '../../../';
     }
 
     read(filepath: string): string {

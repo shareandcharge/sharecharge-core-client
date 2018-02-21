@@ -1,3 +1,4 @@
+connectorData = "./connectors.json"
 statusUpdateInterval = 2000
 test = true
 
