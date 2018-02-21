@@ -1,7 +1,6 @@
-import { Parser } from './src/utils/parser';
 import { Client } from './src/client';
+import { Parser } from './src/utils/parser';
 import { logger } from './src/utils/logger';
-import { Bridge } from './test/testBridge1';
 
 let conf;
 
@@ -22,11 +21,12 @@ parser.write(configTranslate);
 
 import { config } from './config';
 
-conf = config.bridge ? config : { bridge: new Bridge() };
-conf.id = ID;
-conf.pass = PASS;
+config.id = ID;
+config.pass = PASS;
 
-console.log(require(config.connectors));
+if (config.connectors) {
+    config.connectors = require(config.connectors);
+}
 
-const client = new Client(conf);
+const client = new Client(config);
 client.start();

@@ -7,11 +7,11 @@ import {logger} from './utils/logger';
 
 export class Client {
 
-    private readonly config: Config;
+    private readonly config: any;
     private bridge: BridgeInterface;
     private sc: ShareAndCharge;
 
-    constructor(config: Config) {
+    constructor(config: any) {
         this.config = config;
         this.bridge = this.config.bridge;
         const contract = config.test ? new TestContract() : new Contract(this.config.pass);
@@ -94,11 +94,27 @@ export class Client {
         });
     }
 
+    private register(): void {
+        Object.values(this.config.connectors).forEach(async conn => {
+            try {
+                const receipt = await this.sc.registerConnector(conn, this.config.id)
+                if (receipt.blockNumber) {
+                    logger.info(`Registered ${conn.id}`);
+                }
+            } catch (err) {
+                logger.warn(`Error registering ${conn.id}: ${err.message}`);
+            }
+        });
+    }
+
     start(): void {
         this.checkHealth()
             .then(health => {
                 logger.info('Configured to update every ' + this.config.statusUpdateInterval + 'ms');
                 logger.debug('Bridge status: ' + health);
+                if (this.config.connectors) {
+                    this.register();
+                }
                 this.bridge.startUpdater(this.config.statusUpdateInterval);
                 this.handleStartRequests();
                 this.handleStopRequests();

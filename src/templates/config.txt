@@ -1,6 +1,6 @@
 import { {{bridge.name}} } from '{{bridge.path}}';
 
-export const config = {
+export let config = {
     test: {{test}},
     bridge: new {{bridge.name}}(),
     statusUpdateInterval: {{statusUpdateInterval}},
