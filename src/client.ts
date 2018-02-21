@@ -10,15 +10,11 @@ export class Client {
     private readonly config: Config;
     private bridge: BridgeInterface;
     private sc: ShareAndCharge;
-    private readonly id: string;
-    private readonly pass: string;
 
-    constructor(config: Config, id: string, pass: string) {
+    constructor(config: Config) {
         this.config = config;
         this.bridge = this.config.bridge;
-        this.id = id;
-        this.pass = pass;
-        const contract = config.test ? new TestContract() : new Contract(this.pass);
+        const contract = config.test ? new TestContract() : new Contract(this.config.pass);
         logger.debug("Type of contract:", contract.constructor.name);
         this.sc = new ShareAndCharge(contract);
     }
@@ -37,7 +33,7 @@ export class Client {
     }
 
     private filter(params): boolean {
-        return params.clientId === this.id;
+        return params.clientId === this.config.id;
     }
 
     private handleStartRequests(): void {
@@ -86,7 +82,7 @@ export class Client {
             if (update.points[0]) {
                 update.points.forEach(async point => {
                     try {
-                        const receipt = await this.sc.setUnavailable(point, this.id);
+                        const receipt = await this.sc.setUnavailable(point, this.config.id);
                         if (receipt && receipt.blockNumber) {
                             logger.info(`Updated ${point} to unavailable on contract`);
                         }

@@ -3,6 +3,8 @@ import { Client } from './src/client';
 import { logger } from './src/utils/logger';
 import { Bridge } from './test/testBridge1';
 
+let conf;
+
 let ID = process.env.ID || '';
 const PASS = process.env.PASS || '';
 
@@ -19,7 +21,12 @@ const configTranslate = parser.translate(configString);
 parser.write(configTranslate);
 
 import { config } from './config';
-const conf = config.bridge ? config : { bridge: new Bridge() };
 
-const client = new Client(conf, ID, PASS);
+conf = config.bridge ? config : { bridge: new Bridge() };
+conf.id = ID;
+conf.pass = PASS;
+
+console.log(require(config.connectors));
+
+const client = new Client(conf);
 client.start();
