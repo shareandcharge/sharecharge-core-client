@@ -3,5 +3,6 @@
     name: Bridge
     path: ./test/testBridge1
   statusUpdateInterval: 2000
+  connectorData: ./connectors.json
   test: true
   
