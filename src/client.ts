@@ -1,9 +1,9 @@
-import { Config } from './models/config';
-import { BridgeInterface } from './models/bridge';
-import { ShareAndCharge } from './lib/src/index';
-import { Contract } from './lib/src/services/contract';
-import { TestContract } from './lib/test/test-contract';
-import { logger } from './utils/logger';
+import {Config} from './models/config';
+import {BridgeInterface} from './models/bridge';
+import {ShareAndCharge} from './lib/src/index';
+import {Contract} from './lib/src/services/contract';
+import {TestContract} from './lib/test/test-contract';
+import {logger} from './utils/logger';
 
 export class Client {
 
@@ -19,6 +19,7 @@ export class Client {
         this.id = id;
         this.pass = pass;
         const contract = config.test ? new TestContract() : new Contract(this.pass);
+        logger.info("Type of contract:", contract.constructor.name);
         this.sc = new ShareAndCharge(contract);
     }
 
