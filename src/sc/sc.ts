@@ -1,6 +1,7 @@
 import * as yargs from "yargs";
 import bridgeHandler from "./bridge"
 import cpHandler from "./cp";
+import { clientHandler, clientStarter } from "./client"
 
 const argv = yargs
     .usage("Usage: sc <command> [options]")
@@ -18,5 +19,6 @@ const argv = yargs
         // this command has sub commands, exit
         yargs.showHelp();
     })
+    .command("client", "Run the S&C Core Client", clientHandler, clientStarter)
     .demandCommand(1)
     .argv;
