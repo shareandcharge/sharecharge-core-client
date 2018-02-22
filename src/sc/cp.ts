@@ -39,17 +39,21 @@ export default (yargs) => {
                 contractQueryState("isAvailable", argv.id)
                     .then(contractState => {
 
+                        result.state.ev = contractState ? "available" : "unavailable";
+
+                        if (!argv.json) {
+                            console.log("EV Network:\t", result.state.ev);
+                        }
+
                         bridge.connectorStatus(argv.id)
                             .then(bridgeState => {
 
                                 result.state.bridge = bridgeState;
-                                result.state.ev = contractState ? "available" : "unavailable";
 
                                 if (argv.json) {
                                     console.log(JSON.stringify(result, null, 2));
                                 }
                                 else {
-                                    console.log("EV Network:\t", result.state.ev);
                                     console.log("CPO Backend:\t", result.state.bridge);
                                 }
 
@@ -178,7 +182,7 @@ export default (yargs) => {
                 }
 
                 contractSendTx("registerConnector",
-                    cp.id, ID, cp.owner, cp.lat, cp.lng, cp.price, cp.model, cp.plugType,
+                    cp.id, cp.client, cp.owner, cp.lat, cp.lng, cp.price, cp.model, cp.plugType,
                     cp.openingHours, cp.isAvailable)
                     .then((contractResult: any) => {
 
@@ -191,5 +195,4 @@ export default (yargs) => {
                         process.exit(0);
                     });
             })
-
 }
