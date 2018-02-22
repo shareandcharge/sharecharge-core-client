@@ -85,7 +85,7 @@ export default (yargs) => {
                 };
 
                 if (!argv.json) {
-                    console.log("Disabling CP with id:", argv.id);
+                    console.log("Disabling CP with id:", argv.id, "for client:", ID);
                 }
 
                 contractSendTx("setAvailability", ID, argv.id, false)
@@ -130,7 +130,7 @@ export default (yargs) => {
                 };
 
                 if (!argv.json) {
-                    console.log("Enabling CP with id:", argv.id);
+                    console.log("Enabling CP with id:", argv.id, "for client:", ID);
                 }
 
                 contractSendTx("setAvailability", ID, argv.id, true)
@@ -170,27 +170,35 @@ export default (yargs) => {
 
                 let result: any = {
                     id: cp.id,
-                    deploy: {
+                    register: {
                         txHash: null,
                         block: null,
                         success: null
                     }
                 };
 
+                const clientId = ID || cp.client;
+
                 if (!argv.json) {
-                    console.log("Registering CP with id:", cp.id);
+                    console.log("Registering CP with id:", cp.id, "for client:", clientId);
                 }
 
                 contractSendTx("registerConnector",
-                    cp.id, cp.client, cp.owner, cp.lat, cp.lng, cp.price, cp.model, cp.plugType,
+                    cp.id, clientId, cp.owner, cp.lat, cp.lng, cp.price, cp.model, cp.plugType,
                     cp.openingHours, cp.isAvailable)
                     .then((contractResult: any) => {
 
-                        result.deploy.success = contractResult.status === "mined";
-                        result.deploy.txHash = contractResult.txHash;
-                        result.deploy.block = contractResult.blockNumber;
+                        result.register.success = contractResult.status === "mined";
+                        result.register.txHash = contractResult.txHash;
+                        result.register.block = contractResult.blockNumber;
 
-                        console.log(JSON.stringify(result, null, 2));
+                        if (argv.json) {
+                            console.log(JSON.stringify(result, null, 2));
+                        } else {
+                            console.log("Success:", result.register.success);
+                            console.log("Tx:", result.register.txHash);
+                            console.log("Block:", result.register.block);
+                        }
 
                         process.exit(0);
                     });
