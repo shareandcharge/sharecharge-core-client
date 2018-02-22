@@ -169,13 +169,24 @@ export default (yargs) => {
                 const cp = connectors[argv.id];
 
                 let result: any = {
-                    id: cp.id,
+                    id: null,
                     register: {
                         txHash: null,
                         block: null,
-                        success: null
+                        success: false
                     }
                 };
+
+                if (!cp) {
+                    if (argv.json) {
+                        console.log(JSON.stringify(result, null, 2));
+                    } else {
+                        console.error(`No CP found with id ${argv.id}`);
+                    }
+                    process.exit(1);
+                }
+
+                result.id = cp.id;
 
                 const clientId = ID || cp.client;
 
