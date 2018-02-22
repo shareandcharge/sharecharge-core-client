@@ -1,7 +1,8 @@
-import { Parser } from './src/utils/parser';
 import { Client } from './src/client';
+import { Parser } from './src/utils/parser';
 import { logger } from './src/utils/logger';
-import { Bridge } from './test/testBridge1';
+
+let conf;
 
 let ID = process.env.ID || '';
 const PASS = process.env.PASS || '';
@@ -19,7 +20,13 @@ const configTranslate = parser.translate(configString);
 parser.write(configTranslate);
 
 import { config } from './config';
-const conf = config.bridge ? config : { bridge: new Bridge() };
 
-const client = new Client(conf, ID, PASS);
+config.id = ID;
+config.pass = PASS;
+
+if (config.connectors) {
+    config.connectors = require(config.connectors);
+}
+
+const client = new Client(config);
 client.start();

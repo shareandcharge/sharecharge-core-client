@@ -10,18 +10,14 @@ import {logger} from './utils/logger';
 
 export class Client {
 
-    private readonly config: Config;
+    private readonly config: any;
     private bridge: BridgeInterface;
     private sc: ShareAndCharge;
-    private readonly id: string;
-    private readonly pass: string;
 
-    constructor(config: Config, id: string, pass: string) {
+    constructor(config: any) {
         this.config = config;
         this.bridge = this.config.bridge;
-        this.id = id;
-        this.pass = pass;
-        const contract = config.test ? new TestContract() : new Contract(this.pass);
+        const contract = config.test ? new TestContract() : new Contract(this.config.pass);
         logger.debug("Type of contract:", contract.constructor.name);
         this.sc = new ShareAndCharge(contract);
     }
@@ -40,7 +36,7 @@ export class Client {
     }
 
     private filter(params): boolean {
-        return params.clientId === this.id;
+        return params.clientId === this.config.id;
     }
 
     private handleStartRequests(): void {
@@ -89,7 +85,7 @@ export class Client {
             if (update.points[0]) {
                 update.points.forEach(async point => {
                     try {
-                        const receipt = await this.sc.setUnavailable(point, this.id);
+                        const receipt = await this.sc.setUnavailable(point, this.config.id);
                         if (receipt && receipt.blockNumber) {
                             logger.info(`Updated ${point} to unavailable on contract`);
                         }
@@ -101,11 +97,27 @@ export class Client {
         });
     }
 
+    private register(): void {
+        Object.values(this.config.connectors).forEach(async conn => {
+            try {
+                const receipt = await this.sc.registerConnector(conn, this.config.id)
+                if (receipt.blockNumber) {
+                    logger.info(`Registered ${conn.id}`);
+                }
+            } catch (err) {
+                logger.warn(`Error registering ${conn.id}: ${err.message}`);
+            }
+        });
+    }
+
     start(): void {
         this.checkHealth()
             .then(health => {
                 logger.info('Configured to update every ' + this.config.statusUpdateInterval + 'ms');
                 logger.debug('Bridge status: ' + health);
+                if (this.config.connectors) {
+                    this.register();
+                }
                 this.bridge.startUpdater(this.config.statusUpdateInterval);
                 this.handleStartRequests();
                 this.handleStopRequests();
