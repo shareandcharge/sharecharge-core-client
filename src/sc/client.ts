@@ -37,6 +37,12 @@ export const clientHandler = (yargs) => {
 
 export const clientStarter = (argv) => {
     const config = createConfig(argv);
+    if (!config.id) {
+        logger.warn('No Client ID found in configuration!');
+    }
+    if (!config.pass) {
+        logger.warn('No Ethereum password found in configuration!');
+    }
     const client = new Client(config);
     client.start();
 }
