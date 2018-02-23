@@ -113,12 +113,12 @@ export class Client {
     start(): void {
         this.checkHealth()
             .then(health => {
-                logger.info('Configured to update every ' + this.config.statusUpdateInterval + 'ms');
+                logger.info('Configured to update every ' + this.config.statusInterval + 'ms');
                 logger.debug('Bridge status: ' + health);
                 if (this.config.connectors) {
                     this.register();
                 }
-                this.bridge.startUpdater(this.config.statusUpdateInterval);
+                this.bridge.startUpdater(this.config.statusInterval);
                 this.handleStartRequests();
                 this.handleStopRequests();
                 this.handleStatusUpdates();

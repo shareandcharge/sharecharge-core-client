@@ -24,7 +24,7 @@ export const createConfig = argv => {
         pass: argv.pass,
         test: argv.test,
         statusInterval: argv['status-interval'],
-        bridge: argv.bridge,
+        bridge: new argv.bridge(),
         connectors: require(connPath)
     };
 }

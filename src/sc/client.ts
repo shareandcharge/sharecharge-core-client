@@ -36,11 +36,7 @@ export const clientHandler = (yargs) => {
 }
 
 export const clientStarter = (argv) => {
-
-    console.log(createConfig(argv));
-
-    argv.bridge = new argv.bridge();
-    const config = { bridge: argv.bridge };
+    const config = createConfig(argv);
     const client = new Client(config);
     client.start();
 }
