@@ -1,9 +1,10 @@
 import * as connectors from "../../connectors.json";
-import {contractSendTx, contractQueryState} from "./helper";
-import {config} from "../../config";
+import {contractSendTx, contractQueryState, initBridge, parseConfigFile, customConfig, createConfig } from "./helper";
 
-const ID = process.env.ID || "";
-const bridge = new config.bridge();
+const configFile = './conf.yaml';
+const config = createConfig(customConfig('./conf.yaml'));
+const ID = config.id;
+const bridge = initBridge('./conf.yaml');
 
 export default (yargs) => {
 
@@ -154,7 +155,7 @@ export default (yargs) => {
             })
 
         .command("register [id]",
-            "Registers a Charge Point with given id in the EV Nwtwork",
+            "Registers a Charge Point with given id in the EV Network",
             (yargs) => {
                 yargs
                     .positional("id", {

@@ -1,4 +1,3 @@
-import {Config} from './models/config';
 import {BridgeInterface} from './models/bridge';
 import {ShareAndCharge} from './lib/src/shareAndCharge';
 import {Contract} from './lib/src/services/contract';

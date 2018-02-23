@@ -30,14 +30,4 @@ describe('Yaml parser', function(){
         expect(config.statusInterval).to.equal(2000);
     });
 
-    it('should write the config.ts file', function(done) {
-        const configString = parser.read(__dirname + '/test.yaml');
-        const config = parser.translate(configString);
-        parser.write(config, path);
-        fs.stat('./config.ts', (err, res) => {
-            expect(res.size > 0).to.equal(true);
-            done();
-        });
-    });
-
 });
