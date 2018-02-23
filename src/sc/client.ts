@@ -1,34 +1,13 @@
 import { Parser } from '../utils/parser';
 import { Client } from '../client';
 import { logger } from '../utils/logger';
-
-/*
-if (!ID) {
-    logger.warn('Missing Environment Variable: ID')
-}
-if (!PASS) {
-    logger.warn('Missing Environment Variable: PASS (Using empty PASS)');
-}
-
-const parser = new Parser();
-const configString = parser.read(__dirname + '/conf.yaml');
-const configTranslate = parser.translate(configString);
-parser.write(configTranslate);
-
-import { config } from './config';
-
-const client = new Client(conf, ID, PASS);
-client.start();
-*/
+import { parseConfig } from './helper';
 
 export const clientHandler = (yargs) => {
     yargs
         .usage('Usage: sc client [options]')
+        .config('config', parseConfig)
         .options({
-            'config': {
-                describe: 'Specify a configuration file to use',
-                type: 'string'
-            },
             'id': {
                 describe: 'The client ID used to filter EV charge requests',
                 type: 'string'
@@ -57,16 +36,9 @@ export const clientHandler = (yargs) => {
 }
 
 export const clientStarter = (argv) => {
+    argv.bridge = new argv.bridge();
+    const config = { bridge: argv.bridge };
+    const client = new Client(config);
+    client.start();
 
-    let config = {
-        config: argv.config,
-        id: argv.id,
-        pass: argv.pass,
-        bridge: argv.bridge,
-        connectors: argv.connectors,
-        test: argv.test,
-        'status-update-interval': argv['status-update-interval'],
-    }
-
-    console.log('Running the core client with args:', config);
 }

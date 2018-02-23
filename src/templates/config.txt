@@ -2,7 +2,7 @@ import { {{bridge.name}} } from '{{bridge.path}}';
 
 export let config = {
     test: {{test}},
-    bridge: new {{bridge.name}}(),
+    bridge: {{bridge.name}},
     statusUpdateInterval: {{statusUpdateInterval}},
     connectors: '{{connectorData}}'
 }
