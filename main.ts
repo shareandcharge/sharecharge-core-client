@@ -28,5 +28,7 @@ if (config.connectors) {
     config.connectors = require(config.connectors);
 }
 
+config.bridge = new config.bridge();
+
 const client = new Client(config);
 client.start();
