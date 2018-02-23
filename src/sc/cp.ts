@@ -3,7 +3,7 @@ import {contractSendTx, contractQueryState} from "./helper";
 import {config} from "../../config";
 
 const ID = process.env.ID || "";
-const bridge = config.bridge;
+const bridge = new config.bridge();
 
 export default (yargs) => {
 
