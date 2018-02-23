@@ -85,7 +85,7 @@ export default (yargs) => {
                 };
 
                 if (!argv.json) {
-                    console.log("Disabling CP with id:", argv.id, "for client:", ID);
+                    console.log(`Disabling CP with id: ${argv.id} for client ${ID}`);
                 }
 
                 contractSendTx("setAvailability", ID, argv.id, false)
@@ -181,7 +181,7 @@ export default (yargs) => {
                     if (argv.json) {
                         console.log(JSON.stringify(result, null, 2));
                     } else {
-                        console.error(`No CP found with id ${argv.id}`);
+                        console.error(`No CP found with id ${argv.id} in configuration.`);
                     }
                     process.exit(1);
                 }
