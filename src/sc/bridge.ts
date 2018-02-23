@@ -1,6 +1,6 @@
 import {config} from "../../config";
 
-const bridge = config.bridge;
+const bridge = new config.bridge();
 
 export default (yargs) => {
 
