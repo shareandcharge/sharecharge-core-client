@@ -1,21 +1,32 @@
+import * as path from 'path';
+
 import {Contract} from "../lib/src/services/contract";
 import {TestContract} from "../lib/test/test-contract";
 //import {Contract} from "../../../core-client-lib/src/services/contract";
 //import {TestContract} from "../../../core-client-lib/test/test-contract";
 import { Parser } from '../utils/parser';
-
 import {config} from "../../config";
 
 const PASS = process.env.PASS || "";
 
-export const parseConfig = path => {
+export const parseConfigFile = path => {
     const parser = new Parser();
     const confString = parser.read(path);
     const translation = parser.translate(confString);
     parser.write(translation);
-    // console.log(require('../../config').config)
-    // import config from '../../config';
     return require('../../config').config;
+}
+
+export const createConfig = argv => {
+    const connPath = path.join(process.cwd(), argv.connectors);
+    return {
+        id: argv.id,
+        pass: argv.pass,
+        test: argv.test,
+        statusInterval: argv['status-interval'],
+        bridge: argv.bridge,
+        connectors: require(connPath)
+    };
 }
 
 export const contractQueryState = (method, ...args) => {

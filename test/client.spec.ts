@@ -4,12 +4,12 @@ import { config } from './testConfig';
 
 describe('Core Client', function() {
 
-    let client;
+    let client, conf;
    
     beforeEach(async function() {
-        const id = '123';
-        const pass = '123';
-        client = new Client(config, id, pass);
+        conf = Object.create(config);
+        conf.bridge = new config.bridge();
+        client = new Client(conf);
     });
 
     it('should initialise core client with correct plugin', function() {

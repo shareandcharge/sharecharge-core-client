@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as fs from 'fs';
 
 import { Parser} from '../src/utils/parser';
-import { Bridge } from '../test/testBridge1';
+import Bridge from '../test/testBridge1';
 
 describe('Yaml parser', function(){
 
@@ -21,13 +21,13 @@ describe('Yaml parser', function(){
     it('should read the yaml config string and translate to js object', function() {
         const configString = parser.read(__dirname + '/test.yaml');
         const config = parser.translate(configString);
-        expect(config.statusUpdateInterval).to.equal(2000);
+        expect(config.statusInterval).to.equal(2000);
     });
 
     it('should read the toml config string and translate to js object', function() {
         const configString = parser.read(__dirname + '/test.toml');
         const config = parser.translate(configString);
-        expect(config.statusUpdateInterval).to.equal(2000);
+        expect(config.statusInterval).to.equal(2000);
     });
 
     it('should write the config.ts file', function(done) {

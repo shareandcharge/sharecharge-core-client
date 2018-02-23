@@ -1,6 +1,10 @@
-import { Bridge } from './testBridge1';
+import Bridge from './testBridge1';
 
-export const config = {
+export let config = {
     test: true,
-    bridge: new Bridge()
-};
+    bridge: Bridge,
+    'status-interval': 2000,
+    connectors: './connectors.json',
+    id: '123',
+    pass: '123'
+}

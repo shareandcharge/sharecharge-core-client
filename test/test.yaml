@@ -1,8 +1,8 @@
 --- 
-  bridge:
-    name: Bridge
-    path: ./testBridge1
-  statusUpdateInterval: 2000
+  bridge: ./testBridge1
+  statusInterval: 2000
   connectorData: ./connectors.json
   test: true
+  id: 123
+  pass: 123
   

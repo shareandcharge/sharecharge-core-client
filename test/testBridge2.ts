@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import { BridgeInterface, StatusObject } from '../src/models/bridge';
 
-export class Bridge implements BridgeInterface {
+export default class Bridge implements BridgeInterface {
 
     updater: any;
     status = new Subject<StatusObject>();

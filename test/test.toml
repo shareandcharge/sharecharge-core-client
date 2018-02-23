@@ -1,8 +1,7 @@
 connectorData = "./connectors.json"
-statusUpdateInterval = 2000
+statusInterval = 2000
 test = true
-
-[bridge]
-name = "Bridge"
-path = "./testBridge.ts"
+bridge = "./testBridge.ts"
+id = "123"
+pass = "123"
 

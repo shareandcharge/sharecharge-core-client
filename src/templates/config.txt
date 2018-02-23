@@ -1,8 +1,10 @@
-import { {{bridge.name}} } from '{{bridge.path}}';
+import Bridge from '{{ bridge }}';
 
 export let config = {
-    test: {{test}},
-    bridge: {{bridge.name}},
-    statusUpdateInterval: {{statusUpdateInterval}},
-    connectors: '{{connectorData}}'
+    test: {{ test }},
+    bridge: Bridge,
+    'status-interval': {{ statusInterval }},
+    connectors: '{{ connectorData }}',
+    id: '{{ id }}',
+    pass: '{{ pass }}'
 }
