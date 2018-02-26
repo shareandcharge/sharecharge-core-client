@@ -1,5 +1,5 @@
 import * as connectors from "../../connectors.json";
-import {contractSendTx, contractQueryState, initBridge, customConfig, createConfig, coinbase } from "./helper";
+import {contractSendTx, contractQueryState, initBridge, customConfig, createConfig, coinbase} from "./helper";
 
 const configFile = './conf.yaml';
 const config = createConfig(customConfig(configFile));
@@ -190,28 +190,48 @@ export default (yargs) => {
 
                 const clientId = config.id || cp.client;
 
-                if (!argv.json) {
-                    console.log("Registering CP with id:", cp.id, "for client:", clientId);
-                }
+                const args = [
+                    clientId, cp.owner, cp.lat, cp.lng,
+                    cp.price, cp.model, cp.plugType,
+                    cp.openingHours, cp.isAvailable,
+                ];
 
-                contractSendTx("registerConnector",
-                    cp.id, clientId, cp.owner, cp.lat, cp.lng, cp.price, cp.model, cp.plugType,
-                    cp.openingHours, cp.isAvailable)
-                    .then((contractResult: any) => {
+                contractQueryState("updateRequired", cp.id, ...args)
+                    .then(needsUpdate => {
 
-                        result.register.success = contractResult.status === "mined";
-                        result.register.txHash = contractResult.txHash;
-                        result.register.block = contractResult.blockNumber;
+                        if (needsUpdate) {
 
-                        if (argv.json) {
-                            console.log(JSON.stringify(result, null, 2));
+                            if (!argv.json) {
+                                console.log("Registering CP with id:", cp.id, "for client:", clientId);
+                            }
+
+                            contractSendTx("registerConnector", cp.id, ...args)
+                                .then((contractResult: any) => {
+
+                                    result.register.success = contractResult.status === "mined";
+                                    result.register.txHash = contractResult.txHash;
+                                    result.register.block = contractResult.blockNumber;
+
+                                    if (argv.json) {
+                                        console.log(JSON.stringify(result, null, 2));
+                                    } else {
+                                        console.log("Success:", result.register.success);
+                                        console.log("Tx:", result.register.txHash);
+                                        console.log("Block:", result.register.block);
+                                    }
+
+                                    process.exit(0);
+                                });
                         } else {
-                            console.log("Success:", result.register.success);
-                            console.log("Tx:", result.register.txHash);
-                            console.log("Block:", result.register.block);
-                        }
 
-                        process.exit(0);
+                            if (argv.json) {
+                                console.log(JSON.stringify(result, null, 2));
+                            } else {
+                                console.log("Registering/Updating CP with id:", cp.id, "for client:", clientId, "not needed.");
+                            }
+
+                            process.exit(0);
+                        }
                     });
             })
 
@@ -232,13 +252,13 @@ export default (yargs) => {
                     .demand('id')
 
             }, (argv) => {
-                console.log(argv)
+                console.log(argv);
                 contractSendTx('requestStart', argv.id, argv.seconds)
                     .then(res => {
 
                         console.log('requestStart res:', res);
                         if (res.blockNumber) {
-                            
+
                             coinbase()
                                 .then(address => {
                                     console.log('coinbase:', res);
@@ -249,12 +269,11 @@ export default (yargs) => {
                                         })
 
 
-                            })
-                            
+                                })
+
 
                         }
                     })
             }
-        
         );
 }
