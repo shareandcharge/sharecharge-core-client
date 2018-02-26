@@ -22,10 +22,10 @@ export const parseConfigFile = path => {
 
 export const createConfig = argv => {
     return {
-        id: argv.id || '',
-        pass: argv.pass || '',
+        id: argv.id,
+        pass: argv.pass,
         test: argv.test,
-        statusInterval: argv['status-interval'] || 30000,
+        statusInterval: argv['status-interval'],
         connectors: checkConnectorPath(argv.connectors),
         bridge: configureBridge(argv.bridge)
     };

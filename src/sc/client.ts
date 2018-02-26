@@ -14,7 +14,8 @@ export const clientHandler = (yargs) => {
             },
             'pass': {
                 describe: 'The password of the user\'s Ethereum address for confirming charge sessions',
-                type: 'string'
+                type: 'string',
+                default: ''
             },
             'bridge': {
                 describe: 'Path to the bridge which the Core Client should connect to',
@@ -30,7 +31,8 @@ export const clientHandler = (yargs) => {
             },
             'status-interval': {
                 describe: 'Specify interval between connector status updates from bridge',
-                type: 'number'
+                type: 'number',
+                default: 30000
             }
         })
 }
@@ -43,6 +45,7 @@ export const clientStarter = (argv) => {
     if (!config.pass) {
         logger.warn('No Ethereum password found in configuration!');
     }
+
     const client = new Client(config);
     client.start();
 }
