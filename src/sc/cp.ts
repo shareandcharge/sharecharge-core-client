@@ -1,5 +1,5 @@
 import * as connectors from "../../connectors.json";
-import {contractSendTx, contractQueryState, initBridge, customConfig, createConfig, coinbase } from "./helper";
+import { contractSendTx, contractQueryState, initBridge, customConfig, createConfig, getCoinbase } from "./helper";
 
 const configFile = './conf.yaml';
 const config = createConfig(customConfig(configFile));
@@ -232,29 +232,25 @@ export default (yargs) => {
                     .demand('id')
 
             }, (argv) => {
-                console.log(argv)
+                console.log(`Starting charge on ${argv.id} for ${argv.seconds} seconds...`);
+
                 contractSendTx('requestStart', argv.id, argv.seconds)
                     .then(res => {
 
-                        console.log('requestStart res:', res);
                         if (res.blockNumber) {
                             
-                            coinbase()
+                            getCoinbase()
                                 .then(address => {
-                                    console.log('coinbase:', res);
+                                    console.log(`Start request by ${address} included in block ${res.blockNumber}`);
 
                                     contractSendTx('confirmStart', argv.id, address)
                                         .then(res => {
-                                            console.log('confirmStart res:', res);
-                                        })
-
-
-                            })
-                            
-
+                                            console.log(`Start confirmation included in block ${res.blockNumber}`);
+                                            process.exit(1);
+                                        });
+                                });
                         }
-                    })
+                    });
             }
-        
         );
 }
