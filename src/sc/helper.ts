@@ -60,8 +60,8 @@ export const initBridge = (filename) => {
 export const getCoinbase = async () => {
     const config = customConfig('./conf.yaml');    
     const contract = config.test ? new TestContract() : new Contract(config.pass);
-    return contract.getCoinbase();
-}
+    return await contract.getCoinbase();
+};
 
 export const contractQueryState = (method, ...args) => {
     const config = customConfig('./conf.yaml');
