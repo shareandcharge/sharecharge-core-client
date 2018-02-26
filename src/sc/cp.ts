@@ -1,9 +1,9 @@
 import * as connectors from "../../connectors.json";
-import {contractSendTx, contractQueryState} from "./helper";
-import {config} from "../../config";
+import {contractSendTx, contractQueryState, initBridge, customConfig, createConfig } from "./helper";
 
-const ID = process.env.ID || "";
-const bridge = new config.bridge();
+const configFile = './conf.yaml';
+const config = createConfig(customConfig(configFile));
+const bridge = initBridge(configFile);
 
 export default (yargs) => {
 
@@ -85,10 +85,10 @@ export default (yargs) => {
                 };
 
                 if (!argv.json) {
-                    console.log(`Disabling CP with id: ${argv.id} for client ${ID}`);
+                    console.log(`Disabling CP with id: ${argv.id} for client: ${ID}`);
                 }
 
-                contractSendTx("setAvailability", ID, argv.id, false)
+                contractSendTx("setAvailability", config.id, argv.id, false)
                     .then((contractResult: any) => {
 
                         result.disabled.success = contractResult.status === "mined";
@@ -130,10 +130,10 @@ export default (yargs) => {
                 };
 
                 if (!argv.json) {
-                    console.log("Enabling CP with id:", argv.id, "for client:", ID);
+                    console.log("Enabling CP with id:", argv.id, "for client:", config.id);
                 }
 
-                contractSendTx("setAvailability", ID, argv.id, true)
+                contractSendTx("setAvailability", config.id, argv.id, true)
                     .then((contractResult: any) => {
 
                         result.enabled.success = contractResult.status === "mined";
@@ -154,7 +154,7 @@ export default (yargs) => {
             })
 
         .command("register [id]",
-            "Registers a Charge Point with given id in the EV Nwtwork",
+            "Registers a Charge Point with given id in the EV Network",
             (yargs) => {
                 yargs
                     .positional("id", {
@@ -188,7 +188,7 @@ export default (yargs) => {
 
                 result.id = cp.id;
 
-                const clientId = ID || cp.client;
+                const clientId = config.id || cp.client;
 
                 if (!argv.json) {
                     console.log("Registering CP with id:", cp.id, "for client:", clientId);

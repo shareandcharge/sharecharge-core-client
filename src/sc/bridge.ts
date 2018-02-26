@@ -1,6 +1,6 @@
-import {config} from "../../config";
+import { initBridge } from './helper';
 
-const bridge = new config.bridge();
+const bridge = initBridge('./conf.yaml');
 
 export default (yargs) => {
 
