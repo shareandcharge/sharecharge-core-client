@@ -1,4 +1,5 @@
 import * as connectors from "../../connectors.json";
+import * as ProgressBar from 'progress';
 import { contractSendTx, contractQueryState, initBridge, customConfig, createConfig, getCoinbase } from "./helper";
 
 const configFile = './conf.yaml';
@@ -237,19 +238,37 @@ export default (yargs) => {
                 contractSendTx('requestStart', argv.id, argv.seconds)
                     .then(res => {
 
-                        if (res.blockNumber) {
-                            
-                            getCoinbase()
-                                .then(address => {
-                                    console.log(`Start request by ${address} included in block ${res.blockNumber}`);
+                        getCoinbase()
+                            .then(address => {
+                                console.log(`Start request by ${address} included in block ${res.blockNumber}`);
 
-                                    contractSendTx('confirmStart', argv.id, address)
-                                        .then(res => {
-                                            console.log(`Start confirmation included in block ${res.blockNumber}`);
-                                            process.exit(1);
+                                contractSendTx('confirmStart', argv.id, address)
+                                    .then(res => {
+                                        console.log(`Start confirmation included in block ${res.blockNumber}`);
+
+                                        const bar = new ProgressBar(':msg [:bar] :currents', {
+                                            total: argv.seconds,
+                                            incomplete: ' ',
+                                            width: 80
                                         });
-                                });
-                        }
+
+                                        const timer = setInterval(() => {
+                                            bar.tick({ msg: 'Charging' });
+
+                                            if (bar.complete) {
+                                                clearInterval(timer);
+
+                                                contractSendTx('confirmStop', argv.id)
+                                                    .then(res => {
+                                                        console.log(`Stop confirmation included in block ${res.blockNumber}`);
+                                                        process.exit(1);
+                                                    });
+                                            }
+
+                                        }, 1000);
+                                    });
+                            });
+
                     });
             }
         );
