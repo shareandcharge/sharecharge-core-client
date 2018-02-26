@@ -85,7 +85,7 @@ export default (yargs) => {
                 };
 
                 if (!argv.json) {
-                    console.log(`Disabling CP with id: ${argv.id} for client: ${ID}`);
+                    console.log(`Disabling CP with id: ${argv.id} for client: ${config.id}`);
                 }
 
                 contractSendTx("setAvailability", config.id, argv.id, false)
