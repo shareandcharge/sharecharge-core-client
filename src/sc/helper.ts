@@ -3,21 +3,22 @@ import * as fs from 'fs';
 
 import {Contract} from "../lib/src/services/contract";
 import {TestContract} from "../lib/test/test-contract";
-import TestBridge from '../../test/testBridge1';
 //import {Contract} from "../../../core-client-lib/src/services/contract";
 //import {TestContract} from "../../../core-client-lib/test/test-contract";
-import { Parser } from '../utils/parser';
+
+import {Parser} from '../utils/parser';
+import TestBridge from '../../test/testBridge1';
 
 export const customConfig = (filename) => {
     const confPath = path.join(process.cwd(), filename);
     return parseConfigFile(confPath);
-}
+};
 
 export const parseConfigFile = path => {
     const parser = new Parser();
     const confString = parser.read(path);
     return parser.translate(confString);
-}
+};
 
 export const createConfig = argv => {
     return {
@@ -28,7 +29,7 @@ export const createConfig = argv => {
         connectors: checkConnectorPath(argv.connectors),
         bridge: configureBridge(argv.bridge)
     };
-}
+};
 
 const checkConnectorPath = (connPath) => {
     try {
@@ -38,7 +39,7 @@ const checkConnectorPath = (connPath) => {
     } catch (err) {
         return;
     }
-}
+};
 
 const configureBridge = (bridge) => {
     try {
@@ -46,18 +47,18 @@ const configureBridge = (bridge) => {
     } catch (err) {
         return new TestBridge();
     }
-}
+};
 
 export const initBridge = (filename) => {
     const config = customConfig(filename);
     const bridgePath = path.join(process.cwd(), config.bridge);
     const Bridge = require(bridgePath).default;
     return new Bridge();
-}
+};
 
 export const contractQueryState = (method, ...args) => {
     const config = customConfig('./conf.yaml');
-    
+
     return new Promise((resolve, reject) => {
 
         const contract = config.test ? new TestContract() : new Contract(config.pass);
@@ -73,7 +74,7 @@ export const contractQueryState = (method, ...args) => {
 };
 
 export const contractSendTx = (method, ...args) => {
-    const config = customConfig('./conf.yaml'); 
+    const config = customConfig('./conf.yaml');
 
     return new Promise((resolve, reject) => {
 
