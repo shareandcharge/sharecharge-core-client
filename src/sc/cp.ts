@@ -1,6 +1,6 @@
 import * as connectors from "../../connectors.json";
 import * as ProgressBar from 'progress';
-import { contractSendTx, contractQueryState, initBridge, customConfig, createConfig, getCoinbase } from "./helper";
+import {contractSendTx, contractQueryState, initBridge, customConfig, createConfig, getCoinbase} from "./helper";
 
 const configFile = './conf.yaml';
 const config = createConfig(customConfig(configFile));
@@ -187,26 +187,24 @@ export default (yargs) => {
                     process.exit(1);
                 }
 
-                result.id = cp.id;
-
-                const clientId = config.id || cp.client;
+                result.id = argv.id;
 
                 const args = [
-                    clientId, cp.owner, cp.lat, cp.lng,
-                    cp.price, cp.model, cp.plugType,
+                    config.id, cp.owner, cp.lat, cp.lng,
+                    cp.price, cp.priceModel, cp.plugType,
                     cp.openingHours, cp.isAvailable,
                 ];
 
-                contractQueryState("updateRequired", cp.id, ...args)
+                contractQueryState("updateRequired", argv.id, ...args)
                     .then(needsUpdate => {
 
                         if (needsUpdate) {
 
                             if (!argv.json) {
-                                console.log("Registering CP with id:", cp.id, "for client:", clientId);
+                                console.log("Registering CP with id:", argv.id, "for client:", config.id);
                             }
 
-                            contractSendTx("registerConnector", cp.id, ...args)
+                            contractSendTx("registerConnector", argv.id, ...args)
                                 .then((contractResult: any) => {
 
                                     result.register.success = contractResult.status === "mined";
@@ -228,7 +226,7 @@ export default (yargs) => {
                             if (argv.json) {
                                 console.log(JSON.stringify(result, null, 2));
                             } else {
-                                console.log("Registering/Updating CP with id:", cp.id, "for client:", clientId, "not needed.");
+                                console.log("Registering/Updating CP with id:", argv.id, "for client:", config.id, "not needed.");
                             }
 
                             process.exit(0);
@@ -273,7 +271,7 @@ export default (yargs) => {
                                         });
 
                                         const timer = setInterval(() => {
-                                            bar.tick({ msg: 'Charging' });
+                                            bar.tick({msg: 'Charging'});
 
                                             if (bar.complete) {
                                                 clearInterval(timer);
