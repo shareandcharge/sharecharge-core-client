@@ -1,5 +1,6 @@
 import * as connectors from "../../connectors.json";
-import {contractSendTx, contractQueryState, initBridge, customConfig, createConfig, coinbase} from "./helper";
+import * as ProgressBar from 'progress';
+import { contractSendTx, contractQueryState, initBridge, customConfig, createConfig, getCoinbase } from "./helper";
 
 const configFile = './conf.yaml';
 const config = createConfig(customConfig(configFile));
@@ -252,28 +253,43 @@ export default (yargs) => {
                     .demand('id')
 
             }, (argv) => {
-                console.log(argv);
+                console.log(`Starting charge on ${argv.id} for ${argv.seconds} seconds...`);
+
                 contractSendTx('requestStart', argv.id, argv.seconds)
                     .then(res => {
 
-                        console.log('requestStart res:', res);
-                        if (res.blockNumber) {
+                        getCoinbase()
+                            .then(address => {
+                                console.log(`Start request by ${address} included in block ${res.blockNumber}`);
 
-                            coinbase()
-                                .then(address => {
-                                    console.log('coinbase:', res);
+                                contractSendTx('confirmStart', argv.id, address)
+                                    .then(res => {
+                                        console.log(`Start confirmation included in block ${res.blockNumber}`);
 
-                                    contractSendTx('confirmStart', argv.id, address)
-                                        .then(res => {
-                                            console.log('confirmStart res:', res);
-                                        })
+                                        const bar = new ProgressBar(':msg [:bar] :currents', {
+                                            total: argv.seconds,
+                                            incomplete: ' ',
+                                            width: 80
+                                        });
 
+                                        const timer = setInterval(() => {
+                                            bar.tick({ msg: 'Charging' });
 
-                                })
+                                            if (bar.complete) {
+                                                clearInterval(timer);
 
+                                                contractSendTx('confirmStop', argv.id)
+                                                    .then(res => {
+                                                        console.log(`Stop confirmation included in block ${res.blockNumber}`);
+                                                        process.exit(1);
+                                                    });
+                                            }
 
-                        }
-                    })
+                                        }, 1000);
+                                    });
+                            });
+
+                    });
             }
         );
 }

@@ -57,10 +57,10 @@ export const initBridge = (filename) => {
     return new Bridge();
 };
 
-export const coinbase = async () => {
+export const getCoinbase = async () => {
     const config = customConfig('./conf.yaml');    
     const contract = config.test ? new TestContract() : new Contract(config.pass);
-    return contract.coinbase();
+    return contract.getCoinbase();
 }
 
 export const contractQueryState = (method, ...args) => {
