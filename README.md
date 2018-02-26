@@ -23,58 +23,27 @@ You can store bridges in the `src/bridges` directory.
 git clone <bridge location> src/bridges/<bridge_name>
 ```
 
-You should then configure the client to use your desired bridge (e.g. in `./config.ts`):
-```ts
-import { Bridge } from './src/bridges/path/to/bridge';
-export const = {
-    ...,
-    bridge: new Bridge();
-}
-```
+You can then point the S&C CLI to the path of the bridge entry point in the configuration (see section below). 
 
-Bridges should implement the standard bridge interface:
-```ts
-interface BridgeInterface {
-    status$: Observable<StatusObject>;
-    health(): Promise<boolean>;
-    connectorStatus(id?: string): Promise<boolean>;
-    start(parameters: any): Promise<Result>;
-    stop(parameters: any): Promise<Result>;
-    startUpdater(interval?: number): void;
-    stopUpdater(): void;
-}
-```
+Note that the CLI will expect a default class export.  
+
 
 #### Configuration
 
-Define a `config.ts` file to inject as a dependency when instantiating the Core Client class:
+A `config.yaml` is provided with default configuration values in the root directory. A TOML file can also be used if preferred. 
 
-
-```ts
-import { Bridge } from '.src/bridges/myBridge';
-
-export const config = {
-    test: false,
-    bridge: new Bridge(),
-    statusUpdateInterval: 5000
-}
+```
+--- 
+  bridge: ./testBridge1
+  statusInterval: 2000
+  connectors: ./connectors.json
+  test: true
+  id: 123
+  pass: 123
 ```
 
-Default values exist:
-- test is false
-- bridge is configured to use a mock bridge implementation
-- statusUpdateInterval will default to 5 minutes
 
-
-## Starting the core client:
-
-The environment variables `ID` and `PASS` are necessary for the core client to function properly. The ID is used to filter events on connectors managed by the client and the PASS of the client's wallet connected to the client is needed to confirm requests via smart contracts. This may not be needed in the case of local development where the wallet password is simply an empty string.
-```
-ID=0x01234 PASS=123 npm run client
-```
-
-Command Line Interface
-----------------------
+## Command Line Interface:
 
 To install the cli you have to use
 
@@ -82,28 +51,46 @@ To install the cli you have to use
 npm link
 ```
 
-Usage:
+Charge Point on EV Network Subcommand Usage:
 
 ```
-ID=0x0123 PASS=123 sc cp --help
 Usage: sc cp <command> [options]
 
 Commands:
-  sc.ts cp status [id]     Returns the current status of the Charge Point with
-                           given id
-  sc.ts cp disable [id]    Disables the Charge Point with given id
-  sc.ts cp enable [id]     Enables the Charge Point with given id
-  sc.ts cp register [id]   Deploys the Charge Point with given id
+  sc.ts cp status [id]           Returns the current status of the Charge Point
+                                 with given id
+  sc.ts cp disable [id]          Disables the Charge Point with given id
+  sc.ts cp enable [id]           Enables the Charge Point with given id
+  sc.ts cp register [id]         Registers a Charge Point with given id in the
+                                 EV Network
+  sc.ts cp start [id] [seconds]  Start a charging session at a given Charge
+                                 Point
 
 Options:
   --json         generate json output
   -v, --version  Show version number                                   [boolean]
   -h, --help     Show help                                             [boolean]
-
 ```
 
+Example:
 ```
-ID=0x0123 PASS=123 sc bridge --help
+$ sc cp register 0x01
+Registering CP with id: 0x01 for client: 0x09
+Success: true
+Tx: 0xc55409b655a829f1b5d7631f9dde219538c9fbf60c347bf222e0f82cc19fb2b3
+Block: 156334
+$ sc cp start 0x01
+Starting charge on 0x01 for 10 seconds...
+Start request by 0xf2035405c983638c6d560d43ce199240f6bf135d included in block 156362
+Start confirmation included in block 156364
+Charging [================================================================================] 10s
+Stop confirmation included in block 156376
+```
+
+Charge Point on Bridge Subcommand Usage 
+
+```
+sc bridge --help
 Usage: sc bridge <command> [options]
 
 Commands:
@@ -117,10 +104,6 @@ Options:
 
 Example:
 ```
-ID=0x0123 PASS=123 sc cp status 0x12
+sc cp status 0x12
 ```
 
-**NOTE**: ~~Modbus does not appear to support simultaneous connections. If the core client is running, it is not possible to retrieve the charge point's status via the IoT Bridge from the shell.~~ Could not reproduce! 
-
-### Coming Soon:
-- docker setup
