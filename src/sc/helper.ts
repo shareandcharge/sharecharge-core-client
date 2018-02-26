@@ -37,6 +37,7 @@ const checkConnectorPath = (connPath) => {
         fs.statSync(fullPath);
         return require(fullPath);
     } catch (err) {
+        // console.log(err);
         return;
     }
 };
@@ -55,6 +56,12 @@ export const initBridge = (filename) => {
     const Bridge = require(bridgePath).default;
     return new Bridge();
 };
+
+export const coinbase = async () => {
+    const config = customConfig('./conf.yaml');    
+    const contract = config.test ? new TestContract() : new Contract(config.pass);
+    return contract.coinbase();
+}
 
 export const contractQueryState = (method, ...args) => {
     const config = customConfig('./conf.yaml');

@@ -1,5 +1,5 @@
 import * as connectors from "../../connectors.json";
-import {contractSendTx, contractQueryState, initBridge, customConfig, createConfig } from "./helper";
+import {contractSendTx, contractQueryState, initBridge, customConfig, createConfig, coinbase } from "./helper";
 
 const configFile = './conf.yaml';
 const config = createConfig(customConfig(configFile));
@@ -214,4 +214,47 @@ export default (yargs) => {
                         process.exit(0);
                     });
             })
+
+        .command("start [id] [seconds]",
+            "Start a charging session at a given Charge Point",
+            (yargs) => {
+                yargs
+                    .positional("id", {
+                        describe: "a unique identifier for the Charge Point",
+                        type: "string",
+                    })
+                    .positional("seconds", {
+                        describe: "time to rent in seconds",
+                        type: "number",
+                        default: 10
+                    })
+                    .string('_')
+                    .demand('id')
+
+            }, (argv) => {
+                console.log(argv)
+                contractSendTx('requestStart', argv.id, argv.seconds)
+                    .then(res => {
+
+                        console.log('requestStart res:', res);
+                        if (res.blockNumber) {
+                            
+                            coinbase()
+                                .then(address => {
+                                    console.log('coinbase:', res);
+
+                                    contractSendTx('confirmStart', argv.id, address)
+                                        .then(res => {
+                                            console.log('confirmStart res:', res);
+                                        })
+
+
+                            })
+                            
+
+                        }
+                    })
+            }
+        
+        );
 }

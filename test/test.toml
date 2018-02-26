@@ -1,4 +1,4 @@
-connectorData = "./connectors.json"
+connectors = "./connectors.json"
 statusInterval = 2000
 test = true
 bridge = "./testBridge.ts"

@@ -1,7 +1,7 @@
 --- 
   bridge: ./testBridge1
   statusInterval: 2000
-  connectorData: ./connectors.json
+  connectors: ./connectors.json
   test: true
   id: 123
   pass: 123
