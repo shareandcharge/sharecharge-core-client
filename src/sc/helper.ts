@@ -1,10 +1,8 @@
 import * as path from 'path';
 import * as fs from 'fs';
 
-import {Contract} from "../lib/src/services/contract";
-import {TestContract} from "../lib/test/test-contract";
-//import {Contract} from "../../../core-client-lib/src/services/contract";
-//import {TestContract} from "../../../core-client-lib/test/test-contract";
+import {Contract} from "../../lib/src/services/contract";
+import {TestContract} from "../../lib/test/test-contract";
 
 import {Parser} from '../utils/parser';
 import TestBridge from '../../test/testBridge1';
@@ -58,7 +56,7 @@ export const initBridge = (filename) => {
 };
 
 export const getCoinbase = async () => {
-    const config = customConfig('./conf.yaml');    
+    const config = customConfig('./conf.yaml');
     const contract = config.test ? new TestContract() : new Contract(config.pass);
     return await contract.getCoinbase();
 };
