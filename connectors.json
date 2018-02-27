@@ -1,7 +1,7 @@
 {
   "0x01": {
-    "owner": "Jim",
-    "lat": "52.8",
+    "ownerName": "Jim",
+    "lat": "5 2.8",
     "lng": "-0.6",
     "price": 1,
     "priceModel": 1,
@@ -10,7 +10,7 @@
     "isAvailable": true
   },
   "0x02": {
-    "owner": "Pam",
+    "ownerName": "Pam",
     "lat": "50.5",
     "lng": "0.2",
     "price": 2,
@@ -20,7 +20,7 @@
     "isAvailable": true
   },
   "0x03": {
-    "owner": "Pam",
+    "ownerName": "Pam",
     "lat": "50.5",
     "lng": "0.2",
     "price": 2,

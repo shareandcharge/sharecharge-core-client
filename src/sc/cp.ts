@@ -1,6 +1,7 @@
 import * as connectors from "../../connectors.json";
 import * as ProgressBar from 'progress';
-import {contractSendTx, contractQueryState, initBridge, customConfig, createConfig, getCoinbase} from "./helper";
+import {contractSendTx, contractQueryState, getCoinbase} from "./helper";
+import {initBridge, customConfig, createConfig,} from "./helper";
 
 const configFile = './conf.yaml';
 const config = createConfig(customConfig(configFile));
@@ -10,9 +11,8 @@ export default (yargs) => {
 
     yargs
         .usage("Usage: sc cp <command> [options]")
-        .demandCommand(1);
+        .demandCommand(1)
 
-    yargs
         .command("status [id]",
             "Returns the current status of the Charge Point with given id",
             (yargs) => {
@@ -61,9 +61,72 @@ export default (yargs) => {
                                 process.exit(0);
                             });
                     });
-            });
+            })
 
-    yargs
+        .command("info [id]",
+            "Returns the current info of the Charge Point with given id",
+            (yargs) => {
+                yargs
+                    .positional("id", {
+                        describe: "a unique identifier for the Charge Point",
+                        type: "string"
+                    })
+                    .string("_")
+                    .demand("id")
+            }, (argv) => {
+
+
+                let result: any = {
+                    [argv.id]: {
+                        ownerName: null,
+                        lat: null,
+                        lng: null,
+                        price: null,
+                        priceModel: null,
+                        plugType: null,
+                        openingHours: null,
+                        isAvailable: null,
+                        session: null
+                    }
+                };
+
+
+                if (!argv.json) {
+                    console.log("Getting info for Charge Point with id:", argv.id);
+                }
+
+                const location = contractQueryState("getLocationInformation", argv.id)
+                    .then((location: any) => {
+
+                        result[argv.id].lat = location.lat;
+                        result[argv.id].lng = location.lng;
+                    });
+
+                const owner = contractQueryState("getOwnerInformation", argv.id)
+                    .then((owner: any) => {
+
+                        result[argv.id].ownerName = owner.ownerName;
+                    });
+
+                const general = contractQueryState("getGeneralInformation", argv.id)
+                    .then((general: any) => {
+
+                        result[argv.id].price = general.price;
+                        result[argv.id].priceModel = general.priceModel;
+                        result[argv.id].plugType = general.plugType;
+                        result[argv.id].openingHours = general.openingHours;
+                        result[argv.id].isAvailable = general.isAvailable;
+                        result[argv.id].session = general.session;
+                    });
+
+                Promise.all([location, owner, general])
+                    .then(results => {
+                        console.log(JSON.stringify(result, null, 2));
+
+                        process.exit(0);
+                    })
+            })
+
         .command("disable [id]",
             "Disables the Charge Point with given id",
             (yargs) => {
@@ -106,9 +169,8 @@ export default (yargs) => {
 
                         process.exit(0);
                     });
-            });
+            })
 
-    yargs
         .command("enable [id]",
             "Enables the Charge Point with given id",
             (yargs) => {
@@ -190,8 +252,8 @@ export default (yargs) => {
                 result.id = argv.id;
 
                 const args = [
-                    config.id, cp.owner, cp.lat, cp.lng,
-                    cp.price, cp.priceModel, cp.plugType,
+                    config.id, cp.ownerName, cp.lat,
+                    cp.lng, cp.price, cp.priceModel, cp.plugType,
                     cp.openingHours, cp.isAvailable,
                 ];
 
