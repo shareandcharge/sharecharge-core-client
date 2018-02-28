@@ -9,7 +9,7 @@ The Share & Charge Core Client used by Charge Point Operators and Private Chare 
 ```
 git clone git@github.com:motionwerkGmbH/sharecharge-core-client.git
 cd sharecharge-core-client
-git clone git@github.com:motionwerkGmbH/sharecharge-core-client-lib.git src/lib
+git clone git@github.com:motionwerkGmbH/sharecharge-core-client-lib.git lib
 cd src/lib
 npm install
 cd -
