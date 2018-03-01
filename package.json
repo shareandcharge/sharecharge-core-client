@@ -14,7 +14,6 @@
   "author": "MotionWerk GmbH",
   "license": "MIT",
   "dependencies": {
-    "handlebars": "^4.0.11",
     "js-yaml": "^3.10.0",
     "progress": "^2.0.0",
     "toml": "^2.3.3"
