@@ -2,7 +2,6 @@ import * as yaml from 'js-yaml';
 import * as toml from 'toml';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as handlebars from 'handlebars';
 
 import { Config } from '../models/config';
 
@@ -12,6 +11,7 @@ export class Parser {
     extension: string;
 
     constructor(test?: boolean) {
+        this.extension = '';
         this.path = test ? '../../../test/' : '../../../';
     }
 
@@ -35,13 +35,6 @@ export class Parser {
 
     toml(config: string): any {
         return toml.parse(config);
-    }
-
-    write(config: any): void {
-        const source = fs.readFileSync(path.join(__dirname, '../templates/config.txt'));
-        const template = handlebars.compile(source.toString());
-        const data = template(config);
-        fs.writeFileSync(path.join(__dirname + this.path + 'config.ts'), data);
     }
 
 }

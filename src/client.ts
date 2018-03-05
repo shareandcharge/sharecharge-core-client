@@ -1,7 +1,5 @@
 import {BridgeInterface} from './models/bridge';
-import {ShareAndCharge} from '../lib/src/shareAndCharge';
-import {Contract} from '../lib/src/services/contract';
-import {TestContract} from '../lib/test/test-contract';
+import { ShareAndCharge, Contract, TestContract } from 'sharecharge-lib'
 import {logger} from './utils/logger';
 
 export class Client {
