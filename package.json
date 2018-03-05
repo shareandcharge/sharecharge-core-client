@@ -14,10 +14,13 @@
   "author": "MotionWerk GmbH",
   "license": "MIT",
   "dependencies": {
-    "js-yaml": "^3.10.0",
     "progress": "^2.0.0",
     "toml": "^2.3.3",
-    "sharecharge-lib": "../sharecharge-lib/sharecharge-lib-0.1.0.tgz"
+    "sharecharge-lib": "../sharecharge-lib/sharecharge-lib-0.1.0.tgz",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "js-yaml": "^3.10.0",
+    "jsonwebtoken": "^8.1.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",
