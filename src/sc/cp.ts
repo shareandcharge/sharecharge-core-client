@@ -37,7 +37,7 @@ export default (yargs) => {
                     console.log("Getting status for Charge Point with id:", argv.id);
                 }
 
-                contractQueryState("isAvailable", argv.id)
+                contractQueryState("getAvailability", argv.id)
                     .then(contractState => {
 
                         result.state.ev = contractState ? "available" : "unavailable";
@@ -60,6 +60,7 @@ export default (yargs) => {
 
                                 process.exit(0);
                             });
+
                     });
             })
 
