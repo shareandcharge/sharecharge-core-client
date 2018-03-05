@@ -102,6 +102,7 @@ app.put('/start/:id', verifyToken, async (req, res) => {
 
                 setTimeout(async () => {
                     const stop = await contract.sendTx('confirmStop', req.params.id);
+                    res.send(stop);
                     console.log(stop);
                     console.log("Charging Stoped");
                 },10000);
@@ -109,6 +110,18 @@ app.put('/start/:id', verifyToken, async (req, res) => {
 
             res.send(start);
             // console.log(start);
+        }
+    });
+});
+
+app.put('/stop/:id', verifyToken, async (req, res) => {
+    jwt.verify(req.token, 'secretkey', async (err, authData) => {
+        if(err){
+            res.sendStatus(403);
+        }else{
+            const stop = await contract.sendTx('confirmStop', req.params.id);
+            console.log("charging stoped");
+            res.send(stop);
         }
     });
 });
