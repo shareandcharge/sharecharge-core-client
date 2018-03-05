@@ -130,7 +130,12 @@ app.put('/stop/:id', verifyToken, async (req, res) => {
 
 // creating jw token
 jwt.sign({user: 'test'}, 'secretkey', { expiresIn: '2m' }, (err, token) => {
-    console.log("Your json web token: ", token);
+    if(err) {
+        console.log(err);
+    } else {
+        console.log("Your json web token: ", token);
+    }
+
 });
 
 // Verify Token
