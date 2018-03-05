@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+set -e
 export wd=$(pwd)
+
 echo Building contracts
 
-cd ../shareandcharge-contracts/
+cd ../sharecharge-contracts/
 #truffle networks --clean
 truffle migrate
 
