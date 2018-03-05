@@ -10,6 +10,7 @@ const bridge = initBridge('./conf.yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+let to;
 
 const contract = new Contract('');
 
@@ -43,8 +44,8 @@ app.post('/register', verifyToken, async (req, res) => {
             const register = await contract.sendTx('registerConnector', params.id, params.client, params.owner, params.lat, params.lng, 
             params.price, params.model, params.plugType, params.openingHours, params.isAvailable );
 
-            console.log(register, ' register');
             res.send(register);
+            // console.log(register, ' register');
         }
     });
 });
@@ -55,9 +56,13 @@ app.get('/status/:id', verifyToken, async (req, res) => {
       if(err) {
           res.sendStatus(403);
         } else {
-            const status = await contract.queryState('isAvailable', req.params.id);
-            res.send(status);
-            console.log(status);
+            let body = {
+                "CP status ": await contract.queryState('isAvailable', req.params.id),
+                "Bridge name ": bridge.name,
+                "Bridge status ": await bridge.health()
+            }
+            res.send(body);
+            // console.log(body);
         }
     });
 });
@@ -70,7 +75,7 @@ app.put('/disable/:id', verifyToken,(req, res) => {
         }else{
             const disable = await contract.sendTx('setAvailability', '0x09', req.params.id, false);
             res.send(disable);
-            console.log(disable);
+            // console.log(disable);
         }
     });
 });
@@ -83,7 +88,7 @@ app.put('/enable/:id', verifyToken, async (req, res) => {
         }else{
             const enable = await contract.sendTx('setAvailability', '0x09', req.params.id, true);
             res.send(enable);
-            console.log(enable);
+            // console.log(enable);
         }
     });
 });
@@ -100,14 +105,11 @@ app.put('/start/:id', verifyToken, async (req, res) => {
                 //hardcoded adress
                 console.log("Charging...");
 
-                setTimeout(async () => {
+                to = setTimeout(async () => {
                     const stop = await contract.sendTx('confirmStop', req.params.id);
-                    res.send(stop);
-                    console.log(stop);
                     console.log("Charging Stoped");
                 },10000);
             }
-
             res.send(start);
             // console.log(start);
         }
@@ -120,36 +122,13 @@ app.put('/stop/:id', verifyToken, async (req, res) => {
         if(err){
             res.sendStatus(403);
         }else{
+            clearTimeout(to);
             const stop = await contract.sendTx('confirmStop', req.params.id);
-            console.log("charging stoped");
+            console.log("Charging stoped");
             res.send(stop);
         }
     });
 });
-
-
-// creating jw token
-jwt.sign({user: 'test'}, 'secretkey', { expiresIn: '2m' }, (err, token) => {
-    if(err) {
-        console.log(err);
-    } else {
-        console.log("Your json web token: ", token);
-    }
-
-});
-
-// Verify Token
-function verifyToken(req, res, next) {
-    const bearerHeader = req.headers['authorization'];
-    if(typeof bearerHeader !== 'undefined') {
-      const bearer = bearerHeader.split(' ');
-      const bearerToken = bearer[1];
-      req.token = bearerToken;
-      next();
-    } else {
-      res.sendStatus(403);
-    }    
-}
 
 //BRIDGE
 app.get('/bridge/status', verifyToken, async (req, res) => {
@@ -175,6 +154,29 @@ app.get('/config', verifyToken, (req, res) => {
             console.log(PORT);
             const port = PORT;
             // res.send(port);
-          }
-      });
-  });
+        }
+    });
+});
+
+// CREATING JW TOKEN
+jwt.sign({user: 'test'}, 'secretkey', { expiresIn: '2m' }, (err, token) => {
+    if(err) {
+        console.log(err);
+    } else {
+        console.log("Your json web token: ", token);
+    }
+
+});
+
+// Verify Token
+function verifyToken(req, res, next) {
+    const bearerHeader = req.headers['authorization'];
+    if(typeof bearerHeader !== 'undefined') {
+      const bearer = bearerHeader.split(' ');
+      const bearerToken = bearer[1];
+      req.token = bearerToken;
+      next();
+    } else {
+      res.sendStatus(403);
+    }    
+}
