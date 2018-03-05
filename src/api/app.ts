@@ -95,8 +95,20 @@ app.put('/start/:id', verifyToken, async (req, res) => {
             res.sendStatus(403);
         }else{
             const start = await contract.sendTx('requestStart', req.params.id, 10);
+            if(start) {
+                const charging = await contract.sendTx('confirmStart', req.params.id, '0x3d1C72e53cC9BDBd09371Fd173DD303D0DEa9A27');
+                //hardcoded adress
+                console.log("Charging...");
+
+                setTimeout(async () => {
+                    const stop = await contract.sendTx('confirmStop', req.params.id);
+                    console.log(stop);
+                    console.log("Charging Stoped");
+                },10000);
+            }
+
             res.send(start);
-            console.log(start);
+            // console.log(start);
         }
     });
 });
