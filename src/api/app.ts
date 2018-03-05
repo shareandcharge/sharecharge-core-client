@@ -114,6 +114,7 @@ app.put('/start/:id', verifyToken, async (req, res) => {
     });
 });
 
+// Stop endpoint
 app.put('/stop/:id', verifyToken, async (req, res) => {
     jwt.verify(req.token, 'secretkey', async (err, authData) => {
         if(err){
@@ -126,20 +127,10 @@ app.put('/stop/:id', verifyToken, async (req, res) => {
     });
 });
 
-//TOKEN AUTH
-app.post('/login', (req, res) => {
-    // Mock user
-    const user = {
-        id: 1, 
-        username: 'init',
-        email: 'init@mwerk.com'
-    }
-    
-    jwt.sign({user}, 'secretkey', { expiresIn: '24h' }, (err, token) => {
-        res.json({
-        token
-        });
-    });
+
+// creating jw token
+jwt.sign({user: 'test'}, 'secretkey', { expiresIn: '2m' }, (err, token) => {
+    console.log("Your json web token: ", token);
 });
 
 // Verify Token
