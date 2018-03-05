@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { Contract, TestContract } from 'sharecharge-lib';
+import {Contract, TestContract} from 'sharecharge-lib';
 import {Parser} from '../utils/parser';
 import TestBridge from '../../test/testBridge1';
 
@@ -25,6 +25,8 @@ export const createConfig = argv => {
         bridge: configureBridge(argv.bridge)
     };
 };
+
+const defaultConfig = customConfig('./conf.yaml');
 
 const checkConnectorPath = (connPath) => {
     try {
@@ -53,22 +55,26 @@ export const initBridge = (filename) => {
 };
 
 export const getCoinbase = async () => {
-    const config = customConfig('./conf.yaml');
-    const contract = config.test ? new TestContract() : new Contract(config.pass);
+    const contract = defaultConfig.test ?
+        new TestContract() : new Contract(defaultConfig.pass);
     return contract.getCoinbase();
 };
 
 export const contractQueryState = (method, ...args) => {
-    const config = customConfig('./conf.yaml');
 
     return new Promise((resolve, reject) => {
 
-        const contract = config.test ? new TestContract() : new Contract(config.pass);
+        const contract = defaultConfig.test ?
+            new TestContract() : new Contract(defaultConfig.pass);
 
         contract.queryState(method, ...args)
             .then((result) => resolve(result))
             .catch(e => {
+
+                console.log("Method", method, ...args);
                 console.error(e.message);
+                console.error(e.stack);
+
                 process.exit(0);
                 return reject(e);
             });
@@ -76,11 +82,12 @@ export const contractQueryState = (method, ...args) => {
 };
 
 export const contractSendTx = (method, ...args) => {
-    const config = customConfig('./conf.yaml');
+
 
     return new Promise((resolve, reject) => {
 
-        const contract = config.test ? new TestContract() : new Contract(config.pass);
+        const contract = defaultConfig.test ?
+            new TestContract() : new Contract(defaultConfig.pass);
 
         contract.sendTx(method, ...args)
             .then((result) => resolve(result))
