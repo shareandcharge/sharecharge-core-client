@@ -1,7 +1,7 @@
 import * as connectors from "../../connectors.json";
 import * as ProgressBar from 'progress';
-import {contractSendTx, contractQueryState, getCoinbase} from "./helper";
-import {initBridge, customConfig, createConfig,} from "./helper";
+import { contractSendTx, contractQueryState, getCoinbase } from "./helper";
+import { initBridge, customConfig, createConfig, } from "./helper";
 
 const configFile = './conf.yaml';
 const config = createConfig(customConfig(configFile));
@@ -317,14 +317,14 @@ export default (yargs) => {
                 console.log(`Starting charge on ${argv.id} for ${argv.seconds} seconds...`);
 
                 contractSendTx('requestStart', argv.id, argv.seconds)
-                    .then(res => {
+                    .then((res: any) => {
 
                         getCoinbase()
                             .then(address => {
                                 console.log(`Start request by ${address} included in block ${res.blockNumber}`);
 
                                 contractSendTx('confirmStart', argv.id, address)
-                                    .then(res => {
+                                    .then((res: any) => {
                                         console.log(`Start confirmation included in block ${res.blockNumber}`);
 
                                         const bar = new ProgressBar(':msg [:bar] :currents', {
@@ -340,7 +340,7 @@ export default (yargs) => {
                                                 clearInterval(timer);
 
                                                 contractSendTx('confirmStop', argv.id)
-                                                    .then(res => {
+                                                    .then((res: any) => {
                                                         console.log(`Stop confirmation included in block ${res.blockNumber}`);
                                                         process.exit(1);
                                                     });
