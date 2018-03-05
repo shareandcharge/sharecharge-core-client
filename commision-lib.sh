@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 
+export wd=$(pwd)
 echo Building contracts
 
-cd ./contracts/
+cd ../shareandcharge-contracts/
 #truffle networks --clean
 truffle migrate
 
 echo Deploying Contracts
 
-export LIB=../lib
+export LIB=../sharecharge-lib
 npm run deploy
-cd ..
+cd $wd
 
 echo Building lib
 
-cd lib/
+cd $LIB
 npm run deploy
-cd ..
+cd $wd
 
 echo Updating package
 
