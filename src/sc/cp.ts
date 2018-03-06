@@ -93,7 +93,7 @@ export default (yargs) => {
 
 
                 if (!argv.json) {
-                    console.log("Getting info for Charge Point with id:", argv.id);
+                    console.log("Getting info for Charge Point with ID:", argv.id);
                 }
 
                 const location = contractQueryState("getLocationInformation", argv.id)
@@ -122,7 +122,20 @@ export default (yargs) => {
 
                 Promise.all([location, owner, general])
                     .then(results => {
-                        console.log(JSON.stringify(result, null, 2));
+
+                        if (argv.json) {
+                            console.log(JSON.stringify(result, null, 2));
+                        } else {
+                            console.log("lat:", result[argv.id].lat);
+                            console.log("lng:", result[argv.id].lng);
+                            console.log("OwnerName:", result[argv.id].ownerName);
+                            console.log("Price:", result[argv.id].price);
+                            console.log("PriceModel:", result[argv.id].priceModel);
+                            console.log("PlugType:", result[argv.id].plugType);
+                            console.log("OpeningHouts:", result[argv.id].openingHours);
+                            console.log("IsAvailable:", result[argv.id].isAvailable);
+                            console.log("Session:", result[argv.id].session);
+                        }
 
                         process.exit(0);
                     })
