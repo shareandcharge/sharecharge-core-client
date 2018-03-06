@@ -13,6 +13,86 @@ export default (yargs) => {
         .usage("Usage: sc cp <command> [options]")
         .demandCommand(1)
 
+        .command("register [id]",
+            "Registers a Charge Point with given id in the EV Network",
+            (yargs) => {
+                yargs
+                    .positional("id", {
+                        describe: "a unique identifier for the Charge Point",
+                        type: "string"
+                    })
+                    .string("_")
+                    .demand("id");
+            }, (argv) => {
+
+                // load connector
+                const cp = connectors[argv.id];
+
+                let result: any = {
+                    id: null,
+                    register: {
+                        txHash: null,
+                        block: null,
+                        success: false
+                    }
+                };
+
+                if (!cp) {
+                    if (argv.json) {
+                        console.log(JSON.stringify(result, null, 2));
+                    } else {
+                        console.error(`No CP found with id ${argv.id} in configuration.`);
+                    }
+                    process.exit(1);
+                }
+
+                result.id = argv.id;
+
+                const args = [
+                    config.id, cp.ownerName, cp.lat,
+                    cp.lng, cp.price, cp.priceModel, cp.plugType,
+                    cp.openingHours, cp.isAvailable,
+                ];
+
+                contractQueryState("updateRequired", argv.id, ...args)
+                    .then(needsUpdate => {
+
+                        if (needsUpdate) {
+
+                            if (!argv.json) {
+                                console.log("Registering CP with id:", argv.id, "for client:", config.id);
+                            }
+
+                            contractSendTx("registerConnector", argv.id, ...args)
+                                .then((contractResult: any) => {
+
+                                    result.register.success = contractResult.status === "mined";
+                                    result.register.txHash = contractResult.txHash;
+                                    result.register.block = contractResult.blockNumber;
+
+                                    if (argv.json) {
+                                        console.log(JSON.stringify(result, null, 2));
+                                    } else {
+                                        console.log("Success:", result.register.success);
+                                        console.log("Tx:", result.register.txHash);
+                                        console.log("Block:", result.register.block);
+                                    }
+
+                                    process.exit(0);
+                                });
+                        } else {
+
+                            if (argv.json) {
+                                console.log(JSON.stringify(result, null, 2));
+                            } else {
+                                console.log("Registering/Updating CP with id:", argv.id, "for client:", config.id, "not needed.");
+                            }
+
+                            process.exit(0);
+                        }
+                    });
+            })
+
         .command("status [id]",
             "Returns the current status of the Charge Point with given id",
             (yargs) => {
@@ -228,86 +308,6 @@ export default (yargs) => {
                     });
             })
 
-        .command("register [id]",
-            "Registers a Charge Point with given id in the EV Network",
-            (yargs) => {
-                yargs
-                    .positional("id", {
-                        describe: "a unique identifier for the Charge Point",
-                        type: "string"
-                    })
-                    .string("_")
-                    .demand("id");
-            }, (argv) => {
-
-                // load connector
-                const cp = connectors[argv.id];
-
-                let result: any = {
-                    id: null,
-                    register: {
-                        txHash: null,
-                        block: null,
-                        success: false
-                    }
-                };
-
-                if (!cp) {
-                    if (argv.json) {
-                        console.log(JSON.stringify(result, null, 2));
-                    } else {
-                        console.error(`No CP found with id ${argv.id} in configuration.`);
-                    }
-                    process.exit(1);
-                }
-
-                result.id = argv.id;
-
-                const args = [
-                    config.id, cp.ownerName, cp.lat,
-                    cp.lng, cp.price, cp.priceModel, cp.plugType,
-                    cp.openingHours, cp.isAvailable,
-                ];
-
-                contractQueryState("updateRequired", argv.id, ...args)
-                    .then(needsUpdate => {
-
-                        if (needsUpdate) {
-
-                            if (!argv.json) {
-                                console.log("Registering CP with id:", argv.id, "for client:", config.id);
-                            }
-
-                            contractSendTx("registerConnector", argv.id, ...args)
-                                .then((contractResult: any) => {
-
-                                    result.register.success = contractResult.status === "mined";
-                                    result.register.txHash = contractResult.txHash;
-                                    result.register.block = contractResult.blockNumber;
-
-                                    if (argv.json) {
-                                        console.log(JSON.stringify(result, null, 2));
-                                    } else {
-                                        console.log("Success:", result.register.success);
-                                        console.log("Tx:", result.register.txHash);
-                                        console.log("Block:", result.register.block);
-                                    }
-
-                                    process.exit(0);
-                                });
-                        } else {
-
-                            if (argv.json) {
-                                console.log(JSON.stringify(result, null, 2));
-                            } else {
-                                console.log("Registering/Updating CP with id:", argv.id, "for client:", config.id, "not needed.");
-                            }
-
-                            process.exit(0);
-                        }
-                    });
-            })
-
         .command("start [id] [seconds]",
             "Start a charging session at a given Charge Point",
             (yargs) => {
@@ -363,5 +363,43 @@ export default (yargs) => {
 
                     });
             }
-        );
+        )
+
+        .command("stop [id]",
+            "Stops a charging session at a given Charge Point",
+            (yargs) => {
+                yargs
+                    .positional("id", {
+                        describe: "a unique identifier for the Charge Point",
+                        type: "string"
+                    })
+                    .string("_")
+                    .demand("id")
+            }, (argv) => {
+
+                let result: any = {
+                    id: argv.id,
+                    stop: {
+                        bridge: null,
+                        ev: null
+                    }
+                };
+
+                if (!argv.json) {
+                    console.log("Stopping charge on Charge Point with ID:", argv.id);
+                }
+
+                contractSendTx('requestStop', argv.id)
+                    .then((res: any) => {
+
+                        console.log(`Stop request included in block ${res.blockNumber}`);
+
+                        contractSendTx('confirmStop', argv.id)
+                            .then((res: any) => {
+
+                                console.log(`Stop confirmation included in block ${res.blockNumber}`);
+                                process.exit(1);
+                            });
+                    });
+            });
 }
