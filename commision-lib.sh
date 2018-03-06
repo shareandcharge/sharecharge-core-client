@@ -23,4 +23,4 @@ cd $wd
 
 echo Updating package
 
-npm install -u sharecharge-lib
+npm install -U sharecharge-lib --save
