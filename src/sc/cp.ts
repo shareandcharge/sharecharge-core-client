@@ -76,7 +76,6 @@ export default (yargs) => {
                     .demand("id")
             }, (argv) => {
 
-
                 let result: any = {
                     [argv.id]: {
                         ownerName: null,
@@ -90,7 +89,6 @@ export default (yargs) => {
                         session: null
                     }
                 };
-
 
                 if (!argv.json) {
                     console.log("Getting info for Charge Point with ID:", argv.id);
