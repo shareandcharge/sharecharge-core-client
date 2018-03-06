@@ -3,3 +3,4 @@ lib
 bridge
 .chaindata
 config.ts
+connectorsXL.json
