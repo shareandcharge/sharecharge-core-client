@@ -1,8 +1,8 @@
 import {ShareAndCharge, Contract } from 'sharecharge-lib';
-import { initBridge } from '../sc/helper';
 import * as jwt from 'jsonwebtoken';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import { initBridge } from '../sc/helper';
 
 const bridge = initBridge('./conf.yaml');
 
@@ -55,7 +55,7 @@ app.get('/status/:id', verifyToken, async (req, res) => {
           res.sendStatus(403);
         } else {
             let body = {
-                "CP status ": await contract.queryState('isAvailable', req.params.id),
+                "CP status ": await contract.queryState('getAvailability', req.params.id),
                 "Bridge name ": bridge.name,
                 "Bridge status ": await bridge.health()
             }
