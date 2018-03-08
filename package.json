@@ -9,7 +9,7 @@
     "geth-dev": "geth --dev --datadir=.chaindata --dev.period 1 --rpc --rpcaddr 0.0.0.0 --ws --wsaddr 0.0.0.0 --wsorigins=* --wsapi=eth,personal,net,pubsub"
   },
   "bin": {
-    "sc": "./sc.sh"
+    "sc": "./bin/sc.sh"
   },
   "author": "MotionWerk GmbH",
   "license": "MIT",
