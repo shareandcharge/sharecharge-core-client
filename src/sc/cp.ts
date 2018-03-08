@@ -1,21 +1,115 @@
-import * as connectors from "../../connectors.json";
 import * as ProgressBar from 'progress';
-import { contractSendTx, contractQueryState, getCoinbase } from "./helper";
-import { initBridge, customConfig, createConfig, } from "./helper";
+import { contractSendTx, contractQueryState, getCoinbase, parseConfigFile } from "./helper";
+import { initBridge, customConfig, createConfig } from "./helper";
 
 const configFile = './conf.yaml';
 const config = createConfig(customConfig(configFile));
 const bridge = initBridge(configFile);
 
+const registerConnector = (id, json) => {
+
+    return new Promise((resolve, reject) => {
+
+        const cp = config.connectors[id];
+
+        let result: any = {
+            id: id,
+            register: {
+                txHash: null,
+                block: null,
+                success: false
+            }
+        };
+
+        if (!cp) {
+
+            if (json) {
+                console.log(JSON.stringify(result, null, 2));
+            } else {
+                console.error(`No CP found with id ${id} in configuration.`);
+            }
+
+            return reject(result);
+        }
+
+        const args = [
+            config.id, cp.ownerName, cp.lat,
+            cp.lng, cp.price, cp.priceModel, cp.plugType,
+            cp.openingHours, cp.isAvailable,
+        ];
+
+        contractQueryState("updateRequired", id, ...args)
+            .then(needsUpdate => {
+
+                if (needsUpdate) {
+
+                    if (!json) {
+                        console.log("Registering CP with id:", id, "for client:", config.id);
+                    }
+
+                    contractSendTx("registerConnector", id, ...args)
+                        .then((contractResult: any) => {
+
+                            result.register.success = contractResult.status === "mined";
+                            result.register.txHash = contractResult.txHash;
+                            result.register.block = contractResult.blockNumber;
+
+                            if (json) {
+                                console.log(JSON.stringify(result, null, 2));
+                            } else {
+                                console.log("Success:", result.register.success);
+                                console.log("Tx:", result.register.txHash);
+                                console.log("Block:", result.register.block);
+                            }
+
+                            return resolve(result);
+                        });
+                } else {
+
+                    if (json) {
+                        console.log(JSON.stringify(result, null, 2));
+                    } else {
+                        console.log("Registering/Updating CP with id:", id, "for client:", config.id, "not needed.");
+                    }
+
+                    return resolve(result);
+                }
+            });
+
+    });
+
+};
+
 export default (yargs) => {
 
     yargs
         .usage("Usage: sc cp <command> [options]")
+        .config('config', 'Path to plaintext config file', (parseConfigFile))
         .demandCommand(1)
 
         .command("register [id]",
             "Registers a Charge Point with given id in the EV Network",
             (yargs) => {
+
+                yargs
+                    .command("all",
+                        "Registers all Charge Points in the EV Network",
+                        (yargs) => {
+                            // no id in this case, srly
+                            yargs.default("id", "");
+                        }, async (argv) => {
+
+                            console.log("Registering all Charge points from the configuration");
+
+                            const ids = Object.keys(config.connectors);
+
+                            for (let id of ids) {
+                                const result = await registerConnector(id, argv.json);
+                            }
+
+                            process.exit(0);
+                        });
+
                 yargs
                     .positional("id", {
                         describe: "a unique identifier for the Charge Point",
@@ -23,74 +117,12 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id");
-            }, (argv) => {
 
-                // load connector
-                const cp = connectors[argv.id];
+            }, async (argv) => {
 
-                let result: any = {
-                    id: null,
-                    register: {
-                        txHash: null,
-                        block: null,
-                        success: false
-                    }
-                };
+                const result = await registerConnector(argv.id, argv.json);
 
-                if (!cp) {
-                    if (argv.json) {
-                        console.log(JSON.stringify(result, null, 2));
-                    } else {
-                        console.error(`No CP found with id ${argv.id} in configuration.`);
-                    }
-                    process.exit(1);
-                }
-
-                result.id = argv.id;
-
-                const args = [
-                    config.id, cp.ownerName, cp.lat,
-                    cp.lng, cp.price, cp.priceModel, cp.plugType,
-                    cp.openingHours, cp.isAvailable,
-                ];
-
-                contractQueryState("updateRequired", argv.id, ...args)
-                    .then(needsUpdate => {
-
-                        if (needsUpdate) {
-
-                            if (!argv.json) {
-                                console.log("Registering CP with id:", argv.id, "for client:", config.id);
-                            }
-
-                            contractSendTx("registerConnector", argv.id, ...args)
-                                .then((contractResult: any) => {
-
-                                    result.register.success = contractResult.status === "mined";
-                                    result.register.txHash = contractResult.txHash;
-                                    result.register.block = contractResult.blockNumber;
-
-                                    if (argv.json) {
-                                        console.log(JSON.stringify(result, null, 2));
-                                    } else {
-                                        console.log("Success:", result.register.success);
-                                        console.log("Tx:", result.register.txHash);
-                                        console.log("Block:", result.register.block);
-                                    }
-
-                                    process.exit(0);
-                                });
-                        } else {
-
-                            if (argv.json) {
-                                console.log(JSON.stringify(result, null, 2));
-                            } else {
-                                console.log("Registering/Updating CP with id:", argv.id, "for client:", config.id, "not needed.");
-                            }
-
-                            process.exit(0);
-                        }
-                    });
+                process.exit(0);
             })
 
         .command("status [id]",

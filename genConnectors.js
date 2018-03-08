@@ -10,7 +10,7 @@ for (let i = 0; i < quantity; i++) {
     const id = '0x' + crypto.randomBytes(32).toString('hex');
 
     data[id] = {
-        owner: "Share&Charge",
+        ownerName: "Share&Charge",
         client: '0x' + crypto.randomBytes(32).toString('hex'),
         lat: (Math.random() * 90).toFixed(6),
         lng: (Math.random() * 180).toFixed(6),
