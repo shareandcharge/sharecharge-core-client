@@ -3,9 +3,11 @@
 set -e
 export wd=$(pwd)
 
+echo usage ./bin/commision-lib.sh from the core client base path.
+
 echo Building contracts
 
-cd ../../sharecharge-contracts/
+cd ../sharecharge-contracts/
 #truffle networks --clean
 truffle compile
 truffle migrate
