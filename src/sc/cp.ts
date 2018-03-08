@@ -94,6 +94,7 @@ const getConnectorInfo = (id, silent) => {
         const owner = contractQueryState("getOwnerInformation", id)
             .then((owner: any) => {
 
+                result[id].owner = owner.owner;
                 result[id].ownerName = owner.ownerName;
             });
 
@@ -276,7 +277,7 @@ export default (yargs) => {
                             const numberOfConnectors = await contractQueryState("getNumberOfConnectors");
 
                             if (!argv.json) {
-                                console.log("Number of connectors", numberOfConnectors);
+                                console.log("Number of connectors all over", numberOfConnectors);
                             }
 
                             const ids: any[] = [];
@@ -286,11 +287,22 @@ export default (yargs) => {
                                 ids.push(id);
                             }
 
-                            const results: any[] = [];
+                            const results: any = {};
+
+                            const coinbase = await getCoinbase();
 
                             for (let id of ids) {
+
                                 const result = await getConnectorInfo(id, argv.json);
-                                results.push(result);
+
+                                if (result[id].owner.toLowerCase() === coinbase) {
+
+                                    results[id] = result[id];
+                                }
+                            }
+
+                            if (!argv.json) {
+                                console.log("Number of your connectors", Object.keys(results).length);
                             }
 
                             if (argv.json) {
