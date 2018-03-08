@@ -60,7 +60,76 @@ const registerConnector = (cp, id, silent) => {
             });
 
     });
+};
 
+const getConnectorInfo = (id, silent) => {
+
+    return new Promise((resolve, reject) => {
+
+        let result: any = {
+            [id]: {
+                ownerName: null,
+                lat: null,
+                lng: null,
+                price: null,
+                priceModel: null,
+                plugType: null,
+                openingHours: null,
+                isAvailable: null,
+                session: null
+            }
+        };
+
+        if (!silent) {
+            console.log("Getting info for Charge Point with ID:", id);
+        }
+
+        const location = contractQueryState("getLocationInformation", id)
+            .then((location: any) => {
+
+                result[id].lat = location.lat;
+                result[id].lng = location.lng;
+            });
+
+        const owner = contractQueryState("getOwnerInformation", id)
+            .then((owner: any) => {
+
+                result[id].ownerName = owner.ownerName;
+            });
+
+        const general = contractQueryState("getGeneralInformation", id)
+            .then((general: any) => {
+
+                result[id].price = general.price;
+                result[id].priceModel = general.priceModel;
+                result[id].plugType = general.plugType;
+                result[id].openingHours = general.openingHours;
+                result[id].isAvailable = general.isAvailable;
+                result[id].session = general.session;
+            });
+
+        Promise.all([location, owner, general])
+            .then(() => {
+
+                if (!silent) {
+                    console.log("lat:", result[id].lat);
+                    console.log("lng:", result[id].lng);
+                    console.log("OwnerName:", result[id].ownerName);
+                    console.log("Price:", result[id].price);
+                    console.log("PriceModel:", result[id].priceModel);
+                    console.log("PlugType:", result[id].plugType);
+                    console.log("OpeningHouts:", result[id].openingHours);
+                    console.log("IsAvailable:", result[id].isAvailable);
+                    console.log("Session:", result[id].session);
+                }
+
+                return resolve(result);
+            })
+            .catch(err => {
+                console.error(err);
+                return reject(err);
+            })
+    });
 };
 
 export default (yargs) => {
@@ -191,76 +260,63 @@ export default (yargs) => {
         .command("info [id]",
             "Returns the current info of the Charge Point with given id",
             (yargs) => {
+
+                yargs
+                    .command("all",
+                        "Lists all Charge Points in the EV Network that you own",
+                        (yargs) => {
+                            // no id in this case, srly
+                            yargs.default("id", "");
+                        }, async (argv) => {
+
+                            if (!argv.json) {
+                                console.log("Getting all Charge points infos from EV Network");
+                            }
+
+                            const numberOfConnectors = await contractQueryState("getNumberOfConnectors");
+
+                            if (!argv.json) {
+                                console.log("Number of connectors", numberOfConnectors);
+                            }
+
+                            const ids: any[] = [];
+
+                            for (let index = 0; index < numberOfConnectors; index++) {
+                                const id = await contractQueryState("getIdByIndex", index);
+                                ids.push(id);
+                            }
+
+                            const results: any[] = [];
+
+                            for (let id of ids) {
+                                const result = await getConnectorInfo(id, argv.json);
+                                results.push(result);
+                            }
+
+                            if (argv.json) {
+                                console.log(JSON.stringify(results, null, 2))
+                            }
+
+                            process.exit(0);
+                        });
+
                 yargs
                     .positional("id", {
                         describe: "a unique identifier for the Charge Point",
                         type: "string"
                     })
                     .string("_")
-                    .demand("id")
-            }, (argv) => {
+                    .demand("id");
 
-                let result: any = {
-                    [argv.id]: {
-                        ownerName: null,
-                        lat: null,
-                        lng: null,
-                        price: null,
-                        priceModel: null,
-                        plugType: null,
-                        openingHours: null,
-                        isAvailable: null,
-                        session: null
-                    }
-                };
+            }, async (argv) => {
 
-                if (!argv.json) {
-                    console.log("Getting info for Charge Point with ID:", argv.id);
+                const result = await getConnectorInfo(argv.id, argv.json);
+
+                if (argv.json) {
+                    console.log(JSON.stringify(result, null, 2));
                 }
 
-                const location = contractQueryState("getLocationInformation", argv.id)
-                    .then((location: any) => {
-
-                        result[argv.id].lat = location.lat;
-                        result[argv.id].lng = location.lng;
-                    });
-
-                const owner = contractQueryState("getOwnerInformation", argv.id)
-                    .then((owner: any) => {
-
-                        result[argv.id].ownerName = owner.ownerName;
-                    });
-
-                const general = contractQueryState("getGeneralInformation", argv.id)
-                    .then((general: any) => {
-
-                        result[argv.id].price = general.price;
-                        result[argv.id].priceModel = general.priceModel;
-                        result[argv.id].plugType = general.plugType;
-                        result[argv.id].openingHours = general.openingHours;
-                        result[argv.id].isAvailable = general.isAvailable;
-                        result[argv.id].session = general.session;
-                    });
-
-                Promise.all([location, owner, general])
-                    .then(results => {
-
-                        if (argv.json) {
-                            console.log(JSON.stringify(result, null, 2));
-                        } else {
-                            console.log("lat:", result[argv.id].lat);
-                            console.log("lng:", result[argv.id].lng);
-                            console.log("OwnerName:", result[argv.id].ownerName);
-                            console.log("Price:", result[argv.id].price);
-                            console.log("PriceModel:", result[argv.id].priceModel);
-                            console.log("PlugType:", result[argv.id].plugType);
-                            console.log("OpeningHouts:", result[argv.id].openingHours);
-                            console.log("IsAvailable:", result[argv.id].isAvailable);
-                            console.log("Session:", result[argv.id].session);
-                        }
-
-                        process.exit(0);
-                    })
+                process.exit(0);
             })
 
         .command("disable [id]",
