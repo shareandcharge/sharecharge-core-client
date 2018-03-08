@@ -8,9 +8,8 @@ const bridge = initBridge('./conf.yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-let to;
-
 const contract = new Contract('');
+let to;
 
 app.use(bodyParser.json()); // support json bodies
 app.use(bodyParser.urlencoded({ extended: true }));  //support encoded bodies
@@ -43,7 +42,6 @@ app.post('/register', verifyToken, async (req, res) => {
             params.price, params.model, params.plugType, params.openingHours, params.isAvailable );
 
             res.send(register);
-            // console.log(register, ' register');
         }
     });
 });
@@ -60,10 +58,36 @@ app.get('/status/:id', verifyToken, async (req, res) => {
                 "Bridge status ": await bridge.health()
             }
             res.send(body);
-            // console.log(body);
         }
     });
 });
+
+// get information 
+app.get('/info/:id', verifyToken, async (req, res) => {
+    jwt.verify(req.token, 'secretkey', async(err, authData) => {
+        if(err) {
+            res.sendStatus(403);
+          } else {
+            
+            let body = {
+                location : await contract.queryState('getLocationInformation', req.params.id),
+                infos: await contract.queryState('getGeneralInformation', req.params.id)
+            }
+
+            let response = {
+                lat: body.location.lat,
+                lng: body.location.lng,
+                price: body.infos.price,
+                priceModel: body.infos.priceModel,
+                plugType: body.infos.plugType,
+                openingHours: body.infos.openingHours,
+                isAvailable: body.infos.isAvailable,
+                session: body.infos.session
+            }
+            res.send(response);
+          }
+      });
+  });
 
 //Disable the pole
 app.put('/disable/:id', verifyToken,(req, res) => {
@@ -73,7 +97,6 @@ app.put('/disable/:id', verifyToken,(req, res) => {
         }else{
             const disable = await contract.sendTx('setAvailability', '0x09', req.params.id, false);
             res.send(disable);
-            // console.log(disable);
         }
     });
 });
@@ -86,7 +109,6 @@ app.put('/enable/:id', verifyToken, async (req, res) => {
         }else{
             const enable = await contract.sendTx('setAvailability', '0x09', req.params.id, true);
             res.send(enable);
-            // console.log(enable);
         }
     });
 });
@@ -109,7 +131,6 @@ app.put('/start/:id', verifyToken, async (req, res) => {
                 },10000);
             }
             res.send(start);
-            // console.log(start);
         }
     });
 });
@@ -163,7 +184,6 @@ jwt.sign({user: 'test'}, 'secretkey', { expiresIn: '2m' }, (err, token) => {
     } else {
         console.log("Your json web token: ", token);
     }
-
 });
 
 // Verify Token
