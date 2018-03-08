@@ -69,20 +69,20 @@ app.get('/info/:id', verifyToken, async (req, res) => {
             res.sendStatus(403);
           } else {
             
-            let body = {
+            let getter = {
                 location : await contract.queryState('getLocationInformation', req.params.id),
                 infos: await contract.queryState('getGeneralInformation', req.params.id)
             }
 
             let response = {
-                lat: body.location.lat,
-                lng: body.location.lng,
-                price: body.infos.price,
-                priceModel: body.infos.priceModel,
-                plugType: body.infos.plugType,
-                openingHours: body.infos.openingHours,
-                isAvailable: body.infos.isAvailable,
-                session: body.infos.session
+                lat: getter.location.lat,
+                lng: getter.location.lng,
+                price: getter.infos.price,
+                priceModel: getter.infos.priceModel,
+                plugType: getter.infos.plugType,
+                openingHours: getter.infos.openingHours,
+                isAvailable: getter.infos.isAvailable,
+                session: getter.infos.session
             }
             res.send(response);
           }
