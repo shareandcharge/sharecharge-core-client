@@ -7,6 +7,7 @@ echo Building contracts
 
 cd ../sharecharge-contracts/
 #truffle networks --clean
+truffle compile
 truffle migrate
 
 echo Deploying Contracts
@@ -21,6 +22,8 @@ cd $LIB
 npm run deploy
 cd $wd
 
-echo Updating package
+echo Uninstall package
+npm uninstall sharecharge-lib --no-save
 
-npm install -U sharecharge-lib --save
+echo Reinstalling package
+npm install sharecharge-lib --save
