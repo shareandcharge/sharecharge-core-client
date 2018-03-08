@@ -113,6 +113,7 @@ const getConnectorInfo = (id, silent) => {
             .then(() => {
 
                 if (!silent) {
+                    console.log("ID:", id);
                     console.log("lat:", result[id].lat);
                     console.log("lng:", result[id].lng);
                     console.log("OwnerName:", result[id].ownerName);
