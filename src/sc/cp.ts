@@ -2,7 +2,7 @@ import * as ProgressBar from 'progress';
 import { contractSendTx, contractQueryState, getCoinbase, parseConfigFile } from "./helper";
 import { initBridge, customConfig, createConfig } from "./helper";
 
-const configFile = './conf.yaml';
+const configFile = "./conf.yaml";
 const config = createConfig(customConfig(configFile));
 const bridge = initBridge(configFile);
 
@@ -143,7 +143,7 @@ export default (yargs) => {
 
     yargs
         .usage("Usage: sc cp <command> [options]")
-        .config('config', 'Path to plaintext config file', (parseConfigFile))
+        .config("config", "Path to plaintext config file", (parseConfigFile))
         .demandCommand(1)
 
         .command("register [id]",
@@ -439,36 +439,36 @@ export default (yargs) => {
                         type: "number",
                         default: 10
                     })
-                    .string('_')
-                    .demand('id')
+                    .string("_")
+                    .demand("id")
 
             }, (argv) => {
                 console.log(`Starting charge on ${argv.id} for ${argv.seconds} seconds...`);
 
-                contractSendTx('requestStart', argv.id, argv.seconds)
+                contractSendTx("requestStart", argv.id, argv.seconds)
                     .then((res: any) => {
 
                         getCoinbase()
                             .then(address => {
                                 console.log(`Start request by ${address} included in block ${res.blockNumber}`);
 
-                                contractSendTx('confirmStart', argv.id, address)
+                                contractSendTx("confirmStart", argv.id, address)
                                     .then((res: any) => {
                                         console.log(`Start confirmation included in block ${res.blockNumber}`);
 
-                                        const bar = new ProgressBar(':msg [:bar] :currents', {
+                                        const bar = new ProgressBar(":msg [:bar] :currents", {
                                             total: argv.seconds,
-                                            incomplete: ' ',
+                                            incomplete: " ",
                                             width: 80
                                         });
 
                                         const timer = setInterval(() => {
-                                            bar.tick({msg: 'Charging'});
+                                            bar.tick({msg: "Charging"});
 
                                             if (bar.complete) {
                                                 clearInterval(timer);
 
-                                                contractSendTx('confirmStop', argv.id)
+                                                contractSendTx("confirmStop", argv.id, address)
                                                     .then((res: any) => {
                                                         console.log(`Stop confirmation included in block ${res.blockNumber}`);
                                                         process.exit(1);
@@ -480,8 +480,7 @@ export default (yargs) => {
                             });
 
                     });
-            }
-        )
+            })
 
         .command("stop [id]",
             "Stops a charging session at a given Charge Point",
@@ -507,16 +506,19 @@ export default (yargs) => {
                     console.log("Stopping charge on Charge Point with ID:", argv.id);
                 }
 
-                contractSendTx('requestStop', argv.id)
-                    .then((res: any) => {
-
-                        console.log(`Stop request included in block ${res.blockNumber}`);
-
-                        contractSendTx('confirmStop', argv.id)
+                getCoinbase()
+                    .then((address) => {
+                        contractSendTx("requestStop", argv.id)
                             .then((res: any) => {
 
-                                console.log(`Stop confirmation included in block ${res.blockNumber}`);
-                                process.exit(1);
+                                console.log(`Stop request included in block ${res.blockNumber}`);
+
+                                contractSendTx("confirmStop", argv.id, address)
+                                    .then((res: any) => {
+
+                                        console.log(`Stop confirmation included in block ${res.blockNumber}`);
+                                        process.exit(1);
+                                    });
                             });
                     });
             });
