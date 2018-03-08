@@ -6,11 +6,9 @@ const configFile = './conf.yaml';
 const config = createConfig(customConfig(configFile));
 const bridge = initBridge(configFile);
 
-const registerConnector = (id, json) => {
+const registerConnector = (cp, id, silent) => {
 
     return new Promise((resolve, reject) => {
-
-        const cp = config.connectors[id];
 
         let result: any = {
             id: id,
@@ -20,17 +18,6 @@ const registerConnector = (id, json) => {
                 success: false
             }
         };
-
-        if (!cp) {
-
-            if (json) {
-                console.log(JSON.stringify(result, null, 2));
-            } else {
-                console.error(`No CP found with id ${id} in configuration.`);
-            }
-
-            return reject(result);
-        }
 
         const args = [
             config.id, cp.ownerName, cp.lat,
@@ -43,7 +30,7 @@ const registerConnector = (id, json) => {
 
                 if (needsUpdate) {
 
-                    if (!json) {
+                    if (!silent) {
                         console.log("Registering CP with id:", id, "for client:", config.id);
                     }
 
@@ -54,9 +41,7 @@ const registerConnector = (id, json) => {
                             result.register.txHash = contractResult.txHash;
                             result.register.block = contractResult.blockNumber;
 
-                            if (json) {
-                                console.log(JSON.stringify(result, null, 2));
-                            } else {
+                            if (!silent) {
                                 console.log("Success:", result.register.success);
                                 console.log("Tx:", result.register.txHash);
                                 console.log("Block:", result.register.block);
@@ -66,9 +51,7 @@ const registerConnector = (id, json) => {
                         });
                 } else {
 
-                    if (json) {
-                        console.log(JSON.stringify(result, null, 2));
-                    } else {
+                    if (!silent) {
                         console.log("Registering/Updating CP with id:", id, "for client:", config.id, "not needed.");
                     }
 
@@ -99,12 +82,23 @@ export default (yargs) => {
                             yargs.default("id", "");
                         }, async (argv) => {
 
-                            console.log("Registering all Charge points from the configuration");
+                            if (!argv.json) {
+                                console.log("Registering all Charge points from the configuration");
+                            }
 
                             const ids = Object.keys(config.connectors);
 
+                            const results: any[] = [];
+
                             for (let id of ids) {
-                                const result = await registerConnector(id, argv.json);
+
+                                const cp = config.connectors[id];
+                                const result = await registerConnector(cp, id, argv.json);
+                                results.push(result);
+                            }
+
+                            if (argv.json) {
+                                console.log(JSON.stringify(results, null, 2))
                             }
 
                             process.exit(0);
@@ -120,7 +114,25 @@ export default (yargs) => {
 
             }, async (argv) => {
 
-                const result = await registerConnector(argv.id, argv.json);
+                const cp = config.connectors[argv.id];
+
+                if (!cp) {
+
+                    if (argv.json) {
+                        console.log(JSON.stringify({}, null, 2));
+                    } else {
+                        console.error(`No CP found with id ${argv.id} in configuration.`);
+                    }
+
+                    process.exit(1);
+                }
+
+                const result = await registerConnector(cp, argv.id, argv.json);
+
+
+                if (argv.json) {
+                    console.log(JSON.stringify(result, null, 2));
+                }
 
                 process.exit(0);
             })
