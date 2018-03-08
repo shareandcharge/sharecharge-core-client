@@ -1,6 +1,4 @@
-import { ShareAndCharge } from '../lib/src/shareAndCharge';
-import { Contract } from '../lib/src/services/contract'
-import { IContract } from '../lib/src/models/contract';
+import {ShareAndCharge, Contract } from 'sharecharge-lib';
 import { initBridge } from '../sc/helper';
 import * as jwt from 'jsonwebtoken';
 import * as express from 'express';
