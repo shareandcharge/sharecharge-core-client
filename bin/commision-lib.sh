@@ -5,7 +5,7 @@ export wd=$(pwd)
 
 echo Building contracts
 
-cd ../sharecharge-contracts/
+cd ../../sharecharge-contracts/
 #truffle networks --clean
 truffle compile
 truffle migrate
