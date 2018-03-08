@@ -113,16 +113,21 @@ const getConnectorInfo = (id, silent) => {
             .then(() => {
 
                 if (!silent) {
-                    console.log("ID:", id);
-                    console.log("lat:", result[id].lat);
-                    console.log("lng:", result[id].lng);
-                    console.log("OwnerName:", result[id].ownerName);
-                    console.log("Price:", result[id].price);
-                    console.log("PriceModel:", result[id].priceModel);
-                    console.log("PlugType:", result[id].plugType);
-                    console.log("OpeningHouts:", result[id].openingHours);
-                    console.log("IsAvailable:", result[id].isAvailable);
-                    console.log("Session:", result[id].session);
+
+                    if (result[id].owner.startsWith("0x0")) {
+                        console.log("No Charge Point found with ID:", id);
+                    } else {
+                        console.log("ID:", id);
+                        console.log("lat:", result[id].lat);
+                        console.log("lng:", result[id].lng);
+                        console.log("OwnerName:", result[id].ownerName);
+                        console.log("Price:", result[id].price);
+                        console.log("PriceModel:", result[id].priceModel);
+                        console.log("PlugType:", result[id].plugType);
+                        console.log("OpeningHouts:", result[id].openingHours);
+                        console.log("IsAvailable:", result[id].isAvailable);
+                        console.log("Session:", result[id].session);
+                    }
                 }
 
                 return resolve(result);
