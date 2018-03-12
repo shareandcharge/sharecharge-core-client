@@ -1,6 +1,6 @@
-import {BridgeInterface} from './models/bridge';
+import { BridgeInterface } from './models/bridge';
 import { ShareAndCharge, Contract, TestContract } from 'sharecharge-lib'
-import {logger} from './utils/logger';
+import { logger } from './utils/logger';
 
 export class Client {
 
@@ -11,9 +11,9 @@ export class Client {
     constructor(config: any) {
         this.config = config;
         this.bridge = this.config.bridge;
-        const contract = config.test ? new TestContract() : new Contract(this.config.pass);
+        const contract = config.test ? new TestContract() : new Contract({pass: this.config.pass});
         logger.debug("Type of contract:", contract.constructor.name);
-        this.sc = new ShareAndCharge(contract);
+        this.sc = new ShareAndCharge({contract});
     }
 
     private get bridgeName(): string {
