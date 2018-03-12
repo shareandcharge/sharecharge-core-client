@@ -19,7 +19,7 @@
     "js-yaml": "^3.10.0",
     "jsonwebtoken": "^8.1.1",
     "progress": "^2.0.0",
-    "sharecharge-lib": "file:../sharecharge-lib/sharecharge-lib-0.1.0.tgz",
+    "sharecharge-lib": "git+ssh://git@github.com/motionwerkGmbH/sharecharge-lib.git",
     "toml": "^2.3.3"
   },
   "devDependencies": {
