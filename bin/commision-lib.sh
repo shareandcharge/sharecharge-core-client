@@ -8,7 +8,7 @@ echo usage ./bin/commision-lib.sh from the core client base path.
 echo Building contracts
 
 cd ../sharecharge-contracts/
-#truffle networks --clean
+truffle networks --clean
 truffle compile
 truffle migrate
 
@@ -24,8 +24,5 @@ cd $LIB
 npm run deploy
 cd $wd
 
-echo Uninstall package
-npm uninstall sharecharge-lib --no-save
-
 echo Reinstalling package
-npm install sharecharge-lib --save
+npm install sharecharge-lib --save --force
