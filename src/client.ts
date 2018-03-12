@@ -35,9 +35,10 @@ export class Client {
 
     private handleStartRequests(): void {
         this.sc.start$.subscribe(async request => {
-            if (this.filter(request.params)) {
+            const values = request.params.values;
+            if (this.filter(values)) {
                 try {
-                    logger.info(`Starting charge on ${request.params.connectorId}`);
+                    logger.info(`Starting charge on ${values.connectorId}`);
                     const res = await this.bridge.start(request.params);
                     logger.debug('Bridge start response: ' + JSON.stringify(res));
                     const health = await this.bridge.health();
@@ -55,9 +56,10 @@ export class Client {
 
     private handleStopRequests(): void {
         this.sc.stop$.subscribe(async request => {
-            if (this.filter(request.params)) {
+            const values = request.params.values;
+            if (this.filter(values)) {
                 try {
-                    logger.info(`Stopping charge on ${request.params.connectorId}`);
+                    logger.info(`Stopping charge on ${values.connectorId}`);
                     const res = await this.bridge.stop(request.params);
                     logger.debug('Bridge stop response: ' + JSON.stringify(res));
                     const health = await this.bridge.health();
@@ -109,13 +111,13 @@ export class Client {
             .then(health => {
                 logger.info('Configured to update every ' + this.config.statusInterval + 'ms');
                 logger.debug('Bridge status: ' + health);
-                if (this.config.connectors) {
-                    this.register();
-                }
-                this.bridge.startUpdater(this.config.statusInterval);
+                // if (this.config.connectors) {
+                //     this.register();
+                // }
+                // this.bridge.startUpdater(this.config.statusInterval);
                 this.handleStartRequests();
                 this.handleStopRequests();
-                this.handleStatusUpdates();
+                // this.handleStatusUpdates();
                 this.logOnStart();
             }).catch(() => {
             logger.info('Backend not healthy! Exiting...');

@@ -1,7 +1,7 @@
 --- 
   bridge: ./test/testBridge1
   statusInterval: 2000
-  connectors: ./bin/connectorsXL.json
+  connectors: ./connectors.json
   test: false
-  id: '0x01'
+  id: '0x0100000000000000000000000000000000000000000000000000000000000000'
   
