@@ -3,6 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { initBridge } from '../sc/helper';
+import { logger } from '../utils/logger';
 
 const bridge = initBridge('./conf.yaml');
 
@@ -15,7 +16,7 @@ app.use(bodyParser.json()); // support json bodies
 app.use(bodyParser.urlencoded({extended: true}));  //support encoded bodies
 
 app.listen(PORT, function () {
-    console.log('Server is started on PORT:', PORT);
+    logger.info('API server running on http://localhost:' + PORT);
 });
 
 //CP
@@ -123,11 +124,11 @@ app.put('/start/:id', verifyToken, async (req, res) => {
             if (start) {
                 const charging = await contract.sendTx('confirmStart', req.params.id, '0x3d1C72e53cC9BDBd09371Fd173DD303D0DEa9A27');
                 //hardcoded adress
-                console.log("Charging...");
+                logger.info("Charging...");
 
                 to = setTimeout(async () => {
                     const stop = await contract.sendTx('confirmStop', req.params.id);
-                    console.log("Charging Stoped");
+                    logger.info("Charging Stoped");
                 }, 10000);
             }
             res.send(start);
@@ -143,7 +144,7 @@ app.put('/stop/:id', verifyToken, async (req, res) => {
         } else {
             clearTimeout(to);
             const stop = await contract.sendTx('confirmStop', req.params.id);
-            console.log("Charging stoped");
+            logger.info("Charging stoped");
             res.send(stop);
         }
     });
@@ -170,7 +171,7 @@ app.get('/config', verifyToken, (req, res) => {
         if (err) {
             res.sendStatus(403);
         } else {
-            console.log(PORT);
+            logger.info(PORT.toString());
             const port = PORT;
             // res.send(port);
         }
@@ -180,9 +181,9 @@ app.get('/config', verifyToken, (req, res) => {
 // CREATING JW TOKEN
 jwt.sign({user: 'test'}, 'secretkey', {expiresIn: '2m'}, (err, token) => {
     if (err) {
-        console.log(err);
+        logger.info(err);
     } else {
-        console.log("Your json web token: ", token);
+        logger.info("Your json web token: ", token);
     }
 });
 

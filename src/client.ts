@@ -1,6 +1,7 @@
 import { BridgeInterface } from './models/bridge';
 import { ShareAndCharge, Contract, TestContract } from 'sharecharge-lib'
 import { logger } from './utils/logger';
+import './api/app';
 
 export class Client {
 
@@ -93,18 +94,18 @@ export class Client {
         });
     }
 
-    private register(): void {
-        Object.values(this.config.connectors).forEach(async conn => {
-            try {
-                const receipt = await this.sc.registerConnector(conn, this.config.id)
-                if (receipt.blockNumber) {
-                    logger.info(`Registered ${conn.id}`);
-                }
-            } catch (err) {
-                logger.warn(`Error registering ${conn.id}: ${err.message}`);
-            }
-        });
-    }
+    // private register(): void {
+    //     Object.values(this.config.connectors).forEach(async conn => {
+    //         try {
+    //             const receipt = await this.sc.registerConnector(conn, this.config.id)
+    //             if (receipt.blockNumber) {
+    //                 logger.info(`Registered ${conn.id}`);
+    //             }
+    //         } catch (err) {
+    //             logger.warn(`Error registering ${conn.id}: ${err.message}`);
+    //         }
+    //     });
+    // }
 
     start(): void {
         this.checkHealth()
@@ -114,10 +115,10 @@ export class Client {
                 // if (this.config.connectors) {
                 //     this.register();
                 // }
-                // this.bridge.startUpdater(this.config.statusInterval);
+                this.bridge.startUpdater(this.config.statusInterval);
                 this.handleStartRequests();
                 this.handleStopRequests();
-                // this.handleStatusUpdates();
+                this.handleStatusUpdates();
                 this.logOnStart();
             }).catch(() => {
             logger.info('Backend not healthy! Exiting...');
