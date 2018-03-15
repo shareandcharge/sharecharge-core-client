@@ -15,9 +15,20 @@ let to;
 app.use(bodyParser.json()); // support json bodies
 app.use(bodyParser.urlencoded({extended: true}));  //support encoded bodies
 
-app.listen(PORT, function () {
-    logger.info('API server running on http://localhost:' + PORT);
-});
+export const listen = () => {
+    app.listen(PORT, function () {
+        logger.info('API server running on http://localhost:' + PORT);
+    });
+
+    // CREATING JW TOKEN
+    jwt.sign({user: 'test'}, 'secretkey', {expiresIn: '2m'}, (err, token) => {
+        if (err) {
+            logger.info(err);
+        } else {
+            logger.info("Your json web token: ", token);
+        }
+    });
+};
 
 //CP
 // Register connector
@@ -176,15 +187,6 @@ app.get('/config', verifyToken, (req, res) => {
             // res.send(port);
         }
     });
-});
-
-// CREATING JW TOKEN
-jwt.sign({user: 'test'}, 'secretkey', {expiresIn: '2m'}, (err, token) => {
-    if (err) {
-        logger.info(err);
-    } else {
-        logger.info("Your json web token: ", token);
-    }
 });
 
 // Verify Token

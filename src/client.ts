@@ -1,7 +1,7 @@
 import { BridgeInterface } from './models/bridge';
 import { ShareAndCharge, Contract, TestContract } from 'sharecharge-lib'
 import { logger } from './utils/logger';
-import './api/app';
+import { listen } from './api/app';
 
 export class Client {
 
@@ -115,6 +115,7 @@ export class Client {
                 // if (this.config.connectors) {
                 //     this.register();
                 // }
+                listen();
                 this.bridge.startUpdater(this.config.statusInterval);
                 this.handleStartRequests();
                 this.handleStopRequests();
