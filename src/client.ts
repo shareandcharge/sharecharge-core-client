@@ -37,10 +37,11 @@ export class Client {
     private handleStartRequests(): void {
         this.sc.start$.subscribe(async request => {
             const values = request.params.values;
+            console.log(values);
             if (this.filter(values)) {
                 try {
                     logger.info(`Starting charge on ${values.connectorId}`);
-                    const res = await this.bridge.start(request.params);
+                    const res = await this.bridge.start(values);
                     logger.debug('Bridge start response: ' + JSON.stringify(res));
                     const health = await this.bridge.health();
                     logger.debug('Bridge status following start:', health);
@@ -58,10 +59,11 @@ export class Client {
     private handleStopRequests(): void {
         this.sc.stop$.subscribe(async request => {
             const values = request.params.values;
+            console.log(values);
             if (this.filter(values)) {
                 try {
                     logger.info(`Stopping charge on ${values.connectorId}`);
-                    const res = await this.bridge.stop(request.params);
+                    const res = await this.bridge.stop(values);
                     logger.debug('Bridge stop response: ' + JSON.stringify(res));
                     const health = await this.bridge.health();
                     logger.debug('Bridge status following stop:', health);
