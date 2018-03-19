@@ -41,7 +41,8 @@ const checkConnectorPath = (connPath) => {
 
 const configureBridge = (bridge) => {
     try {
-        return new bridge();
+        const Bridge = require(path.join(process.cwd(), bridge)).default;
+        return new Bridge();
     } catch (err) {
         return new TestBridge();
     }
