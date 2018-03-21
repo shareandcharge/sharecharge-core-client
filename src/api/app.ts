@@ -1,18 +1,51 @@
-import { ShareCharge } from 'sharecharge-lib';
+import { ShareCharge, Wallet, Connector, Station, ToolKit, OpeningHours } from 'sharecharge-lib';
 import * as jwt from 'jsonwebtoken';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { loadConfigFromFile } from '../utils/config';
 import { logger } from '../utils/logger';
 
-const config = loadConfigFromFile('./config/config.yaml');
+// const config = loadConfigFromFile('./config/config.yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+export const config = {
+    stage: process.env.sc_stage || "local",
+    provider: process.env.sc_provider || 'http://localhost:8545',
+    gasPrice: 18000000000
+};
+
+const sc = new ShareCharge(config);
+const wallet = new Wallet('filter march urge naive sauce distance under copy payment slow just cool');
+
+sc.startListening();
+sc.on('StationCreated', result => { console.log(result); });
+sc.on('StationUpdated', result => { console.log(result); });
+sc.on('ConnectorCreated', result => { console.log(result); });
+sc.on('ConnectorUpdated', result => { console.log(result); });
+sc.on('StartRequested', result => {
+    // if result.connectorId is one of ours since this will receive ALL messages
+    // simulate delay of starting connector
+    setTimeout(async () => {
+        const connector = await sc.connectors.getById(result.connectorId);
+        sc.charging.useWallet(wallet).confirmStart(connector, result.controller);
+    }, 500);
+});
+sc.on('StopRequested', result => {
+    // if result.connectorId is one of ours since this will receive ALL messages
+    // simulate delay of starting connector
+    setTimeout(async () => {
+        const connector = await sc.connectors.getById(result.connectorId);
+        sc.charging.useWallet(wallet).confirmStop(connector, result.controller);
+    }, 500);
+});
+sc.on('Error', result => { console.log("Error", result); });
+
 let to;
 
 app.use(bodyParser.json()); // support json bodies
-app.use(bodyParser.urlencoded({extended: true}));  //support encoded bodies
+app.use(bodyParser.urlencoded({ extended: true }));  //support encoded bodies
 
 export const listen = () => {
     app.listen(PORT, function () {
@@ -29,153 +62,108 @@ export const listen = () => {
     });
 };
 
-//CP
-// Register connector
-app.post('/register', verifyToken, async (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err, authData) => {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-
-            let params = {
-                id: req.body.id,
-                client: req.body.client,
-                owner: req.body.owner,
-                lat: req.body.lat,
-                lng: req.body.lng,
-                price: req.body.price,
-                model: req.body.model,
-                plugType: req.body.plugType,
-                openingHours: req.body.openingHours,
-                isAvailable: req.body.isAvailable
-            };
-            /*const register = await contract.sendTx('registerConnector', params.id, params.client, params.owner, params.lat, params.lng,
-                params.price, params.model, params.plugType, params.openingHours, params.isAvailable);
-
-            res.send(register);*/
-        }
-    });
+// get all stations
+app.get('/stations', verifyToken, async (req, res) => {
+    const stations = await sc.stations.getAll();
+    res.send(stations.map(station => station.serialize()));
 });
 
-//Get status of the pole 
-app.get('/status/:id', verifyToken, async (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err, authData) => {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-            /*let body = {
-                "CP status ": await contract.queryState('getAvailability', req.params.id),
-                "Bridge name ": config.bridge.name,
-                "Bridge status ": await config.bridge.health()
-            }
-            res.send(body);*/
-        }
-    });
+// get single station
+app.get('/stations/:id', verifyToken, async (req, res) => {
+    const station = await sc.stations.getById(req.params.id);
+    res.send(station.serialize());
 });
 
-// get information 
-app.get('/info/:id', verifyToken, async (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err, authData) => {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-
-            /*
-            let getter = {
-                location: await contract.queryState('getLocationInformation', req.params.id),
-                infos: await contract.queryState('getGeneralInformation', req.params.id)
-            }
-
-            let response = {
-                lat: getter.location.lat,
-                lng: getter.location.lng,
-                price: getter.infos.price,
-                priceModel: getter.infos.priceModel,
-                plugType: getter.infos.plugType,
-                openingHours: getter.infos.openingHours,
-                isAvailable: getter.infos.isAvailable,
-                session: getter.infos.session
-            }
-            res.send(response);*/
-        }
-    });
+// create station
+app.post('/stations', verifyToken, async (req, res) => {
+    const station = new Station();
+    station.latitude = req.body.latitude;
+    station.longitude = req.body.longitude;
+    station.openingHours = new OpeningHours();
+    await sc.stations.useWallet(wallet).create(station);
+    res.send(station.id);
 });
 
-//Disable the pole
-app.put('/disable/:id', verifyToken, (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err, authData) => {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-            /*
-            const disable = await contract.sendTx('setAvailability', '0x09', req.params.id, false);
-            res.send(disable);*/
-        }
-    });
+// create connector
+app.post('/connectors', verifyToken, async (req, res) => {
+    const connector = new Connector();
+    connector.owner = req.body.client || "";
+    connector.plugTypes = ToolKit.fromPlugMask(req.body.plugTypes);
+    connector.available = true;
+    await sc.connectors.useWallet(wallet).create(connector);
+    res.send(connector.id);
 });
 
-//Enable the pole
+// get informations for one connector
+app.get('/connectors/:id', verifyToken, async (req, res) => {
+
+    const connector = await sc.connectors.getById(req.params.id);
+    const station = await sc.stations.getById(connector.stationId);
+
+    let response = {
+        lat: station.latitude,
+        lng: station.longitude,
+        price: 0,
+        priceModel: 0,
+        plugType: connector.plugTypes,
+        openingHours: station.openingHours,
+        isAvailable: connector.available
+    }
+    res.send(response);
+});
+
+//Get status of the connector
+// app.get('/status/:id', async (req, res) => {
+//     let body = {
+//         "CP status ": (await sc.connectors.getById(req.params.id)).available,
+//         "Bridge name ": bridge.name,
+//         "Bridge status ": await bridge.health()
+//     }
+//     res.send(body);
+// });
+
+//Disable the connector
+app.put('/disable/:id', verifyToken, async (req, res) => {
+    const connector = await sc.connectors.getById(req.params.id);
+    connector.available = false;
+    await sc.connectors.useWallet(wallet).update(connector);
+    res.sendStatus(200);
+});
+
+//Enable the connector
 app.put('/enable/:id', verifyToken, async (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err, authData) => {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-            /*const enable = await contract.sendTx('setAvailability', '0x09', req.params.id, true);
-            res.send(enable);*/
-        }
-    });
+    const connector = await sc.connectors.getById(req.params.id);
+    connector.available = true;
+    await sc.connectors.useWallet(wallet).update(connector);
+    res.sendStatus(200);
 });
 
 //Request start
 app.put('/start/:id', verifyToken, async (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err, authData) => {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-            /*const start = await contract.sendTx('requestStart', req.params.id, 10);
-            if (start) {
-                const charging = await contract.sendTx('confirmStart', req.params.id, '0x3d1C72e53cC9BDBd09371Fd173DD303D0DEa9A27');
-                //hardcoded adress
-                logger.info("Charging...");
-
-                to = setTimeout(async () => {
-                    const stop = await contract.sendTx('confirmStop', req.params.id);
-                    logger.info("Charging Stoped");
-                }, 10000);
-            }
-            res.send(start);*/
-        }
-    });
+    const connector = await sc.connectors.getById(req.params.id);
+    await sc.charging.useWallet(wallet).requestStart(connector, 10);
+    res.send(200);
 });
 
 // Stop endpoint
 app.put('/stop/:id', verifyToken, async (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err, authData) => {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-            clearTimeout(to);
-            /*const stop = await contract.sendTx('confirmStop', req.params.id);
-            logger.info("Charging stoped");
-            res.send(stop);*/
-        }
-    });
+    const connector = await sc.connectors.getById(req.params.id);
+    await sc.charging.useWallet(wallet).requestStop(connector);
+    // clearTimeout(to);
+    // const stop = await contract.sendTx('confirmStop', req.params.id);
+    // console.log("Charging stoped");
+    // res.send(stop);
+    res.send(200);
 });
 
 //BRIDGE
-app.get('/bridge/status', verifyToken, async (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err, authData) => {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-            let body = {
-                "Bridge name ": config.bridge.name,
-                "Bridge status ": await config.bridge.health()
-            }
-            res.send(body);
-        }
-    });
-});
+// app.get('/bridge/status', verifyToken, async (req, res) => {
+//     let body = {
+//         "Bridge name ": bridge.name,
+//         "Bridge status ": await bridge.health()
+//     }
+//     res.send(body);
+// });
 
 //CONFIGURATION
 app.get('/config', verifyToken, (req, res) => {
@@ -190,15 +178,30 @@ app.get('/config', verifyToken, (req, res) => {
     });
 });
 
+// CREATING JW TOKEN
+jwt.sign({user: 'test'}, 'secretkey', {expiresIn: '20m'}, (err, token) => {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log("Your json web token: ", token);
+    }
+});
 // Verify Token
 function verifyToken(req, res, next) {
-    const bearerHeader = req.headers['authorization'];
-    if (typeof bearerHeader !== 'undefined') {
-        const bearer = bearerHeader.split(' ');
-        const bearerToken = bearer[1];
-        req.token = bearerToken;
-        next();
-    } else {
-        res.sendStatus(403);
-    }
+    // const bearerHeader = req.headers['authorization'];
+    
+    // if (typeof bearerHeader === 'undefined') {
+    //     res.sendStatus(403);
+    // }
+    // const bearer = bearerHeader.split(' ');
+    // const bearerToken = bearer[1];
+    // req.token = bearerToken;
+
+    // jwt.verify(bearerToken, 'secretkey', (err, authData) => {
+    //     if (err) {
+    //         res.sendStatus(403);
+    //     } else {
+            next();
+    //     }
+    // });
 }
