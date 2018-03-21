@@ -1,6 +1,3 @@
-node_modules
-lib
-bridge
-.chaindata
-config.ts
+/node_modules/
+/.chaindata/
 connectorsXL.json

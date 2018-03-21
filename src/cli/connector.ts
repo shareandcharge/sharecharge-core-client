@@ -1,71 +1,35 @@
 import * as ProgressBar from 'progress';
-import { contractSendTx, contractQueryState, getCoinbase, parseConfigFile } from "./helper";
-import { initBridge, customConfig, createConfig } from "./helper";
 
-const configFile = "./conf.yaml";
-const config = createConfig(customConfig(configFile));
-const bridge = initBridge(configFile);
+import { createConfig, loadConfigFromFile } from "../utils/config";
+import { Connector, IConfig, ShareCharge, Wallet } from "sharecharge-lib";
+import IClientConfig from "../models/iClientConfig";
 
-const registerConnector = (cp, id, silent) => {
+const config: IClientConfig = loadConfigFromFile("./config/config.yaml");
+const wallet: Wallet = new Wallet(config.seed);
 
-    return new Promise((resolve, reject) => {
+const registerConnector = async (connectorToRegister, stfu) => {
 
-        let result: any = {
-            id: id,
-            register: {
-                txHash: null,
-                block: null,
-                success: false
-            }
-        };
+    const connector: Connector = new Connector();
+    connector.owner = config.id;
+    connector.available = connectorToRegister.available;
 
-        const args = [
-            config.id, cp.ownerName, cp.lat,
-            cp.lng, cp.price, cp.priceModel, cp.plugType,
-            cp.openingHours, cp.isAvailable,
-        ];
+    const sc = new ShareCharge(config);
 
-        contractQueryState("updateRequired", id, ...args)
-            .then(needsUpdate => {
+    const isPersisted = await sc.connectors.isPersisted(connector);
 
-                if (needsUpdate) {
-
-                    if (!silent) {
-                        console.log("Registering CP with id:", id, "for client:", config.id);
-                    }
-
-                    contractSendTx("registerConnector", id, ...args)
-                        .then((contractResult: any) => {
-
-                            result.register.success = contractResult.status === "mined";
-                            result.register.txHash = contractResult.txHash;
-                            result.register.block = contractResult.blockNumber;
-
-                            if (!silent) {
-                                console.log("Success:", result.register.success);
-                                console.log("Tx:", result.register.txHash);
-                                console.log("Block:", result.register.block);
-                            }
-
-                            return resolve(result);
-                        });
-                } else {
-
-                    if (!silent) {
-                        console.log("Registering/Updating CP with id:", id, "for client:", config.id, "not needed.");
-                    }
-
-                    return resolve(result);
-                }
-            });
-
-    });
+    if (!isPersisted) {
+        await sc.connectors.useWallet(wallet).create(connector);
+    }
+    else {
+        await sc.connectors.useWallet(wallet).update(connector);
+    }
 };
 
 const getConnectorInfo = (id, silent) => {
 
     return new Promise((resolve, reject) => {
 
+        /*
         let result: any = {
             [id]: {
                 ownerName: null,
@@ -135,7 +99,7 @@ const getConnectorInfo = (id, silent) => {
             .catch(err => {
                 console.error(err);
                 return reject(err);
-            })
+            })*/
     });
 };
 
@@ -143,7 +107,7 @@ export default (yargs) => {
 
     yargs
         .usage("Usage: sc cp <command> [options]")
-        .config("config", "Path to plaintext config file", (parseConfigFile))
+        .config("config", "Path to plaintext config file", (createConfig))
         .demandCommand(1)
 
         .command("register [id]",
@@ -169,15 +133,13 @@ export default (yargs) => {
                             for (let id of ids) {
 
                                 const cp = config.connectors[id];
-                                const result = await registerConnector(cp, id, argv.json);
+                                const result = await registerConnector(cp, argv.json);
                                 results.push(result);
                             }
 
                             if (argv.json) {
                                 console.log(JSON.stringify(results, null, 2))
                             }
-
-                            process.exit(0);
                         });
 
                 yargs
@@ -200,17 +162,16 @@ export default (yargs) => {
                         console.error(`No CP found with id ${argv.id} in configuration.`);
                     }
 
-                    process.exit(1);
+
                 }
 
-                const result = await registerConnector(cp, argv.id, argv.json);
-
+                const result = await registerConnector(cp, argv.json);
 
                 if (argv.json) {
                     console.log(JSON.stringify(result, null, 2));
                 }
 
-                process.exit(0);
+
             })
 
         .command("status [id]",
@@ -237,6 +198,7 @@ export default (yargs) => {
                     console.log("Getting status for Charge Point with id:", argv.id);
                 }
 
+                /*
                 contractQueryState("getAvailability", argv.id)
                     .then(contractState => {
 
@@ -246,7 +208,7 @@ export default (yargs) => {
                             console.log("EV Network:\t", result.state.ev);
                         }
 
-                        bridge.connectorStatus(argv.id)
+                        config.bridge.connectorStatus(argv.id)
                             .then(bridgeState => {
 
                                 result.state.bridge = bridgeState;
@@ -258,10 +220,10 @@ export default (yargs) => {
                                     console.log("CPO Backend:\t", result.state.bridge);
                                 }
 
-                                process.exit(0);
+
                             });
 
-                    });
+                    });*/
             })
 
         .command("info [id]",
@@ -280,6 +242,7 @@ export default (yargs) => {
                                 console.log("Getting all Charge points infos from EV Network");
                             }
 
+                            /*
                             const numberOfConnectors = await contractQueryState("getNumberOfConnectors");
 
                             if (!argv.json) {
@@ -313,9 +276,9 @@ export default (yargs) => {
 
                             if (argv.json) {
                                 console.log(JSON.stringify(results, null, 2))
-                            }
+                            }*/
 
-                            process.exit(0);
+
                         });
 
                 yargs
@@ -334,7 +297,7 @@ export default (yargs) => {
                     console.log(JSON.stringify(result, null, 2));
                 }
 
-                process.exit(0);
+
             })
 
         .command("disable [id]",
@@ -362,6 +325,7 @@ export default (yargs) => {
                     console.log(`Disabling CP with id: ${argv.id} for client: ${config.id}`);
                 }
 
+                /*
                 contractSendTx("setAvailability", config.id, argv.id, false)
                     .then((contractResult: any) => {
 
@@ -377,8 +341,8 @@ export default (yargs) => {
                             console.log("Block:", result.disabled.success);
                         }
 
-                        process.exit(0);
-                    });
+
+                    });*/
             })
 
         .command("enable [id]",
@@ -406,6 +370,7 @@ export default (yargs) => {
                     console.log("Enabling CP with id:", argv.id, "for client:", config.id);
                 }
 
+                /*
                 contractSendTx("setAvailability", config.id, argv.id, true)
                     .then((contractResult: any) => {
 
@@ -422,8 +387,8 @@ export default (yargs) => {
                             console.log("Block:", result.enabled.block);
                         }
 
-                        process.exit(0);
-                    });
+
+                    });*/
             })
 
         .command("start [id] [seconds]",
@@ -445,6 +410,7 @@ export default (yargs) => {
             }, (argv) => {
                 console.log(`Starting charge on ${argv.id} for ${argv.seconds} seconds...`);
 
+                /*
                 contractSendTx("requestStart", argv.id, argv.seconds)
                     .then((res: any) => {
 
@@ -471,7 +437,7 @@ export default (yargs) => {
                                                 contractSendTx("confirmStop", argv.id, address)
                                                     .then((res: any) => {
                                                         console.log(`Stop confirmation included in block ${res.blockNumber}`);
-                                                        process.exit(1);
+
                                                     });
                                             }
 
@@ -479,7 +445,7 @@ export default (yargs) => {
                                     });
                             });
 
-                    });
+                    });*/
             })
 
         .command("stop [id]",
@@ -506,6 +472,7 @@ export default (yargs) => {
                     console.log("Stopping charge on Charge Point with ID:", argv.id);
                 }
 
+                /*
                 getCoinbase()
                     .then((address) => {
                         contractSendTx("requestStop", argv.id)
@@ -517,9 +484,9 @@ export default (yargs) => {
                                     .then((res: any) => {
 
                                         console.log(`Stop confirmation included in block ${res.blockNumber}`);
-                                        process.exit(1);
+
                                     });
                             });
-                    });
+                    }); */
             });
 }

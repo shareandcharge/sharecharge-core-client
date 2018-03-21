@@ -1,0 +1,11 @@
+--- 
+  bridge: ./src/bridges/MockBridge
+  statusInterval: 2000
+  connectors: ./config/connectors.json
+  test: false
+  stage: "local"
+  seed: "lorem ipsum dolor sit amet"
+  gasPrice: 1800000
+  provider: "http://localhost:8545"
+  id: '0x0100000000000000000000000000000000000000000000000000000000000000'
+  

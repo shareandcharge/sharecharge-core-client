@@ -1,15 +1,14 @@
-import { ShareAndCharge, Contract } from 'sharecharge-lib';
+import { ShareCharge } from 'sharecharge-lib';
 import * as jwt from 'jsonwebtoken';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import { initBridge } from '../sc/helper';
+import { loadConfigFromFile } from '../utils/config';
 import { logger } from '../utils/logger';
 
-const bridge = initBridge('./conf.yaml');
+const config = loadConfigFromFile('./config/config.yaml');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const contract = new Contract({pass: ""});
 let to;
 
 app.use(bodyParser.json()); // support json bodies
@@ -50,10 +49,10 @@ app.post('/register', verifyToken, async (req, res) => {
                 openingHours: req.body.openingHours,
                 isAvailable: req.body.isAvailable
             };
-            const register = await contract.sendTx('registerConnector', params.id, params.client, params.owner, params.lat, params.lng,
+            /*const register = await contract.sendTx('registerConnector', params.id, params.client, params.owner, params.lat, params.lng,
                 params.price, params.model, params.plugType, params.openingHours, params.isAvailable);
 
-            res.send(register);
+            res.send(register);*/
         }
     });
 });
@@ -64,12 +63,12 @@ app.get('/status/:id', verifyToken, async (req, res) => {
         if (err) {
             res.sendStatus(403);
         } else {
-            let body = {
+            /*let body = {
                 "CP status ": await contract.queryState('getAvailability', req.params.id),
-                "Bridge name ": bridge.name,
-                "Bridge status ": await bridge.health()
+                "Bridge name ": config.bridge.name,
+                "Bridge status ": await config.bridge.health()
             }
-            res.send(body);
+            res.send(body);*/
         }
     });
 });
@@ -81,6 +80,7 @@ app.get('/info/:id', verifyToken, async (req, res) => {
             res.sendStatus(403);
         } else {
 
+            /*
             let getter = {
                 location: await contract.queryState('getLocationInformation', req.params.id),
                 infos: await contract.queryState('getGeneralInformation', req.params.id)
@@ -96,7 +96,7 @@ app.get('/info/:id', verifyToken, async (req, res) => {
                 isAvailable: getter.infos.isAvailable,
                 session: getter.infos.session
             }
-            res.send(response);
+            res.send(response);*/
         }
     });
 });
@@ -107,8 +107,9 @@ app.put('/disable/:id', verifyToken, (req, res) => {
         if (err) {
             res.sendStatus(403);
         } else {
+            /*
             const disable = await contract.sendTx('setAvailability', '0x09', req.params.id, false);
-            res.send(disable);
+            res.send(disable);*/
         }
     });
 });
@@ -119,8 +120,8 @@ app.put('/enable/:id', verifyToken, async (req, res) => {
         if (err) {
             res.sendStatus(403);
         } else {
-            const enable = await contract.sendTx('setAvailability', '0x09', req.params.id, true);
-            res.send(enable);
+            /*const enable = await contract.sendTx('setAvailability', '0x09', req.params.id, true);
+            res.send(enable);*/
         }
     });
 });
@@ -131,7 +132,7 @@ app.put('/start/:id', verifyToken, async (req, res) => {
         if (err) {
             res.sendStatus(403);
         } else {
-            const start = await contract.sendTx('requestStart', req.params.id, 10);
+            /*const start = await contract.sendTx('requestStart', req.params.id, 10);
             if (start) {
                 const charging = await contract.sendTx('confirmStart', req.params.id, '0x3d1C72e53cC9BDBd09371Fd173DD303D0DEa9A27');
                 //hardcoded adress
@@ -142,7 +143,7 @@ app.put('/start/:id', verifyToken, async (req, res) => {
                     logger.info("Charging Stoped");
                 }, 10000);
             }
-            res.send(start);
+            res.send(start);*/
         }
     });
 });
@@ -154,9 +155,9 @@ app.put('/stop/:id', verifyToken, async (req, res) => {
             res.sendStatus(403);
         } else {
             clearTimeout(to);
-            const stop = await contract.sendTx('confirmStop', req.params.id);
+            /*const stop = await contract.sendTx('confirmStop', req.params.id);
             logger.info("Charging stoped");
-            res.send(stop);
+            res.send(stop);*/
         }
     });
 });
@@ -168,8 +169,8 @@ app.get('/bridge/status', verifyToken, async (req, res) => {
             res.sendStatus(403);
         } else {
             let body = {
-                "Bridge name ": bridge.name,
-                "Bridge status ": await bridge.health()
+                "Bridge name ": config.bridge.name,
+                "Bridge status ": await config.bridge.health()
             }
             res.send(body);
         }

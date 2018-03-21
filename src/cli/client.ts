@@ -1,12 +1,10 @@
-import { Parser } from '../utils/parser';
-import { Client } from '../client';
 import { logger } from '../utils/logger';
-import { parseConfigFile, createConfig } from './helper';
+import { loadConfigFromFile } from '../utils/config';
 
 export const clientHandler = (yargs) => {
     yargs
         .usage('Usage: sc client [options]')
-        .config('config', 'Path to plaintext config file', (parseConfigFile))
+        .config('config', 'Path to plaintext config file', loadConfigFromFile)
         .options({
             'id': {
                 describe: 'The client ID used to filter EV charge requests',
@@ -25,9 +23,9 @@ export const clientHandler = (yargs) => {
                 describe: 'Path to the connector data if registration of connectors required',
                 type: 'string'
             },
-            'test': {
-                describe: 'Use a mock S&C EV ChargingStation contract',
-                type: 'boolean'
+            'stage': {
+                describe: 'Specify on what stage we want to be',
+                type: 'string'
             },
             'status-interval': {
                 describe: 'Specify interval between connector status updates from bridge',
@@ -35,17 +33,18 @@ export const clientHandler = (yargs) => {
                 default: 30000
             }
         })
-}
+};
 
 export const clientStarter = (argv) => {
-    const config = createConfig(argv);
+
+    const config = argv.config ? argv : loadConfigFromFile("./config/config.yaml");
+
     if (!config.id) {
         logger.warn('No Client ID found in configuration!');
     }
+
     if (!config.pass) {
         logger.warn('No Ethereum password found in configuration!');
     }
 
-    const client = new Client(config);
-    client.start();
-}
+};

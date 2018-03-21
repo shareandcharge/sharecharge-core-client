@@ -1,6 +1,7 @@
-import { initBridge } from './helper';
+import { loadConfigFromFile } from '../utils/config';
+import IClientConfig from "../models/iClientConfig";
 
-const bridge = initBridge('./conf.yaml');
+const config: IClientConfig = loadConfigFromFile('./config/config.yaml');
 
 export default (yargs) => {
 
@@ -24,9 +25,9 @@ export default (yargs) => {
                     console.log("Getting status of bridge.");
                 }
 
-                result.name = bridge.name;
+                result.name = config.bridge.name;
 
-                bridge.health()
+                config.bridge.health()
                     .then(isAvailable => {
 
                         result.bridge.isAvailable = isAvailable;

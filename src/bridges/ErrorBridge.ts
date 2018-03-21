@@ -1,13 +1,12 @@
-import { Subject } from 'rxjs';
-import { BridgeInterface, StatusObject } from '../src/models/bridge';
+import IBridge from '../models/iBridge';
+import StatusObject from "../models/iStatusObject";
 
-export default class Bridge implements BridgeInterface {
+export default class ErrorBridge implements IBridge {
 
     updater: any;
-    status = new Subject<StatusObject>();
-    status$ = this.status.asObservable();
 
-    constructor() {}
+    constructor() {
+    }
 
     get name(): string {
         return 'test2';
@@ -22,7 +21,7 @@ export default class Bridge implements BridgeInterface {
     }
 
     async stop(parameteres: any): Promise<any> {
-        return { data: 50 };
+        return {data: 50};
     }
 
     async connectorStatus(id?: string): Promise<any> {
@@ -31,10 +30,7 @@ export default class Bridge implements BridgeInterface {
 
     startUpdater(interval?: number): void {
         this.updater = setInterval(async () => {
-            this.status.next({
-                points: [],
-                errors: []
-            });
+
         }, interval || 30000);
     }
 
