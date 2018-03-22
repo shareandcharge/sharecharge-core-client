@@ -5,15 +5,13 @@ import * as sinon from "sinon";
 import ConnectorLogic from "../../src/cli/connector.logic";
 import { Connector, ToolKit } from "sharecharge-lib";
 import { loadConfigFromFile } from "../../src/utils/config";
+import IClientConfig from "../../src/models/iClientConfig";
 
 const testConfigPath = "./test/cli/config.yaml";
 
 describe('Connector.Logic', () => {
 
-    let scMock;
-    let config;
-    let connectorLogic: ConnectorLogic;
-    let db;
+    let scMock: any, config: IClientConfig, db: object, connectorLogic: ConnectorLogic;
 
     before(() => {
 
@@ -49,17 +47,15 @@ describe('Connector.Logic', () => {
 
             const doRegisterSpy = sinon.spy(connectorLogic, "doRegister");
 
-            await connectorLogic.register({id: idToTest, json: false});
-            const connector: Connector = await scMock.connectors.getById(idToTest);
+            const result = await connectorLogic.register({id: idToTest, json: false});
 
             expect(doRegisterSpy.calledOnce).to.be.true;
-            expect(connector.id).to.include(idToTest);
-            expect(connector.available).to.equal(true);
-            expect(connector.owner).to.include(config.id);
-
             doRegisterSpy.restore();
-        });
 
+            expect(result.id).to.include(idToTest);
+            expect(result.available).to.equal(true);
+            expect(result.owner).to.include(config.id);
+        });
     });
 
     describe("#registerAll()", () => {
@@ -68,12 +64,19 @@ describe('Connector.Logic', () => {
 
             const doRegisterSpy = sinon.spy(connectorLogic, "doRegister");
 
-            await connectorLogic.registerAll({json: false});
+            const results = await connectorLogic.registerAll({json: false});
 
-            expect(doRegisterSpy.callCount).to.be.equal(Object.keys(config.connectors).length);
+            const connectorIndexes = Object.keys(config.connectors);
+
+            expect(doRegisterSpy.callCount).to.be.equal(connectorIndexes.length);
+            expect(results.length).to.be.equal(doRegisterSpy.callCount);
+            expect(results.length).to.be.equal(connectorIndexes.length);
+
             doRegisterSpy.restore();
-        });
 
+            expect(results[0].available).to.be.equal(config.connectors[connectorIndexes[0]].available);
+            expect(results[0].owner).to.be.equal(config.id);
+        });
     });
 
     describe("#info()", () => {
@@ -98,9 +101,6 @@ describe('Connector.Logic', () => {
             expect(result.owner).to.equal(owner);
             expect(result.plugTypes).to.contain(plugMask);
             expect(result.available).to.equal(available);
-
         });
-
     });
-
 });

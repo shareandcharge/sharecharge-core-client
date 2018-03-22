@@ -27,11 +27,11 @@ export default class ConnectorLogic {
         await this.sc.connectors.useWallet(this.wallet).create(connector);
 
         return {
-            Id: connector.id,
-            Owner: connector.owner,
-            StationId: connector.stationId,
-            Available: connector.available,
-            PlugTypes: connector.plugTypes
+            id: connector.id,
+            owner: connector.owner,
+            stationId: connector.stationId,
+            available: connector.available,
+            plugTypes: connector.plugTypes
         }
     };
 
@@ -58,6 +58,7 @@ export default class ConnectorLogic {
             console.log(JSON.stringify(result, null, 2));
         }
 
+        return result;
     };
 
     public registerAll = async (argv) => {
@@ -80,6 +81,8 @@ export default class ConnectorLogic {
         if (argv.json) {
             console.log(JSON.stringify(results, null, 2))
         }
+
+        return results;
     };
 
     public status = (argv) => {
