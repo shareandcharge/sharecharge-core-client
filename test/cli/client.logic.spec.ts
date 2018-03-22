@@ -3,16 +3,16 @@ import { expect } from 'chai';
 import * as sinon from "sinon";
 
 import ClientLogic from "../../src/cli/client.logic";
-import IClientConfig from "../../src/models/iClientConfig";
+import { loadConfigFromFile } from "../../src/utils/config";
 
-const testConfigPath = "./test/cli/config.yaml";
+const testConfigPath = "./test/config.yaml";
 
 describe('ClientLogic', () => {
 
-    let config: IClientConfig, clientLogic: ClientLogic;
+    let clientLogic: ClientLogic;
 
     beforeEach(() => {
-        clientLogic = new ClientLogic(testConfigPath);
+        clientLogic = new ClientLogic(loadConfigFromFile(testConfigPath));
     });
 
     describe("#start()", () => {

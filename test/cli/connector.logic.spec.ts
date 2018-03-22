@@ -7,7 +7,7 @@ import { Connector, ToolKit } from "sharecharge-lib";
 import { loadConfigFromFile } from "../../src/utils/config";
 import IClientConfig from "../../src/models/iClientConfig";
 
-const testConfigPath = "./test/cli/config.yaml";
+const testConfigPath = "./test/config.yaml";
 
 describe('ConnectorLogic', () => {
 
@@ -32,7 +32,7 @@ describe('ConnectorLogic', () => {
                 }
             }
         };
-        connectorLogic = new ConnectorLogic(testConfigPath, scMock);
+        connectorLogic = new ConnectorLogic(config, scMock);
     });
 
     beforeEach(() => {

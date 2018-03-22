@@ -1,16 +1,13 @@
 import { Connector, ShareCharge, Wallet } from "sharecharge-lib";
-import { loadConfigFromFile } from "../utils/config";
 import IClientConfig from "../models/iClientConfig";
 
 export default class ConnectorLogic {
 
-    private readonly config: IClientConfig;
     private readonly wallet: Wallet;
     private readonly sc: ShareCharge;
 
-    constructor(configPath: string, sc?: ShareCharge) {
+    constructor(private config: IClientConfig, sc?: ShareCharge) {
 
-        this.config = loadConfigFromFile(configPath);
         this.wallet = new Wallet(this.config.seed);
         this.sc = sc || new ShareCharge(this.config);
     }

@@ -1,7 +1,7 @@
 import { loadConfigFromFile } from "../utils/config";
 import ConnectorLogic from "./connector.logic";
 
-const connectorLogic = new ConnectorLogic("./config/config.yaml");
+const connectorLogic = new ConnectorLogic(loadConfigFromFile("./config/config.yaml"));
 
 export default (yargs) => {
 

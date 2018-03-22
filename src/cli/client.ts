@@ -1,7 +1,7 @@
 import ClientLogic from './client.logic';
 import { loadConfigFromFile } from '../utils/config';
 
-const clientLogic = new ClientLogic("./config/config.yaml");
+const clientLogic = new ClientLogic(loadConfigFromFile("./config/config.yaml"));
 
 export const clientHandler = (yargs) => {
     yargs

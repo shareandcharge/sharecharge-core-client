@@ -1,13 +1,10 @@
 import { loadConfigFromFile } from "../utils/config";
 import { logger } from "../utils/logger";
+import IClientConfig from "../models/iClientConfig";
 
 export default class ClientLogic {
 
-    private config;
-
-    constructor(configPath: string) {
-
-        this.config = loadConfigFromFile(configPath);
+    constructor(private config: IClientConfig) {
     }
 
     public start = async (argv) => {
