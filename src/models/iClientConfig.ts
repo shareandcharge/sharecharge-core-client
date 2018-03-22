@@ -11,4 +11,5 @@ export default interface IClientConfig {
     gasPrice: number;
     provider: string;
     connectors: any;
+    logger: any;
 }

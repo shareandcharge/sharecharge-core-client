@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import Parser from './parser';
 import IClientConfig from "../models/iClientConfig"
+import { logger } from "./logger";
 
 /**
  * loads config from filesystem and parses it depending on the format
@@ -27,6 +28,7 @@ export const createConfig = (argv: any) => {
         seed: argv.seed,
         gasPrice: argv.gasPrice,
         provider: argv.provider,
+        logger: logger,
         statusInterval: argv['status-interval'],
         connectors: loadConnectorsFromPath(argv.connectors),
         bridge: createBrideInstance(argv.bridge)

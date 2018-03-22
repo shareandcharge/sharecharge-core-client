@@ -15,6 +15,9 @@ describe('ClientLogic', () => {
 
     beforeEach(() => {
         config = loadConfigFromFile(testConfigPath);
+        config.logger = {
+          info: () => {}
+        };
         bridgeLogic = new BridgeLogic(config);
     });
 

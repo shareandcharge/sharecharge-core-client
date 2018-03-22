@@ -35,7 +35,7 @@ export default class ConnectorLogic {
     public register = async (argv) => {
 
         if (!argv.json) {
-            console.log(`Registering Connector with id: ${argv.id}`);
+            this.config.logger.info(`Registering Connector with id: ${argv.id}`);
         }
 
         const cp = this.config.connectors[argv.id];
@@ -43,7 +43,7 @@ export default class ConnectorLogic {
         if (!cp) {
 
             if (argv.json) {
-                console.log(JSON.stringify({}, null, 2));
+                this.config.logger.info(JSON.stringify({}, null, 2));
             } else {
                 console.error(`No CP found with id ${argv.id} in configuration.`);
             }
@@ -52,7 +52,7 @@ export default class ConnectorLogic {
         const result = await this.doRegister(cp, argv.id);
 
         if (argv.json) {
-            console.log(JSON.stringify(result, null, 2));
+            this.config.logger.info(JSON.stringify(result, null, 2));
         }
 
         return result;
@@ -61,7 +61,7 @@ export default class ConnectorLogic {
     public registerAll = async (argv) => {
 
         if (!argv.json) {
-            console.log("Registering all Charge points from the configuration");
+            this.config.logger.info("Registering all Charge points from the configuration");
         }
 
         const ids = Object.keys(this.config.connectors);
@@ -76,7 +76,7 @@ export default class ConnectorLogic {
         }
 
         if (argv.json) {
-            console.log(JSON.stringify(results, null, 2))
+            this.config.logger.info(JSON.stringify(results, null, 2))
         }
 
         return results;
@@ -93,7 +93,7 @@ export default class ConnectorLogic {
         };
 
         if (!argv.json) {
-            console.log("Getting status for Charge Point with id:", argv.id);
+            this.config.logger.info("Getting status for Charge Point with id:", argv.id);
         }
 
         /*
@@ -103,7 +103,7 @@ export default class ConnectorLogic {
                 result.state.ev = contractState ? "available" : "unavailable";
 
                 if (!argv.json) {
-                    console.log("EV Network:\t", result.state.ev);
+                    this.config.logger.log("EV Network:\t", result.state.ev);
                 }
 
                 config.bridge.connectorStatus(argv.id)
@@ -112,10 +112,10 @@ export default class ConnectorLogic {
                         result.state.bridge = bridgeState;
 
                         if (argv.json) {
-                            console.log(JSON.stringify(result, null, 2));
+                            this.config.logger.log(JSON.stringify(result, null, 2));
                         }
                         else {
-                            console.log("CPO Backend:\t", result.state.bridge);
+                            this.config.logger.log("CPO Backend:\t", result.state.bridge);
                         }
 
 
@@ -137,13 +137,13 @@ export default class ConnectorLogic {
         };
 
         if (argv.json) {
-            console.log(JSON.stringify(result, null, 2));
+            this.config.logger.info(JSON.stringify(result, null, 2));
         } else {
-            console.log("ID:", result.id);
-            console.log("Owner:", result.owner);
-            console.log("StationId:", result.stationId);
-            console.log("Available:", result.available);
-            console.log("PlugTypes:", result.plugTypes);
+            this.config.logger.info("ID:", result.id);
+            this.config.logger.info("Owner:", result.owner);
+            this.config.logger.info("StationId:", result.stationId);
+            this.config.logger.info("Available:", result.available);
+            this.config.logger.info("PlugTypes:", result.plugTypes);
         }
 
         return result;
@@ -152,14 +152,14 @@ export default class ConnectorLogic {
     public infoAll = async (argv) => {
 
         if (!argv.json) {
-            console.log("Getting all Charge points infos from EV Network");
+            this.config.logger.info("Getting all Charge points infos from EV Network");
         }
 
         /*
         const numberOfConnectors = await contractQueryState("getNumberOfConnectors");
 
         if (!argv.json) {
-            console.log("Number of connectors all over", numberOfConnectors);
+            this.config.logger.log("Number of connectors all over", numberOfConnectors);
         }
 
         const ids: any[] = [];
@@ -184,11 +184,11 @@ export default class ConnectorLogic {
         }
 
         if (!argv.json) {
-            console.log("Number of your connectors", Object.keys(results).length);
+            this.config.logger.log("Number of your connectors", Object.keys(results).length);
         }
 
         if (argv.json) {
-            console.log(JSON.stringify(results, null, 2))
+            this.config.logger.log(JSON.stringify(results, null, 2))
         }*/
 
 
@@ -206,7 +206,7 @@ export default class ConnectorLogic {
         };
 
         if (!argv.json) {
-            console.log(`Disabling CP with id: ${argv.id} for client: ${this.config.id}`);
+            this.config.logger.info(`Disabling CP with id: ${argv.id} for client: ${this.config.id}`);
         }
 
         /*
@@ -218,11 +218,11 @@ export default class ConnectorLogic {
                 result.disabled.block = contractResult.blockNumber;
 
                 if (argv.json) {
-                    console.log(JSON.stringify(result, null, 2));
+                    this.config.logger.log(JSON.stringify(result, null, 2));
                 } else {
-                    console.log("Success:", result.disabled.success);
-                    console.log("Tx:", result.disabled.txHash);
-                    console.log("Block:", result.disabled.success);
+                    this.config.logger.log("Success:", result.disabled.success);
+                    this.config.logger.log("Tx:", result.disabled.txHash);
+                    this.config.logger.log("Block:", result.disabled.success);
                 }
 
 
@@ -241,7 +241,7 @@ export default class ConnectorLogic {
         };
 
         if (!argv.json) {
-            console.log("Enabling CP with id:", argv.id, "for client:", this.config.id);
+            this.config.logger.info("Enabling CP with id:", argv.id, "for client:", this.config.id);
         }
 
         /*
@@ -253,12 +253,12 @@ export default class ConnectorLogic {
                 result.enabled.block = contractResult.blockNumber;
 
                 if (argv.json) {
-                    console.log(JSON.stringify(result, null, 2));
+                    this.config.logger.log(JSON.stringify(result, null, 2));
 
                 } else {
-                    console.log("Success:", result.enabled.success);
-                    console.log("Tx:", result.enabled.txHash);
-                    console.log("Block:", result.enabled.block);
+                    this.config.logger.log("Success:", result.enabled.success);
+                    this.config.logger.log("Tx:", result.enabled.txHash);
+                    this.config.logger.log("Block:", result.enabled.block);
                 }
 
 
@@ -266,7 +266,7 @@ export default class ConnectorLogic {
     };
 
     public start = (argv) => {
-        console.log(`Starting charge on ${argv.id} for ${argv.seconds} seconds...`);
+        this.config.logger.info(`Starting charge on ${argv.id} for ${argv.seconds} seconds...`);
 
         /*
         contractSendTx("requestStart", argv.id, argv.seconds)
@@ -274,11 +274,11 @@ export default class ConnectorLogic {
 
                 getCoinbase()
                     .then(address => {
-                        console.log(`Start request by ${address} included in block ${res.blockNumber}`);
+                        this.config.logger.log(`Start request by ${address} included in block ${res.blockNumber}`);
 
                         contractSendTx("confirmStart", argv.id, address)
                             .then((res: any) => {
-                                console.log(`Start confirmation included in block ${res.blockNumber}`);
+                                this.config.logger.log(`Start confirmation included in block ${res.blockNumber}`);
 
                                 const bar = new ProgressBar(":msg [:bar] :currents", {
                                     total: argv.seconds,
@@ -294,7 +294,7 @@ export default class ConnectorLogic {
 
                                         contractSendTx("confirmStop", argv.id, address)
                                             .then((res: any) => {
-                                                console.log(`Stop confirmation included in block ${res.blockNumber}`);
+                                                this.config.logger.log(`Stop confirmation included in block ${res.blockNumber}`);
 
                                             });
                                     }
@@ -317,7 +317,7 @@ export default class ConnectorLogic {
         };
 
         if (!argv.json) {
-            console.log("Stopping charge on Charge Point with ID:", argv.id);
+            this.config.logger.info("Stopping charge on Charge Point with ID:", argv.id);
         }
 
         /*
@@ -326,12 +326,12 @@ export default class ConnectorLogic {
                 contractSendTx("requestStop", argv.id)
                     .then((res: any) => {
 
-                        console.log(`Stop request included in block ${res.blockNumber}`);
+                        this.config.logger.log(`Stop request included in block ${res.blockNumber}`);
 
                         contractSendTx("confirmStop", argv.id, address)
                             .then((res: any) => {
 
-                                console.log(`Stop confirmation included in block ${res.blockNumber}`);
+                                this.config.logger.log(`Stop confirmation included in block ${res.blockNumber}`);
 
                             });
                     });

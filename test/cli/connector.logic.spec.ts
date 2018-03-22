@@ -16,6 +16,10 @@ describe('ConnectorLogic', () => {
     before(() => {
 
         config = loadConfigFromFile(testConfigPath);
+        config.logger = {
+            info: () => {
+            }
+        };
         scMock = {
             connectors: {
                 useWallet: () => {

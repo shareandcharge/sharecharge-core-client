@@ -12,7 +12,15 @@ describe('ClientLogic', () => {
     let clientLogic: ClientLogic;
 
     beforeEach(() => {
-        clientLogic = new ClientLogic(loadConfigFromFile(testConfigPath));
+        const config = loadConfigFromFile(testConfigPath);
+        config.logger = {
+            info: () => {
+            },
+            warn: () => {
+
+            }
+        };
+        clientLogic = new ClientLogic(config);
     });
 
     describe("#start()", () => {

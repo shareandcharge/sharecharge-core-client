@@ -15,17 +15,17 @@ export default class BridgeLogic {
         };
 
         if (!argv.json) {
-            console.log("Getting status of bridge.");
+            this.config.logger.info("Getting status of bridge.");
         }
 
         result.name = this.config.bridge.name;
         result.bridge.isAvailable = await this.config.bridge.health();
 
         if (argv.json) {
-            console.log(JSON.stringify(result, null, 2));
+            this.config.logger.info(JSON.stringify(result, null, 2));
         } else {
-            console.log("Bridge Available:", result.bridge.isAvailable);
-            console.log("Bridge name:", result.name)
+            this.config.logger.info("Bridge Available:", result.bridge.isAvailable);
+            this.config.logger.info("Bridge name:", result.name)
         }
 
         return result;
