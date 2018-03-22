@@ -11,28 +11,41 @@ const testConfigPath = "./test/config.yaml";
 
 describe('ConnectorLogic', () => {
 
-    let scMock: any, config: IClientConfig, db: object, connectorLogic: ConnectorLogic;
+    let scMock: any, config: IClientConfig, db: object, connectorLogic: ConnectorLogic, connectorModifiers;
 
     before(() => {
 
         config = loadConfigFromFile(testConfigPath);
         config.logger = {
             info: () => {
+            },
+            warn: () => {
+
             }
         };
+
+        connectorModifiers = {
+            create: (connector) => {
+
+                db[connector.id] = connector;
+            },
+            update: (connector) => {
+
+                db[connector.id] = connector;
+            }
+        };
+
         scMock = {
             connectors: {
-                useWallet: () => {
-                    return {
-                        create: (connector) => {
-
-                            db[connector.id] = connector;
-                        }
-                    }
-
+                useWallet: (wallet) => {
+                    return connectorModifiers
                 },
                 getById: (id) => {
                     return db[id] || Connector.deserialize({id, owner: config.id});
+                },
+                isPersisted: (connector: Connector) => {
+
+                    return !!db[connector.id]
                 }
             }
         };
@@ -59,6 +72,30 @@ describe('ConnectorLogic', () => {
             expect(result.id).to.include(idToTest);
             expect(result.available).to.equal(true);
             expect(result.owner).to.include(config.id);
+        });
+    });
+
+    describe("#enable()", () => {
+
+        it('should enable a disabled connector', async () => {
+
+            const idToTest = "0x100000000111";
+
+            db[idToTest] = Connector.deserialize({id: idToTest, available: false});
+
+            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const updateSpy = sinon.spy(connectorModifiers, "update");
+
+            const result = await connectorLogic.enable({id: idToTest, json: false});
+
+            expect(db[idToTest].available).to.be.true;
+            expect(result.success).to.be.true;
+
+            expect(getByIdSpy.calledOnce).to.be.true;
+            getByIdSpy.restore();
+
+            expect(updateSpy.calledOnce).to.be.true;
+            updateSpy.restore();
         });
     });
 
@@ -105,6 +142,15 @@ describe('ConnectorLogic', () => {
             expect(result.owner).to.equal(owner);
             expect(result.plugTypes).to.contain(plugMask);
             expect(result.available).to.equal(available);
+        });
+
+        it("fails if the connector is not persisted", async () => {
+
+            const idToTest = ToolKit.randomBytes32String();
+
+            const result = await connectorLogic.info({id: idToTest, json: false});
+
+            expect(result).to.equal(null);
         });
     });
 });

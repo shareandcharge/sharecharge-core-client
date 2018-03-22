@@ -12,16 +12,23 @@ export default class ConnectorLogic {
         this.sc = sc || new ShareCharge(this.config);
     }
 
-    private doRegister = async (cp, id) => {
+    private async doRegister(connectorToRegister, id, stfu) {
 
         let connector: Connector = await this.sc.connectors.getById(id);
 
         connector.owner = this.config.id;
         connector.stationId = "0x12";
-        connector.available = cp.available;
-        connector.plugTypes = cp.plugTypes;
+        connector.available = connectorToRegister.available;
+        connector.plugTypes = connectorToRegister.plugTypes;
 
-        await this.sc.connectors.useWallet(this.wallet).create(connector);
+        if (!await this.sc.connectors.isPersisted(connector)) {
+            await this.sc.connectors.useWallet(this.wallet).create(connector);
+            if (!stfu) {
+                this.config.logger.info(`Connector with id ${id} created`);
+            }
+        } else if (!stfu) {
+            this.config.logger.warn(`Connector with id ${id} already created`);
+        }
 
         return {
             id: connector.id,
@@ -30,7 +37,27 @@ export default class ConnectorLogic {
             available: connector.available,
             plugTypes: connector.plugTypes
         }
-    };
+    }
+
+    private async getInformation(id) {
+
+        let result: any = null;
+
+        if (await this.sc.connectors.isPersisted(Connector.deserialize({id}))) {
+
+            const connector: Connector = await this.sc.connectors.getById(id);
+
+            result = {
+                id: connector.id,
+                owner: connector.owner,
+                stationId: connector.stationId,
+                available: connector.available,
+                plugTypes: connector.plugTypes
+            }
+        }
+
+        return result;
+    }
 
     public register = async (argv) => {
 
@@ -38,21 +65,23 @@ export default class ConnectorLogic {
             this.config.logger.info(`Registering Connector with id: ${argv.id}`);
         }
 
-        const cp = this.config.connectors[argv.id];
+        const connector = this.config.connectors[argv.id];
 
-        if (!cp) {
+        if (!connector) {
 
             if (argv.json) {
                 this.config.logger.info(JSON.stringify({}, null, 2));
             } else {
-                console.error(`No CP found with id ${argv.id} in configuration.`);
+                console.error(`No Connector found with id ${argv.id} in configuration.`);
             }
         }
 
-        const result = await this.doRegister(cp, argv.id);
+        const result = await this.doRegister(connector, argv.id, argv.json);
 
         if (argv.json) {
             this.config.logger.info(JSON.stringify(result, null, 2));
+        } else {
+            this.config.logger.info("All done");
         }
 
         return result;
@@ -61,7 +90,7 @@ export default class ConnectorLogic {
     public registerAll = async (argv) => {
 
         if (!argv.json) {
-            this.config.logger.info("Registering all Charge points from the configuration");
+            this.config.logger.info("Registering all Connectors from the configuration");
         }
 
         const ids = Object.keys(this.config.connectors);
@@ -71,18 +100,20 @@ export default class ConnectorLogic {
         for (let id of ids) {
 
             const cp = this.config.connectors[id];
-            const result = await this.doRegister(cp, argv.id);
+            const result = await this.doRegister(cp, id, argv.json);
             results.push(result);
         }
 
         if (argv.json) {
             this.config.logger.info(JSON.stringify(results, null, 2))
+        } else {
+            this.config.logger.info("All done");
         }
 
         return results;
     };
 
-    public status = (argv) => {
+    public status = async (argv) => {
 
         let result: any = {
             id: argv.id,
@@ -93,57 +124,48 @@ export default class ConnectorLogic {
         };
 
         if (!argv.json) {
-            this.config.logger.info("Getting status for Charge Point with id:", argv.id);
+            this.config.logger.info("Getting status for Connector with id:", argv.id);
         }
 
-        /*
-        contractQueryState("getAvailability", argv.id)
-            .then(contractState => {
+        const connector = await this.sc.connectors.getById(argv.id);
+        result.state.ev = connector.available;
 
-                result.state.ev = contractState ? "available" : "unavailable";
+        result.state.bridge = await this.config.bridge.connectorStatus(argv.id);
 
-                if (!argv.json) {
-                    this.config.logger.log("EV Network:\t", result.state.ev);
-                }
+        if (argv.json) {
+            console.log(JSON.stringify(result, null, 2));
+        } else {
+            this.config.logger.info("EV Network:\t", result.state.ev);
+            this.config.logger.info("CPO Backend:\t", result.state.bridge);
+        }
 
-                config.bridge.connectorStatus(argv.id)
-                    .then(bridgeState => {
-
-                        result.state.bridge = bridgeState;
-
-                        if (argv.json) {
-                            this.config.logger.log(JSON.stringify(result, null, 2));
-                        }
-                        else {
-                            this.config.logger.log("CPO Backend:\t", result.state.bridge);
-                        }
-
-
-                    });
-
-            });*/
+        return result;
     };
 
     public info = async (argv) => {
 
-        const connector: Connector = await this.sc.connectors.getById(argv.id);
+        if (!argv.json) {
+            this.config.logger.info(`Getting Info for Connector ${argv.id}`);
+        }
 
-        const result = {
-            id: connector.id,
-            owner: connector.owner,
-            stationId: connector.stationId,
-            available: connector.available,
-            plugTypes: connector.plugTypes
-        };
+        const result: any = await this.getInformation(argv.id);
 
-        if (argv.json) {
-            this.config.logger.info(JSON.stringify(result, null, 2));
+        if (result) {
+            if (!argv.json) {
+                this.config.logger.info("ID:", result.id);
+                this.config.logger.info("Owner:", result.owner);
+                this.config.logger.info("StationId:", result.stationId);
+                this.config.logger.info("Available:", result.available);
+                this.config.logger.info("PlugTypes:", result.plugTypes);
+            } else {
+                console.log(JSON.stringify(result, null, 2));
+            }
         } else {
-            this.config.logger.info("ID:", result.id);
-            this.config.logger.info("Owner:", result.owner);
-            this.config.logger.info("StationId:", result.stationId);
-            this.config.logger.info("Available:", result.available);
-            this.config.logger.info("PlugTypes:", result.plugTypes);
+            if (!argv.json) {
+                this.config.logger.warn("Connector not registered");
+            } else {
+                console.log(JSON.stringify({}, null, 2));
+            }
         }
 
         return result;
@@ -152,189 +174,144 @@ export default class ConnectorLogic {
     public infoAll = async (argv) => {
 
         if (!argv.json) {
-            this.config.logger.info("Getting all Charge points infos from EV Network");
+            this.config.logger.info("Getting all Connector infos from EV Network");
         }
 
-        /*
-        const numberOfConnectors = await contractQueryState("getNumberOfConnectors");
+
+        throw new Error("cannot get all info ");
+    };
+
+    public disable = async (argv) => {
+
+        let result: any = {
+            id: argv.id,
+            success: false
+        };
 
         if (!argv.json) {
-            this.config.logger.log("Number of connectors all over", numberOfConnectors);
+            this.config.logger.info(`Disabling Connector with id: ${argv.id} for client: ${this.config.id}`);
         }
 
-        const ids: any[] = [];
+        const connector = await this.sc.connectors.getById(argv.id);
 
-        for (let index = 0; index < numberOfConnectors; index++) {
-            const id = await contractQueryState("getIdByIndex", index);
-            ids.push(id);
-        }
-
-        const results: any = {};
-
-        const coinbase = await getCoinbase();
-
-        for (let id of ids) {
-
-            const result = await getConnectorInfo(id, argv.json);
-
-            if (result[id].owner.toLowerCase() === coinbase) {
-
-                results[id] = result[id];
-            }
-        }
-
-        if (!argv.json) {
-            this.config.logger.log("Number of your connectors", Object.keys(results).length);
+        // only disable if available
+        if (connector.available) {
+            connector.available = false;
+            await this.sc.connectors.useWallet(this.wallet).update(connector);
+            result.success = true;
         }
 
         if (argv.json) {
-            this.config.logger.log(JSON.stringify(results, null, 2))
-        }*/
+            console.log(JSON.stringify(result, null, 2));
+        } else {
+            this.config.logger.info("Success:", result.success);
+        }
 
-
+        return result;
     };
 
-    public disable = (argv) => {
+    public enable = async (argv) => {
 
         let result: any = {
             id: argv.id,
-            disabled: {
-                txHash: null,
-                block: null,
-                success: null
-            }
+            success: false
         };
 
+        const connector = await this.sc.connectors.getById(argv.id);
+
         if (!argv.json) {
-            this.config.logger.info(`Disabling CP with id: ${argv.id} for client: ${this.config.id}`);
+            this.config.logger.info("Enabling Connector with id:", connector.id, "for client:", this.config.id);
         }
 
-        /*
-        contractSendTx("setAvailability", config.id, argv.id, false)
-            .then((contractResult: any) => {
+        // only enable if disabled
+        if (!connector.available) {
+            connector.available = true;
+            await this.sc.connectors.useWallet(this.wallet).update(connector);
+            result.success = true;
+        }
 
-                result.disabled.success = contractResult.status === "mined";
-                result.disabled.txHash = contractResult.txHash;
-                result.disabled.block = contractResult.blockNumber;
+        if (argv.json) {
+            console.log(JSON.stringify(result, null, 2));
+        } else {
+            this.config.logger.info("Success:", result.success);
+        }
 
-                if (argv.json) {
-                    this.config.logger.log(JSON.stringify(result, null, 2));
-                } else {
-                    this.config.logger.log("Success:", result.disabled.success);
-                    this.config.logger.log("Tx:", result.disabled.txHash);
-                    this.config.logger.log("Block:", result.disabled.success);
-                }
-
-
-            });*/
+        return result;
     };
 
-    public enable = (argv) => {
+    public start = async (argv) => {
 
         let result: any = {
             id: argv.id,
-            enabled: {
-                txHash: null,
-                block: null,
-                success: null
-            }
+            success: false
         };
 
+        const connector = await this.sc.connectors.getById(argv.id);
+
         if (!argv.json) {
-            this.config.logger.info("Enabling CP with id:", argv.id, "for client:", this.config.id);
+            this.config.logger.info(`Starting charge on ${connector.id} for ${argv.seconds} seconds...`);
         }
 
-        /*
-        contractSendTx("setAvailability", config.id, argv.id, true)
-            .then((contractResult: any) => {
+        // only charge if available
+        if (connector.available) {
 
-                result.enabled.success = contractResult.status === "mined";
-                result.enabled.txHash = contractResult.txHash;
-                result.enabled.block = contractResult.blockNumber;
+            await this.sc.charging.useWallet(this.wallet).requestStart(connector, argv.seconds);
 
-                if (argv.json) {
-                    this.config.logger.log(JSON.stringify(result, null, 2));
+            await this.sc.charging.useWallet(this.wallet).confirmStart(connector, this.wallet.address);
 
-                } else {
-                    this.config.logger.log("Success:", result.enabled.success);
-                    this.config.logger.log("Tx:", result.enabled.txHash);
-                    this.config.logger.log("Block:", result.enabled.block);
-                }
+            result.success = true;
+            if (!argv.json) {
+                this.config.logger.info("Charge started");
+            }
 
+        } else {
 
-            });*/
+            if (!argv.json) {
+                this.config.logger.warn("Connector not available");
+            }
+        }
+
+        if (argv.json) {
+            console.log(JSON.stringify(result, null, 2));
+        }
+
+        return result;
     };
 
-    public start = (argv) => {
-        this.config.logger.info(`Starting charge on ${argv.id} for ${argv.seconds} seconds...`);
-
-        /*
-        contractSendTx("requestStart", argv.id, argv.seconds)
-            .then((res: any) => {
-
-                getCoinbase()
-                    .then(address => {
-                        this.config.logger.log(`Start request by ${address} included in block ${res.blockNumber}`);
-
-                        contractSendTx("confirmStart", argv.id, address)
-                            .then((res: any) => {
-                                this.config.logger.log(`Start confirmation included in block ${res.blockNumber}`);
-
-                                const bar = new ProgressBar(":msg [:bar] :currents", {
-                                    total: argv.seconds,
-                                    incomplete: " ",
-                                    width: 80
-                                });
-
-                                const timer = setInterval(() => {
-                                    bar.tick({msg: "Charging"});
-
-                                    if (bar.complete) {
-                                        clearInterval(timer);
-
-                                        contractSendTx("confirmStop", argv.id, address)
-                                            .then((res: any) => {
-                                                this.config.logger.log(`Stop confirmation included in block ${res.blockNumber}`);
-
-                                            });
-                                    }
-
-                                }, 1000);
-                            });
-                    });
-
-            });*/
-    };
-
-    public stop = (argv) => {
+    public stop = async (argv) => {
 
         let result: any = {
             id: argv.id,
-            stop: {
-                bridge: null,
-                ev: null
-            }
+            success: false
         };
 
+        const connector = await this.sc.connectors.getById(argv.id);
+
         if (!argv.json) {
-            this.config.logger.info("Stopping charge on Charge Point with ID:", argv.id);
+            this.config.logger.info("Stopping charge on Connector with ID:", connector.id);
         }
 
-        /*
-        getCoinbase()
-            .then((address) => {
-                contractSendTx("requestStop", argv.id)
-                    .then((res: any) => {
+        // only stop if not available
+        if (!connector.available) {
 
-                        this.config.logger.log(`Stop request included in block ${res.blockNumber}`);
+            await this.sc.charging.useWallet(this.wallet).confirmStop(connector, this.wallet.address);
+            result.success = true;
 
-                        contractSendTx("confirmStop", argv.id, address)
-                            .then((res: any) => {
+            if (!argv.json) {
+                this.config.logger.info("Charge stopped");
+            }
 
-                                this.config.logger.log(`Stop confirmation included in block ${res.blockNumber}`);
+        } else {
 
-                            });
-                    });
-            }); */
+            if (!argv.json) {
+                this.config.logger.warn("No charge running, nothing to stop");
+            }
+        }
+
+        if (argv.json) {
+            console.log(JSON.stringify(result, null, 2));
+        }
+
+        return result;
     };
 }
