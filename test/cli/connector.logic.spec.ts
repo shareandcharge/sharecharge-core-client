@@ -9,7 +9,7 @@ import IClientConfig from "../../src/models/iClientConfig";
 
 const testConfigPath = "./test/cli/config.yaml";
 
-describe('Connector.Logic', () => {
+describe('ConnectorLogic', () => {
 
     let scMock: any, config: IClientConfig, db: object, connectorLogic: ConnectorLogic;
 

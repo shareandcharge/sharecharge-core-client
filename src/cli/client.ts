@@ -1,5 +1,7 @@
-import { start } from './client.logic';
+import ClientLogic from './client.logic';
 import { loadConfigFromFile } from '../utils/config';
+
+const clientLogic = new ClientLogic("./config/config.yaml");
 
 export const clientHandler = (yargs) => {
     yargs
@@ -36,5 +38,5 @@ export const clientHandler = (yargs) => {
 
         .command("start",
             "Starts the client", (yargs) => {
-            }, start)
+            }, clientLogic.start)
 };

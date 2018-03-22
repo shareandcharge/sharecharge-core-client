@@ -1,17 +1,29 @@
 import { loadConfigFromFile } from "../utils/config";
 import { logger } from "../utils/logger";
 
-export const start = (argv) => {
+export default class ClientLogic {
 
-    const config = argv.config ? argv : loadConfigFromFile("./config/config.yaml");
+    private config;
 
-    if (!config.id) {
-        logger.warn('No Client ID found in configuration!');
+    constructor(configPath: string) {
+
+        this.config = loadConfigFromFile(configPath);
     }
 
-    if (!config.pass) {
-        logger.warn('No Ethereum password found in configuration!');
-    }
+    public start = async (argv) => {
 
-    // todo start client ;)
-};
+        const config = argv.config ? argv : this.config;
+
+        if (!config.id) {
+            logger.warn('No Client ID found in configuration!');
+        }
+
+        if (!config.pass) {
+            logger.warn('No Ethereum password found in configuration!');
+        }
+
+        // todo start client ;)
+
+        return true;
+    };
+}
