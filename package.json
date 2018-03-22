@@ -20,6 +20,7 @@
     "jsonwebtoken": "^8.1.1",
     "progress": "^2.0.0",
     "sharecharge-lib": "git+ssh://git@github.com/motionwerkGmbH/sharecharge-lib.git#domain",
+    "sinon": "^4.4.8",
     "toml": "^2.3.3"
   },
   "devDependencies": {
