@@ -128,21 +128,25 @@ export default class ConnectorLogic {
 
         const connector: Connector = await this.sc.connectors.getById(argv.id);
 
+        const result = {
+            id: connector.id,
+            owner: connector.owner,
+            stationId: connector.stationId,
+            available: connector.available,
+            plugTypes: connector.plugTypes
+        };
+
         if (argv.json) {
-            console.log(JSON.stringify({
-                Id: connector.id,
-                Owner: connector.owner,
-                StationId: connector.stationId,
-                Available: connector.available,
-                PlugTypes: connector.plugTypes
-            }, null, 2));
+            console.log(JSON.stringify(result, null, 2));
         } else {
-            console.log("ID:", connector.id);
-            console.log("Owner:", connector.owner);
-            console.log("StationId:", connector.stationId);
-            console.log("Available:", connector.available);
-            console.log("PlugTypes:", connector.plugTypes);
+            console.log("ID:", result.id);
+            console.log("Owner:", result.owner);
+            console.log("StationId:", result.stationId);
+            console.log("Available:", result.available);
+            console.log("PlugTypes:", result.plugTypes);
         }
+
+        return result;
     };
 
     public infoAll = async (argv) => {
