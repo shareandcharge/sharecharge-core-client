@@ -1,0 +1,11 @@
+--- 
+  bridge: ./src/bridges/MockBridge
+  statusInterval: 2000
+  connectors: ./test/cli/connectors.json
+  test: false
+  stage: "local"
+  seed: "filter march urge naive sauce distance under copy payment slow just cool"
+  gasPrice: 2
+  provider: "http://localhost:8545"
+  id: '0x100000000005'
+  

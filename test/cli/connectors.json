@@ -1,0 +1,14 @@
+{
+  "0x1000000001": {
+    "plugTypes": 16,
+    "available": true
+  },
+  "0x1000000002": {
+    "plugTypes": 256,
+    "available": true
+  },
+  "0x1000000003": {
+    "plugTypes": 1024,
+    "available": false
+  }
+}

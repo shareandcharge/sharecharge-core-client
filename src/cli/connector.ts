@@ -1,5 +1,7 @@
 import { loadConfigFromFile } from "../utils/config";
-import { register, registerAll, status, info, infoAll, disable, enable, start, stop } from "./connector.logic";
+import ConnectorLogic from "./connector.logic";
+
+const connectorLogic = new ConnectorLogic("./config/config.yaml");
 
 export default (yargs) => {
 
@@ -18,7 +20,7 @@ export default (yargs) => {
                         (yargs) => {
                             // no id in this case, srly
                             yargs.default("id", "");
-                        }, registerAll);
+                        }, connectorLogic.registerAll);
 
                 yargs
                     .positional("id", {
@@ -28,7 +30,7 @@ export default (yargs) => {
                     .string("_")
                     .demand("id");
 
-            }, register)
+            }, connectorLogic.register)
 
         .command("status [id]",
             "Returns the current status of the Charge Point with given id",
@@ -40,7 +42,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id")
-            }, status)
+            }, connectorLogic.status)
 
         .command("info [id]",
             "Returns the current info of the Charge Point with given id",
@@ -52,7 +54,7 @@ export default (yargs) => {
                         (yargs) => {
                             // no id in this case, srly
                             yargs.default("id", "");
-                        }, infoAll);
+                        }, connectorLogic.infoAll);
 
                 yargs
                     .positional("id", {
@@ -62,7 +64,7 @@ export default (yargs) => {
                     .string("_")
                     .demand("id");
 
-            }, info)
+            }, connectorLogic.info)
 
         .command("disable [id]",
             "Disables the Charge Point with given id",
@@ -74,7 +76,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id");
-            }, disable)
+            }, connectorLogic.disable)
 
         .command("enable [id]",
             "Enables the Charge Point with given id",
@@ -86,7 +88,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id");
-            }, enable)
+            }, connectorLogic.enable)
 
         .command("start [id] [seconds]",
             "Start a charging session at a given Charge Point",
@@ -104,7 +106,7 @@ export default (yargs) => {
                     .string("_")
                     .demand("id")
 
-            }, start)
+            }, connectorLogic.start)
 
         .command("stop [id]",
             "Stops a charging session at a given Charge Point",
@@ -116,5 +118,5 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id")
-            }, stop);
+            }, connectorLogic.stop);
 }
