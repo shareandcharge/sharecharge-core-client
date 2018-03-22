@@ -1,4 +1,4 @@
-import { Connector, ShareCharge, Wallet } from "../../../sharecharge-lib/dist/src";
+import { Connector, ShareCharge, Wallet } from "sharecharge-lib";
 import { loadConfigFromFile } from "../utils/config";
 import IClientConfig from "../models/iClientConfig";
 
