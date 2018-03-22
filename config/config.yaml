@@ -4,8 +4,8 @@
   connectors: ./config/connectors.json
   test: false
   stage: "local"
-  seed: "lorem ipsum dolor sit amet"
-  gasPrice: 1800000
+  seed: "filter march urge naive sauce distance under copy payment slow just cool"
+  gasPrice: 2
   provider: "http://localhost:8545"
   id: '0x0100000000000000000000000000000000000000000000000000000000000000'
   

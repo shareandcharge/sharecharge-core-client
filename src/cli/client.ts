@@ -1,4 +1,4 @@
-import { logger } from '../utils/logger';
+import { start } from './client.logic';
 import { loadConfigFromFile } from '../utils/config';
 
 export const clientHandler = (yargs) => {
@@ -33,18 +33,8 @@ export const clientHandler = (yargs) => {
                 default: 30000
             }
         })
-};
 
-export const clientStarter = (argv) => {
-
-    const config = argv.config ? argv : loadConfigFromFile("./config/config.yaml");
-
-    if (!config.id) {
-        logger.warn('No Client ID found in configuration!');
-    }
-
-    if (!config.pass) {
-        logger.warn('No Ethereum password found in configuration!');
-    }
-
+        .command("start",
+            "Starts the client", (yargs) => {
+            }, start)
 };

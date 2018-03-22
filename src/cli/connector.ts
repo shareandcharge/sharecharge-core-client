@@ -1,113 +1,11 @@
-import * as ProgressBar from 'progress';
-
-import { createConfig, loadConfigFromFile } from "../utils/config";
-import { Connector, IConfig, ShareCharge, Wallet } from "sharecharge-lib";
-import IClientConfig from "../models/iClientConfig";
-
-const config: IClientConfig = loadConfigFromFile("./config/config.yaml");
-const wallet: Wallet = new Wallet(config.seed);
-
-const registerConnector = async (connectorToRegister, stfu) => {
-
-    const connector: Connector = new Connector();
-    connector.owner = config.id;
-    connector.available = connectorToRegister.available;
-
-    const sc = new ShareCharge(config);
-
-    const isPersisted = await sc.connectors.isPersisted(connector);
-
-    if (!isPersisted) {
-        await sc.connectors.useWallet(wallet).create(connector);
-    }
-    else {
-        await sc.connectors.useWallet(wallet).update(connector);
-    }
-};
-
-const getConnectorInfo = (id, silent) => {
-
-    return new Promise((resolve, reject) => {
-
-        /*
-        let result: any = {
-            [id]: {
-                ownerName: null,
-                lat: null,
-                lng: null,
-                price: null,
-                priceModel: null,
-                plugType: null,
-                openingHours: null,
-                isAvailable: null,
-                session: null
-            }
-        };
-
-        if (!silent) {
-            console.log("Getting info for Charge Point with ID:", id);
-        }
-
-        const location = contractQueryState("getLocationInformation", id)
-            .then((location: any) => {
-
-                result[id].lat = location.lat;
-                result[id].lng = location.lng;
-            });
-
-        const owner = contractQueryState("getOwnerInformation", id)
-            .then((owner: any) => {
-
-                result[id].owner = owner.owner;
-                result[id].ownerName = owner.ownerName;
-            });
-
-        const general = contractQueryState("getGeneralInformation", id)
-            .then((general: any) => {
-
-                result[id].price = general.price;
-                result[id].priceModel = general.priceModel;
-                result[id].plugType = general.plugType;
-                result[id].openingHours = general.openingHours;
-                result[id].isAvailable = general.isAvailable;
-                result[id].session = general.session;
-            });
-
-        Promise.all([location, owner, general])
-            .then(() => {
-
-                if (!silent) {
-
-                    if (result[id].owner.startsWith("0x0")) {
-                        console.log("No Charge Point found with ID:", id);
-                    } else {
-                        console.log("ID:", id);
-                        console.log("lat:", result[id].lat);
-                        console.log("lng:", result[id].lng);
-                        console.log("OwnerName:", result[id].ownerName);
-                        console.log("Price:", result[id].price);
-                        console.log("PriceModel:", result[id].priceModel);
-                        console.log("PlugType:", result[id].plugType);
-                        console.log("OpeningHouts:", result[id].openingHours);
-                        console.log("IsAvailable:", result[id].isAvailable);
-                        console.log("Session:", result[id].session);
-                    }
-                }
-
-                return resolve(result);
-            })
-            .catch(err => {
-                console.error(err);
-                return reject(err);
-            })*/
-    });
-};
+import { loadConfigFromFile } from "../utils/config";
+import { register, registerAll, status, info, infoAll, disable, enable, start, stop } from "./connector.logic";
 
 export default (yargs) => {
 
     yargs
         .usage("Usage: sc cp <command> [options]")
-        .config("config", "Path to plaintext config file", (createConfig))
+        .config("config", "Path to plaintext config file", loadConfigFromFile)
         .demandCommand(1)
 
         .command("register [id]",
@@ -120,27 +18,7 @@ export default (yargs) => {
                         (yargs) => {
                             // no id in this case, srly
                             yargs.default("id", "");
-                        }, async (argv) => {
-
-                            if (!argv.json) {
-                                console.log("Registering all Charge points from the configuration");
-                            }
-
-                            const ids = Object.keys(config.connectors);
-
-                            const results: any[] = [];
-
-                            for (let id of ids) {
-
-                                const cp = config.connectors[id];
-                                const result = await registerConnector(cp, argv.json);
-                                results.push(result);
-                            }
-
-                            if (argv.json) {
-                                console.log(JSON.stringify(results, null, 2))
-                            }
-                        });
+                        }, registerAll);
 
                 yargs
                     .positional("id", {
@@ -150,29 +28,7 @@ export default (yargs) => {
                     .string("_")
                     .demand("id");
 
-            }, async (argv) => {
-
-                const cp = config.connectors[argv.id];
-
-                if (!cp) {
-
-                    if (argv.json) {
-                        console.log(JSON.stringify({}, null, 2));
-                    } else {
-                        console.error(`No CP found with id ${argv.id} in configuration.`);
-                    }
-
-
-                }
-
-                const result = await registerConnector(cp, argv.json);
-
-                if (argv.json) {
-                    console.log(JSON.stringify(result, null, 2));
-                }
-
-
-            })
+            }, register)
 
         .command("status [id]",
             "Returns the current status of the Charge Point with given id",
@@ -184,47 +40,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id")
-            }, (argv) => {
-
-                let result: any = {
-                    id: argv.id,
-                    state: {
-                        bridge: null,
-                        ev: null
-                    }
-                };
-
-                if (!argv.json) {
-                    console.log("Getting status for Charge Point with id:", argv.id);
-                }
-
-                /*
-                contractQueryState("getAvailability", argv.id)
-                    .then(contractState => {
-
-                        result.state.ev = contractState ? "available" : "unavailable";
-
-                        if (!argv.json) {
-                            console.log("EV Network:\t", result.state.ev);
-                        }
-
-                        config.bridge.connectorStatus(argv.id)
-                            .then(bridgeState => {
-
-                                result.state.bridge = bridgeState;
-
-                                if (argv.json) {
-                                    console.log(JSON.stringify(result, null, 2));
-                                }
-                                else {
-                                    console.log("CPO Backend:\t", result.state.bridge);
-                                }
-
-
-                            });
-
-                    });*/
-            })
+            }, status)
 
         .command("info [id]",
             "Returns the current info of the Charge Point with given id",
@@ -236,50 +52,7 @@ export default (yargs) => {
                         (yargs) => {
                             // no id in this case, srly
                             yargs.default("id", "");
-                        }, async (argv) => {
-
-                            if (!argv.json) {
-                                console.log("Getting all Charge points infos from EV Network");
-                            }
-
-                            /*
-                            const numberOfConnectors = await contractQueryState("getNumberOfConnectors");
-
-                            if (!argv.json) {
-                                console.log("Number of connectors all over", numberOfConnectors);
-                            }
-
-                            const ids: any[] = [];
-
-                            for (let index = 0; index < numberOfConnectors; index++) {
-                                const id = await contractQueryState("getIdByIndex", index);
-                                ids.push(id);
-                            }
-
-                            const results: any = {};
-
-                            const coinbase = await getCoinbase();
-
-                            for (let id of ids) {
-
-                                const result = await getConnectorInfo(id, argv.json);
-
-                                if (result[id].owner.toLowerCase() === coinbase) {
-
-                                    results[id] = result[id];
-                                }
-                            }
-
-                            if (!argv.json) {
-                                console.log("Number of your connectors", Object.keys(results).length);
-                            }
-
-                            if (argv.json) {
-                                console.log(JSON.stringify(results, null, 2))
-                            }*/
-
-
-                        });
+                        }, infoAll);
 
                 yargs
                     .positional("id", {
@@ -289,16 +62,7 @@ export default (yargs) => {
                     .string("_")
                     .demand("id");
 
-            }, async (argv) => {
-
-                const result = await getConnectorInfo(argv.id, argv.json);
-
-                if (argv.json) {
-                    console.log(JSON.stringify(result, null, 2));
-                }
-
-
-            })
+            }, info)
 
         .command("disable [id]",
             "Disables the Charge Point with given id",
@@ -310,40 +74,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id");
-            }, (argv) => {
-
-                let result: any = {
-                    id: argv.id,
-                    disabled: {
-                        txHash: null,
-                        block: null,
-                        success: null
-                    }
-                };
-
-                if (!argv.json) {
-                    console.log(`Disabling CP with id: ${argv.id} for client: ${config.id}`);
-                }
-
-                /*
-                contractSendTx("setAvailability", config.id, argv.id, false)
-                    .then((contractResult: any) => {
-
-                        result.disabled.success = contractResult.status === "mined";
-                        result.disabled.txHash = contractResult.txHash;
-                        result.disabled.block = contractResult.blockNumber;
-
-                        if (argv.json) {
-                            console.log(JSON.stringify(result, null, 2));
-                        } else {
-                            console.log("Success:", result.disabled.success);
-                            console.log("Tx:", result.disabled.txHash);
-                            console.log("Block:", result.disabled.success);
-                        }
-
-
-                    });*/
-            })
+            }, disable)
 
         .command("enable [id]",
             "Enables the Charge Point with given id",
@@ -355,41 +86,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id");
-            }, (argv) => {
-
-                let result: any = {
-                    id: argv.id,
-                    enabled: {
-                        txHash: null,
-                        block: null,
-                        success: null
-                    }
-                };
-
-                if (!argv.json) {
-                    console.log("Enabling CP with id:", argv.id, "for client:", config.id);
-                }
-
-                /*
-                contractSendTx("setAvailability", config.id, argv.id, true)
-                    .then((contractResult: any) => {
-
-                        result.enabled.success = contractResult.status === "mined";
-                        result.enabled.txHash = contractResult.txHash;
-                        result.enabled.block = contractResult.blockNumber;
-
-                        if (argv.json) {
-                            console.log(JSON.stringify(result, null, 2));
-
-                        } else {
-                            console.log("Success:", result.enabled.success);
-                            console.log("Tx:", result.enabled.txHash);
-                            console.log("Block:", result.enabled.block);
-                        }
-
-
-                    });*/
-            })
+            }, enable)
 
         .command("start [id] [seconds]",
             "Start a charging session at a given Charge Point",
@@ -407,46 +104,7 @@ export default (yargs) => {
                     .string("_")
                     .demand("id")
 
-            }, (argv) => {
-                console.log(`Starting charge on ${argv.id} for ${argv.seconds} seconds...`);
-
-                /*
-                contractSendTx("requestStart", argv.id, argv.seconds)
-                    .then((res: any) => {
-
-                        getCoinbase()
-                            .then(address => {
-                                console.log(`Start request by ${address} included in block ${res.blockNumber}`);
-
-                                contractSendTx("confirmStart", argv.id, address)
-                                    .then((res: any) => {
-                                        console.log(`Start confirmation included in block ${res.blockNumber}`);
-
-                                        const bar = new ProgressBar(":msg [:bar] :currents", {
-                                            total: argv.seconds,
-                                            incomplete: " ",
-                                            width: 80
-                                        });
-
-                                        const timer = setInterval(() => {
-                                            bar.tick({msg: "Charging"});
-
-                                            if (bar.complete) {
-                                                clearInterval(timer);
-
-                                                contractSendTx("confirmStop", argv.id, address)
-                                                    .then((res: any) => {
-                                                        console.log(`Stop confirmation included in block ${res.blockNumber}`);
-
-                                                    });
-                                            }
-
-                                        }, 1000);
-                                    });
-                            });
-
-                    });*/
-            })
+            }, start)
 
         .command("stop [id]",
             "Stops a charging session at a given Charge Point",
@@ -458,35 +116,5 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id")
-            }, (argv) => {
-
-                let result: any = {
-                    id: argv.id,
-                    stop: {
-                        bridge: null,
-                        ev: null
-                    }
-                };
-
-                if (!argv.json) {
-                    console.log("Stopping charge on Charge Point with ID:", argv.id);
-                }
-
-                /*
-                getCoinbase()
-                    .then((address) => {
-                        contractSendTx("requestStop", argv.id)
-                            .then((res: any) => {
-
-                                console.log(`Stop request included in block ${res.blockNumber}`);
-
-                                contractSendTx("confirmStop", argv.id, address)
-                                    .then((res: any) => {
-
-                                        console.log(`Stop confirmation included in block ${res.blockNumber}`);
-
-                                    });
-                            });
-                    }); */
-            });
+            }, stop);
 }

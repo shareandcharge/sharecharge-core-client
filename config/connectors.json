@@ -1,32 +1,14 @@
 {
   "0x01": {
-    "ownerName": "Jim",
-    "lat": "51.454147",
-    "lng": "7.010372",
-    "price": 1,
-    "priceModel": 1,
-    "plugType": 2,
-    "openingHours": "0024002400240024002400240024",
-    "isAvailable": true
+    "plugTypes": 16,
+    "available": true
   },
   "0x02": {
-    "ownerName": "Pam",
-    "lat": "51.458808",
-    "lng": "7.007808",
-    "price": 2,
-    "priceModel": 2,
-    "plugType": 2,
-    "openingHours": "0024002400240024002400240024",
-    "isAvailable": true
+    "plugTypes": 256,
+    "available": true
   },
   "0x03": {
-    "ownerName": "Pam",
-    "lat": "51.451833",
-    "lng": "7.010662",
-    "price": 2,
-    "priceModel": 2,
-    "plugType": 2,
-    "openingHours": "0024002400240024002400240024",
-    "isAvailable": true
+    "plugTypes": 1024,
+    "available": false
   }
 }
