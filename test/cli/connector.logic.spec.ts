@@ -16,6 +16,7 @@ describe('ConnectorLogic', () => {
     before(() => {
 
         config = loadConfigFromFile(testConfigPath);
+        
         config.logger = {
             info: () => {
             },
@@ -49,6 +50,7 @@ describe('ConnectorLogic', () => {
                 }
             }
         };
+
         connectorLogic = new ConnectorLogic(config, scMock);
     });
 

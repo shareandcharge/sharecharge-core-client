@@ -9,14 +9,15 @@ import IBridge from "../../src/models/iBridge";
 
 const testConfigPath = "./test/config.yaml";
 
-describe('ClientLogic', () => {
+describe('BridgeLogic', () => {
 
     let config: IClientConfig, bridgeLogic: BridgeLogic;
 
     beforeEach(() => {
         config = loadConfigFromFile(testConfigPath);
         config.logger = {
-          info: () => {}
+            info: () => {
+            }
         };
         bridgeLogic = new BridgeLogic(config);
     });
