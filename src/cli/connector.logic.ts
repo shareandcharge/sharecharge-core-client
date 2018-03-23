@@ -113,35 +113,6 @@ export default class ConnectorLogic {
         return results;
     };
 
-    public status = async (argv) => {
-
-        let result: any = {
-            id: argv.id,
-            state: {
-                bridge: null,
-                ev: null
-            }
-        };
-
-        if (!argv.json) {
-            this.config.logger.info("Getting status for Connector with id:", argv.id);
-        }
-
-        const connector = await this.sc.connectors.getById(argv.id);
-        result.state.ev = connector.available;
-
-        result.state.bridge = await this.config.bridge.connectorStatus(argv.id);
-
-        if (argv.json) {
-            console.log(JSON.stringify(result, null, 2));
-        } else {
-            this.config.logger.info("EV Network:\t", result.state.ev);
-            this.config.logger.info("CPO Backend:\t", result.state.bridge);
-        }
-
-        return result;
-    };
-
     public info = async (argv) => {
 
         if (!argv.json) {
@@ -179,6 +150,35 @@ export default class ConnectorLogic {
 
 
         throw new Error("cannot get all info ");
+    };
+
+    public status = async (argv) => {
+
+        let result: any = {
+            id: argv.id,
+            state: {
+                bridge: false,
+                ev: false
+            }
+        };
+
+        if (!argv.json) {
+            this.config.logger.info("Getting status for Connector with id:", argv.id);
+        }
+
+        const connector = await this.sc.connectors.getById(argv.id);
+
+        result.state.ev = connector.available;
+        result.state.bridge = await this.config.bridge.connectorStatus(argv.id);
+
+        if (argv.json) {
+            console.log(JSON.stringify(result, null, 2));
+        } else {
+            this.config.logger.info("EV Network:\t", result.state.ev);
+            this.config.logger.info("CPO Backend:\t", result.state.bridge);
+        }
+
+        return result;
     };
 
     public disable = async (argv) => {
@@ -252,23 +252,26 @@ export default class ConnectorLogic {
             this.config.logger.info(`Starting charge on ${connector.id} for ${argv.seconds} seconds...`);
         }
 
-        // only charge if available
-        if (connector.available) {
+        if (await this.sc.connectors.isPersisted(connector)) {
 
-            await this.sc.charging.useWallet(this.wallet).requestStart(connector, argv.seconds);
+            // only charge if available
+            if (connector.available) {
 
-            await this.sc.charging.useWallet(this.wallet).confirmStart(connector, this.wallet.address);
+                await this.sc.charging.useWallet(this.wallet).requestStart(connector, argv.seconds);
 
-            result.success = true;
-            if (!argv.json) {
-                this.config.logger.info("Charge started");
-            }
+                await this.sc.charging.useWallet(this.wallet).confirmStart(connector, this.wallet.address);
 
-        } else {
+                result.success = true;
+                if (!argv.json) {
+                    this.config.logger.info("Charge started");
+                }
 
-            if (!argv.json) {
+            } else if (!argv.json) {
                 this.config.logger.warn("Connector not available");
             }
+
+        } else if (!argv.json) {
+            this.config.logger.warn("Connector not registered");
         }
 
         if (argv.json) {
@@ -291,21 +294,24 @@ export default class ConnectorLogic {
             this.config.logger.info("Stopping charge on Connector with ID:", connector.id);
         }
 
-        // only stop if not available
-        if (!connector.available) {
+        if (this.sc.connectors.isPersisted(connector)) {
 
-            await this.sc.charging.useWallet(this.wallet).confirmStop(connector, this.wallet.address);
-            result.success = true;
+            // only stop if not available
+            if (!connector.available) {
 
-            if (!argv.json) {
-                this.config.logger.info("Charge stopped");
-            }
+                await this.sc.charging.useWallet(this.wallet).confirmStop(connector, this.wallet.address);
+                result.success = true;
 
-        } else {
+                if (!argv.json) {
+                    this.config.logger.info("Charge stopped");
+                }
 
-            if (!argv.json) {
+            } else if (!argv.json) {
                 this.config.logger.warn("No charge running, nothing to stop");
             }
+
+        } else if (!argv.json) {
+            this.config.logger.warn("Connector not registered");
         }
 
         if (argv.json) {
