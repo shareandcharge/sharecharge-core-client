@@ -1,4 +1,4 @@
-import { Connector, ShareCharge, Wallet } from "sharecharge-lib";
+import { Evse, ShareCharge, Wallet } from "sharecharge-lib";
 import IClientConfig from "../models/iClientConfig";
 
 export default class ConnectorLogic {
@@ -9,20 +9,19 @@ export default class ConnectorLogic {
     constructor(private config: IClientConfig, sc?: ShareCharge) {
 
         this.wallet = new Wallet(this.config.seed);
-        this.sc = sc || new ShareCharge(this.config);
+        this.sc = sc || new ShareCharge();
     }
 
     private async doRegister(connectorToRegister, id, stfu) {
 
-        let connector: Connector = await this.sc.connectors.getById(id);
+        let connector: Evse = await this.sc.evses.getById(id);
 
-        connector.owner = this.config.id;
         connector.stationId = "0x12";
         connector.available = connectorToRegister.available;
         connector.plugTypes = connectorToRegister.plugTypes;
 
-        if (!await this.sc.connectors.isPersisted(connector)) {
-            await this.sc.connectors.useWallet(this.wallet).create(connector);
+        if (!await this.sc.evses.isPersisted(connector)) {
+            await this.sc.evses.useWallet(this.wallet).create(connector);
             if (!stfu) {
                 this.config.logger.info(`Connector with id ${id} created`);
             }
@@ -43,9 +42,9 @@ export default class ConnectorLogic {
 
         let result: any = null;
 
-        if (await this.sc.connectors.isPersisted(Connector.deserialize({id}))) {
+        if (await this.sc.evses.isPersisted(Evse.deserialize({id}))) {
 
-            const connector: Connector = await this.sc.connectors.getById(id);
+            const connector: Evse = await this.sc.evses.getById(id);
 
             result = {
                 id: connector.id,
@@ -166,7 +165,7 @@ export default class ConnectorLogic {
             this.config.logger.info("Getting status for Connector with id:", argv.id);
         }
 
-        const connector = await this.sc.connectors.getById(argv.id);
+        const connector = await this.sc.evses.getById(argv.id);
 
         result.state.ev = connector.available;
         result.state.bridge = await this.config.bridge.connectorStatus(argv.id);
@@ -192,12 +191,12 @@ export default class ConnectorLogic {
             this.config.logger.info(`Disabling Connector with id: ${argv.id} for client: ${this.config.id}`);
         }
 
-        const connector = await this.sc.connectors.getById(argv.id);
+        const connector = await this.sc.evses.getById(argv.id);
 
         // only disable if available
         if (connector.available) {
             connector.available = false;
-            await this.sc.connectors.useWallet(this.wallet).update(connector);
+            await this.sc.evses.useWallet(this.wallet).update(connector);
             result.success = true;
         }
 
@@ -217,7 +216,7 @@ export default class ConnectorLogic {
             success: false
         };
 
-        const connector = await this.sc.connectors.getById(argv.id);
+        const connector = await this.sc.evses.getById(argv.id);
 
         if (!argv.json) {
             this.config.logger.info("Enabling Connector with id:", connector.id, "for client:", this.config.id);
@@ -226,7 +225,7 @@ export default class ConnectorLogic {
         // only enable if disabled
         if (!connector.available) {
             connector.available = true;
-            await this.sc.connectors.useWallet(this.wallet).update(connector);
+            await this.sc.evses.useWallet(this.wallet).update(connector);
             result.success = true;
         }
 
@@ -246,20 +245,18 @@ export default class ConnectorLogic {
             success: false
         };
 
-        const connector = await this.sc.connectors.getById(argv.id);
+        const connector = await this.sc.evses.getById(argv.id);
 
         if (!argv.json) {
             this.config.logger.info(`Starting charge on ${connector.id} for ${argv.seconds} seconds...`);
         }
 
-        if (await this.sc.connectors.isPersisted(connector)) {
+        if (await this.sc.evses.isPersisted(connector)) {
 
             // only charge if available
             if (connector.available) {
 
                 await this.sc.charging.useWallet(this.wallet).requestStart(connector, argv.seconds);
-
-                await this.sc.charging.useWallet(this.wallet).confirmStart(connector, this.wallet.address);
 
                 result.success = true;
                 if (!argv.json) {
@@ -288,18 +285,18 @@ export default class ConnectorLogic {
             success: false
         };
 
-        const connector = await this.sc.connectors.getById(argv.id);
+        const connector = await this.sc.evses.getById(argv.id);
 
         if (!argv.json) {
             this.config.logger.info("Stopping charge on Connector with ID:", connector.id);
         }
 
-        if (this.sc.connectors.isPersisted(connector)) {
+        if (this.sc.evses.isPersisted(connector)) {
 
             // only stop if not available
             if (!connector.available) {
 
-                await this.sc.charging.useWallet(this.wallet).confirmStop(connector, this.wallet.address);
+                await this.sc.charging.useWallet(this.wallet).requestStop(connector);
                 result.success = true;
 
                 if (!argv.json) {

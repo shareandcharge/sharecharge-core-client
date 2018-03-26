@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import * as sinon from "sinon";
 
 import ConnectorLogic from "../../src/cli/connector.logic";
-import { Connector, ToolKit } from "sharecharge-lib";
+import { Evse, ToolKit } from "sharecharge-lib";
 import { loadConfigFromFile } from "../../src/utils/config";
 import IClientConfig from "../../src/models/iClientConfig";
 import IBridge from "../../src/models/iBridge";
@@ -46,25 +46,21 @@ describe("ConnectorLogic", () => {
 
                 blockchain[connector.id] = connector;
             },
-            confirmStart: (connector) => {
-
-                blockchain[connector.id] = connector;
-            },
-            confirmStop: (connector) => {
+            requestStop: (connector) => {
 
                 blockchain[connector.id] = connector;
             }
         };
 
         scMock = {
-            connectors: {
+            evses: {
                 useWallet: (wallet) => {
                     return connectorModifiers
                 },
                 getById: (id) => {
-                    return blockchain[id] || Connector.deserialize({id, owner: config.id});
+                    return blockchain[id] || Evse.deserialize({id, owner: config.id});
                 },
-                isPersisted: (connector: Connector) => !!blockchain[connector.id]
+                isPersisted: (connector: Evse) => !!blockchain[connector.id]
             },
             charging: {
                 useWallet: (wallet) => {
@@ -125,8 +121,7 @@ describe("ConnectorLogic", () => {
 
         it("output info about the connector correclty", async () => {
 
-            const connector = new Connector();
-            connector.owner = ToolKit.randomBytes32String();
+            const connector = Evse.deserialize({id: ToolKit.randomBytes32String(), owner: config.id});
             connector.plugTypes = ToolKit.fromPlugMask(16);
             connector.available = false;
 
@@ -135,7 +130,7 @@ describe("ConnectorLogic", () => {
             const result = await connectorLogic.info({id: connector.id, json: false});
 
             expect(result.id).to.equal(connector.id);
-            expect(result.owner).to.equal(connector.owner);
+            expect(result.owner).to.equal(config.id);
             expect(result.plugTypes[0]).to.equal(connector.plugTypes[0]);
             expect(result.available).to.equal(connector.available);
         });
@@ -144,14 +139,14 @@ describe("ConnectorLogic", () => {
 
             const idToTest = ToolKit.randomBytes32String();
 
-            const isPersistedSpy = sinon.spy(scMock.connectors, "isPersisted");
+            const isPersistedSpy = sinon.spy(scMock.evses, "isPersisted");
 
             const result = await connectorLogic.info({id: idToTest, json: false});
+            isPersistedSpy.restore();
 
             expect(result).to.equal(null);
 
             expect(isPersistedSpy.calledOnce).to.be.true;
-            isPersistedSpy.restore();
         });
     });
 
@@ -163,9 +158,8 @@ describe("ConnectorLogic", () => {
 
         it("should return true if connector and bridge are available", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = true;
-            connector.owner = ToolKit.randomBytes32String();
             connector.stationId = ToolKit.randomBytes32String();
 
             blockchain[connector.id] = connector;
@@ -181,9 +175,8 @@ describe("ConnectorLogic", () => {
 
         it("should return false if connector is unavailable", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = false;
-            connector.owner = ToolKit.randomBytes32String();
             connector.stationId = ToolKit.randomBytes32String();
 
             blockchain[connector.id] = connector;
@@ -199,9 +192,8 @@ describe("ConnectorLogic", () => {
 
         it("should return false if bridge is unavailable", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = true;
-            connector.owner = ToolKit.randomBytes32String();
             connector.stationId = ToolKit.randomBytes32String();
 
             blockchain[connector.id] = connector;
@@ -221,46 +213,42 @@ describe("ConnectorLogic", () => {
 
         it("should enable a disabled connector", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = false;
 
             blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const getByIdSpy = sinon.spy(scMock.evses, "getById");
             const updateSpy = sinon.spy(connectorModifiers, "update");
 
             const result = await connectorLogic.enable({id: connector.id, json: false});
+            getByIdSpy.restore();
+            updateSpy.restore();
 
             expect(blockchain[connector.id].available).to.be.true;
             expect(result.success).to.be.true;
-
             expect(getByIdSpy.calledOnce).to.be.true;
-            getByIdSpy.restore();
-
             expect(updateSpy.calledOnce).to.be.true;
-            updateSpy.restore();
         });
 
         it("should return error if already enabled", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = true;
 
             blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const getByIdSpy = sinon.spy(scMock.evses, "getById");
             const updateSpy = sinon.spy(connectorModifiers, "update");
 
             const result = await connectorLogic.enable({id: connector.id, json: false});
+            getByIdSpy.restore();
+            updateSpy.restore();
 
             expect(blockchain[connector.id].available).to.be.true;
             expect(result.success).to.be.false;
-
             expect(getByIdSpy.calledOnce).to.be.true;
-            getByIdSpy.restore();
-
             expect(updateSpy.notCalled).to.be.true;
-            updateSpy.restore();
         });
     });
 
@@ -268,46 +256,43 @@ describe("ConnectorLogic", () => {
 
         it("should disable an enabled connector", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = true;
 
             blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const getByIdSpy = sinon.spy(scMock.evses, "getById");
             const updateSpy = sinon.spy(connectorModifiers, "update");
 
             const result = await connectorLogic.disable({id: connector.id, json: false});
+            updateSpy.restore();
+            getByIdSpy.restore();
 
             expect(blockchain[connector.id].available).to.be.false;
             expect(result.success).to.be.true;
-
             expect(getByIdSpy.calledOnce).to.be.true;
-            getByIdSpy.restore();
-
             expect(updateSpy.calledOnce).to.be.true;
-            updateSpy.restore();
         });
 
         it("should return error of already disabled", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = false;
 
             blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const getByIdSpy = sinon.spy(scMock.evses, "getById");
             const updateSpy = sinon.spy(connectorModifiers, "update");
 
             const result = await connectorLogic.disable({id: connector.id, json: false});
 
+            getByIdSpy.restore();
+            updateSpy.restore();
+
             expect(blockchain[connector.id].available).to.be.false;
             expect(result.success).to.be.false;
-
             expect(getByIdSpy.calledOnce).to.be.true;
-            getByIdSpy.restore();
-
             expect(updateSpy.notCalled).to.be.true;
-            updateSpy.restore();
         });
     });
 
@@ -315,52 +300,42 @@ describe("ConnectorLogic", () => {
 
         it("should start charging on available connector", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = true;
             blockchain[connector.id] = connector;
 
-            const confirmStartSpy = sinon.spy(chargingModifiers, "confirmStart");
             const requestStartSpy = sinon.spy(chargingModifiers, "requestStart");
-            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const getByIdSpy = sinon.spy(scMock.evses, "getById");
 
             const result = await connectorLogic.start({id: connector.id, seconds: 100, json: false});
 
+            requestStartSpy.restore();
+            getByIdSpy.restore();
+
             expect(result.success).to.be.true;
             expect(result.id).to.be.equal(connector.id);
-
-            expect(confirmStartSpy.calledOnce).to.be.true;
-            confirmStartSpy.restore();
-
             expect(requestStartSpy.calledOnce).to.be.true;
-            requestStartSpy.restore();
-
             expect(getByIdSpy.calledOnce).to.be.true;
-            getByIdSpy.restore();
         });
 
         it("should not start charging on unavailable connector", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = false;
             blockchain[connector.id] = connector;
 
-            const confirmStartSpy = sinon.spy(chargingModifiers, "confirmStart");
             const requestStartSpy = sinon.spy(chargingModifiers, "requestStart");
-            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const getByIdSpy = sinon.spy(scMock.evses, "getById");
 
             const result = await connectorLogic.start({id: connector.id, seconds: 100, json: false});
 
+            requestStartSpy.restore();
+            getByIdSpy.restore();
+
             expect(result.success).to.be.false;
             expect(result.id).to.be.equal(connector.id);
-
-            expect(confirmStartSpy.notCalled).to.be.true;
-            confirmStartSpy.restore();
-
             expect(requestStartSpy.notCalled).to.be.true;
-            requestStartSpy.restore();
-
             expect(getByIdSpy.calledOnce).to.be.true;
-            getByIdSpy.restore();
         });
 
     });
@@ -369,32 +344,30 @@ describe("ConnectorLogic", () => {
 
         it("should stop charging on a currently charging connector", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = false;
             blockchain[connector.id] = connector;
 
-            const confirmStopSpy = sinon.spy(chargingModifiers, "confirmStop");
-            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const requestStopSpy = sinon.spy(chargingModifiers, "requestStop");
+            const getByIdSpy = sinon.spy(scMock.evses, "getById");
 
             const result = await connectorLogic.stop({id: connector.id, seconds: 100, json: false});
+            requestStopSpy.restore();
+            getByIdSpy.restore();
 
             expect(result.success).to.be.true;
             expect(result.id).to.be.equal(connector.id);
-
-            expect(confirmStopSpy.calledOnce).to.be.true;
-            confirmStopSpy.restore();
-
+            expect(requestStopSpy.calledOnce).to.be.true;
             expect(getByIdSpy.calledOnce).to.be.true;
-            getByIdSpy.restore();
         });
 
         it("should return an error if connector is not charging", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
             connector.available = true;
             blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const getByIdSpy = sinon.spy(scMock.evses, "getById");
 
             const result = await connectorLogic.stop({id: connector.id, seconds: 100, json: false});
             getByIdSpy.restore();
@@ -406,9 +379,9 @@ describe("ConnectorLogic", () => {
 
         it("should return an error on an unregistered connector", async () => {
 
-            const connector = new Connector();
+            const connector = new Evse();
 
-            const getByIdSpy = sinon.spy(scMock.connectors, "getById");
+            const getByIdSpy = sinon.spy(scMock.evses, "getById");
             const result = await connectorLogic.stop({id: connector.id, seconds: 100, json: false});
             getByIdSpy.restore();
 
