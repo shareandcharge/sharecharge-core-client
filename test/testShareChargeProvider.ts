@@ -1,7 +1,6 @@
 import { injectable, inject } from "inversify";
-import ConfigProvider from "../src/services/configProvider";
 import ShareChargeProvider from "../src/services/shareChargeProvider";
-import { Evse, ShareCharge } from "../../sharecharge-lib/dist/src";
+import { Evse, Wallet, ToolKit } from "sharecharge-lib";
 
 @injectable()
 export default class TestShareChargeProvider extends ShareChargeProvider {
@@ -32,13 +31,12 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
 
     public static scMock = {
         evses: {
-            useWallet: (wallet) => {
+            useWallet: (wallet: Wallet, keyIndex: number = 0) => {
                 return TestShareChargeProvider.connectorModifiers
             },
             getById: (id) => {
-                return TestShareChargeProvider.blockchain[id] || Evse.deserialize({id, owner: id});
-            },
-            isPersisted: (connector: Evse) => !!TestShareChargeProvider.blockchain[connector.id]
+                return TestShareChargeProvider.blockchain[id] || Evse.deserialize({id});
+            }
         },
         charging: {
             useWallet: (wallet) => {

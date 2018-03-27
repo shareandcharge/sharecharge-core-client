@@ -13,7 +13,7 @@ export default class ConnectorLogic extends LogicBase {
             return PlugType[type];
         });
 
-        if (!await this.client.sc.evses.isPersisted(connector)) {
+        if (connector.owner.startsWith("0x00")) {
             await this.client.sc.evses.useWallet(this.client.wallet).create(connector);
             if (!stfu) {
                 this.client.logger.info(`Connector with id ${id} created`);
@@ -35,16 +35,16 @@ export default class ConnectorLogic extends LogicBase {
 
         let result: any = null;
 
-        if (await this.client.sc.evses.isPersisted(Evse.deserialize({id}))) {
+        const connector: Evse = await this.client.sc.evses.getById(id);
 
-            const connector: Evse = await this.client.sc.evses.getById(id);
-
+        if (!connector.owner.startsWith("0x00")) {
             result = {
                 id: connector.id,
                 owner: connector.owner,
                 stationId: connector.stationId,
                 available: connector.available,
                 plugTypes: connector.plugTypes
+
             }
         }
 
@@ -164,8 +164,11 @@ export default class ConnectorLogic extends LogicBase {
 
         const connector = await this.client.sc.evses.getById(argv.id);
 
-        result.state.ev = connector.available;
-        result.state.bridge = await this.client.bridge.connectorStatus(argv.id);
+        if (!connector.owner.startsWith("0x00")) {
+
+            result.state.ev = connector.available;
+            result.state.bridge = await this.client.bridge.connectorStatus(argv.id);
+        }
 
         if (argv.json) {
             console.log(JSON.stringify(result, null, 2));
@@ -190,7 +193,7 @@ export default class ConnectorLogic extends LogicBase {
 
         const connector = await this.client.sc.evses.getById(argv.id);
 
-        if (await this.client.sc.evses.isPersisted(connector)) {
+        if (!connector.owner.startsWith("0x00")) {
 
             // only disable if available
             if (connector.available) {
@@ -223,7 +226,7 @@ export default class ConnectorLogic extends LogicBase {
         const connector = await this.client.sc.evses.getById(argv.id);
 
         // only enable if persisted
-        if (await this.client.sc.evses.isPersisted(connector)) {
+        if (!connector.owner.startsWith("0x00")) {
 
             if (!argv.json) {
                 this.client.logger.info(`Enabling Connector with id: ${connector.id}`);
@@ -264,7 +267,7 @@ export default class ConnectorLogic extends LogicBase {
             this.client.logger.info(`Starting charge on ${connector.id} for ${argv.seconds} seconds...`);
         }
 
-        if (await this.client.sc.evses.isPersisted(connector)) {
+        if (!connector.owner.startsWith("0x00")) {
 
             // only charge if available
             if (connector.available) {
@@ -306,7 +309,7 @@ export default class ConnectorLogic extends LogicBase {
             this.client.logger.info("Stopping charge on Connector with ID:", connector.id);
         }
 
-        if (this.client.sc.evses.isPersisted(connector)) {
+        if (!connector.owner.startsWith("0x00")) {
 
             // only stop if not available
             if (!connector.available) {

@@ -14,12 +14,6 @@ import TestShareChargeProvider from "../testShareChargeProvider";
 import TestBridgeProvider from "../testBridgeProvider";
 import ConnectorsProvider from "../../src/services/connectorsProvider";
 
-ShareChargeCoreClient.rebind(Symbols.LoggingProvider, TestLoggingProvider);
-ShareChargeCoreClient.rebind(Symbols.ShareChargeProvider, TestShareChargeProvider);
-ShareChargeCoreClient.rebind(Symbols.BridgeProvider, TestBridgeProvider);
-ShareChargeCoreClient.rebind(Symbols.ConfigProvider, TestConfigProvider);
-ShareChargeCoreClient.rebind(Symbols.ConnectorsProvider, ConnectorsProvider);
-
 describe("ConnectorLogic", () => {
 
     let connectorLogic: ConnectorLogic;
@@ -28,6 +22,11 @@ describe("ConnectorLogic", () => {
 
     beforeEach(() => {
         connectorLogic = new ConnectorLogic();
+        ShareChargeCoreClient.rebind(Symbols.LoggingProvider, TestLoggingProvider);
+        ShareChargeCoreClient.rebind(Symbols.ShareChargeProvider, TestShareChargeProvider);
+        ShareChargeCoreClient.rebind(Symbols.BridgeProvider, TestBridgeProvider);
+        ShareChargeCoreClient.rebind(Symbols.ConfigProvider, TestConfigProvider);
+        ShareChargeCoreClient.rebind(Symbols.ConnectorsProvider, ConnectorsProvider);
     });
 
     describe("#register()", () => {
@@ -46,7 +45,6 @@ describe("ConnectorLogic", () => {
             expect(result.id).to.include(idToTest);
             expect(result.available).to.equal(true);
             expect(ToolKit.toPlugMask(result.plugTypes)).to.equal(72);
-            expect(result.owner).to.include(id);
         });
     });
 
@@ -67,40 +65,34 @@ describe("ConnectorLogic", () => {
             doRegisterSpy.restore();
 
             expect(results[0].available).to.be.equal(connectorLogic.client.connectors[connectorIndexes[0]].available);
-            expect(results[0].owner).to.be.equal(id);
         });
     });
 
     describe("#info()", () => {
 
-        it("output info about the connector correclty", async () => {
+        it("output info about the connector correctly", async () => {
 
-            const connector = Evse.deserialize({id: ToolKit.randomBytes32String(), owner: id});
-            connector.plugTypes = ToolKit.fromPlugMask(16);
-            connector.available = false;
+            const evse = new Evse();
+            evse.plugTypes = ToolKit.fromPlugMask(16);
+            evse.available = false;
 
-            TestShareChargeProvider.blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain[evse.id]._owner = ToolKit.randomBytes32String();
 
-            const result = await connectorLogic.info({id: connector.id, json: false});
+            const result = await connectorLogic.info({id: evse.id, json: false});
 
-            expect(result.id).to.equal(connector.id);
-            expect(result.owner).to.equal(id);
-            expect(result.plugTypes[0]).to.equal(connector.plugTypes[0]);
-            expect(result.available).to.equal(connector.available);
+            expect(result.id).to.equal(evse.id);
+            expect(result.plugTypes[0]).to.equal(evse.plugTypes[0]);
+            expect(result.available).to.equal(evse.available);
         });
 
         it("fails if the connector is not persisted", async () => {
 
             const idToTest = ToolKit.randomBytes32String();
 
-            const isPersistedSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "isPersisted");
-
             const result = await connectorLogic.info({id: idToTest, json: false});
-            isPersistedSpy.restore();
 
             expect(result).to.equal(null);
-
-            expect(isPersistedSpy.calledOnce).to.be.true;
         });
     });
 
@@ -112,7 +104,7 @@ describe("ConnectorLogic", () => {
 
         it("should return true if connector and bridge are available", async () => {
 
-            const connector = new Evse();
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()});
             connector.available = true;
             connector.stationId = ToolKit.randomBytes32String();
 
@@ -127,9 +119,21 @@ describe("ConnectorLogic", () => {
             expect(result.state.ev).to.be.equal(true);
         });
 
-        it("should return false if connector is unavailable", async () => {
+        it("should return false if connector is not registered", async () => {
 
             const connector = new Evse();
+            connector.available = false;
+            connector.stationId = ToolKit.randomBytes32String();
+
+            const result = await connectorLogic.status({id: connector.id, json: false});
+
+            expect(result.state.bridge).to.be.equal(false);
+            expect(result.state.ev).to.be.equal(false);
+        });
+
+        it("should return false if connector is unavailable", async () => {
+
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()});
             connector.available = false;
             connector.stationId = ToolKit.randomBytes32String();
 
@@ -146,7 +150,7 @@ describe("ConnectorLogic", () => {
 
         it("should return false if bridge is unavailable in CPO backend", async () => {
 
-            const connector = new Evse();
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()});
             connector.available = true;
             connector.stationId = ToolKit.randomBytes32String();
 
@@ -167,10 +171,11 @@ describe("ConnectorLogic", () => {
 
         it("should enable a disabled connector", async () => {
 
-            const connector = new Evse();
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()});
             connector.available = false;
 
             TestShareChargeProvider.blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id]._owner = ToolKit.randomBytes32String();
 
             const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
             const updateSpy = sinon.spy(TestShareChargeProvider.connectorModifiers, "update");
@@ -187,7 +192,7 @@ describe("ConnectorLogic", () => {
 
         it("should return error if already enabled", async () => {
 
-            const connector = new Evse();
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()});
             connector.available = true;
 
             TestShareChargeProvider.blockchain[connector.id] = connector;
@@ -210,7 +215,7 @@ describe("ConnectorLogic", () => {
 
         it("should disable an enabled connector", async () => {
 
-            const connector = new Evse();
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()})
             connector.available = true;
 
             TestShareChargeProvider.blockchain[connector.id] = connector;
@@ -230,7 +235,7 @@ describe("ConnectorLogic", () => {
 
         it("should return error of already disabled", async () => {
 
-            const connector = new Evse();
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()});
             connector.available = false;
 
             TestShareChargeProvider.blockchain[connector.id] = connector;
@@ -254,8 +259,9 @@ describe("ConnectorLogic", () => {
 
         it("should start charging on available connector", async () => {
 
-            const connector = new Evse();
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()});
             connector.available = true;
+
             TestShareChargeProvider.blockchain[connector.id] = connector;
 
             const requestStartSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStart");
@@ -274,8 +280,9 @@ describe("ConnectorLogic", () => {
 
         it("should not start charging on unavailable connector", async () => {
 
-            const connector = new Evse();
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()});
             connector.available = false;
+
             TestShareChargeProvider.blockchain[connector.id] = connector;
 
             const requestStartSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStart");
@@ -298,7 +305,7 @@ describe("ConnectorLogic", () => {
 
         it("should stop charging on a currently charging connector", async () => {
 
-            const connector = new Evse();
+            const connector = Evse.deserialize({owner: ToolKit.randomBytes32String()});
             connector.available = false;
             TestShareChargeProvider.blockchain[connector.id] = connector;
 
