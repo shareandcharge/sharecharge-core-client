@@ -1,14 +1,23 @@
 {
   "0x01": {
-    "plugTypes": 16,
+    "plugTypes": [
+      "CHAdeMO",
+      "Typ1"
+    ],
     "available": true
   },
   "0x02": {
-    "plugTypes": 256,
+    "plugTypes": [
+      "CHAdeMO",
+      "Typ1"
+    ],
     "available": true
   },
   "0x03": {
-    "plugTypes": 1024,
+    "plugTypes": [
+      "CHAdeMO",
+      "Typ1"
+    ],
     "available": false
   }
 }

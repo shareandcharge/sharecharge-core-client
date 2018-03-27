@@ -6,6 +6,8 @@
     "noImplicitAny": false,
     "sourceMap": true,
     "outDir": "dist",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "types": [
       "node"
     ],

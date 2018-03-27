@@ -22,13 +22,13 @@ describe("Parser", function () {
         it("should read the yaml config string and translate to js object", function () {
             const configString = parser.read(__dirname + "/test-config.yaml");
             const config = parser.translate(configString);
-            expect(config.statusInterval).to.equal(2000);
+            expect(config.stage).to.equal("local");
         });
 
         it("should read the toml config string and translate to js object", function () {
             const configString = parser.read(__dirname + "/test-config.toml");
             const config = parser.translate(configString);
-            expect(config.statusInterval).to.equal(2000);
+            expect(config.stage).to.equal("local");
         });
 
     });

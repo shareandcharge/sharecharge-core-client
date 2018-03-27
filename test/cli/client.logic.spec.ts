@@ -1,26 +1,21 @@
 import * as mocha from 'mocha';
 import { expect } from 'chai';
-import * as sinon from "sinon";
 
 import ClientLogic from "../../src/cli/client.logic";
-import { loadConfigFromFile } from "../../src/utils/config";
-
-const testConfigPath = "./test/config.yaml";
+import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
+import { Symbols } from "../../src/symbols";
+import TestConfigProvider from "../testConfigProvider";
+import TestLoggingProvider from "../testLoggingProvider";
 
 describe('ClientLogic', () => {
 
     let clientLogic: ClientLogic;
 
     beforeEach(() => {
-        const config = loadConfigFromFile(testConfigPath);
-        config.logger = {
-            info: () => {
-            },
-            warn: () => {
 
-            }
-        };
-        clientLogic = new ClientLogic(config);
+        clientLogic = new ClientLogic();
+        ShareChargeCoreClient.rebind(Symbols.LoggingProvider, TestLoggingProvider);
+        ShareChargeCoreClient.rebind(Symbols.ConfigProvider, TestConfigProvider);
     });
 
     describe("#start()", () => {

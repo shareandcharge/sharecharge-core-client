@@ -2,79 +2,32 @@ import * as mocha from 'mocha';
 import { expect } from 'chai';
 import * as sinon from "sinon";
 
-import ConnectorLogic from "../../src/cli/connector.logic";
 import { Evse, ToolKit } from "sharecharge-lib";
-import { loadConfigFromFile } from "../../src/utils/config";
-import IClientConfig from "../../src/models/iClientConfig";
-import IBridge from "../../src/models/iBridge";
+
+import ConnectorLogic from "../../src/cli/connector.logic";
+import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
+import { Symbols } from "../../src/symbols";
+
+import TestConfigProvider from "../testConfigProvider";
+import TestLoggingProvider from "../testLoggingProvider";
+import TestShareChargeProvider from "../testShareChargeProvider";
+import TestBridgeProvider from "../testBridgeProvider";
+import ConnectorsProvider from "../../src/services/connectorsProvider";
+
+ShareChargeCoreClient.rebind(Symbols.LoggingProvider, TestLoggingProvider);
+ShareChargeCoreClient.rebind(Symbols.ShareChargeProvider, TestShareChargeProvider);
+ShareChargeCoreClient.rebind(Symbols.BridgeProvider, TestBridgeProvider);
+ShareChargeCoreClient.rebind(Symbols.ConfigProvider, TestConfigProvider);
+ShareChargeCoreClient.rebind(Symbols.ConnectorsProvider, ConnectorsProvider);
 
 describe("ConnectorLogic", () => {
 
-    let config: IClientConfig, scMock: any, blockchain: object, cpoBackend: object,
-        connectorLogic: ConnectorLogic, connectorModifiers, chargingModifiers;
+    let connectorLogic: ConnectorLogic;
 
-    before(() => {
-
-        config = loadConfigFromFile("./test/config.yaml");
-
-        config.logger = {
-            info: () => {
-            },
-            warn: () => {
-            }
-        };
-
-        config.bridge = <IBridge>{
-            connectorStatus: (id: string) => {
-                return cpoBackend[id].available;
-            }
-        };
-
-        connectorModifiers = {
-            create: (connector) => {
-
-                blockchain[connector.id] = connector;
-            },
-            update: (connector) => {
-
-                blockchain[connector.id] = connector;
-            }
-        };
-
-        chargingModifiers = {
-            requestStart: (connector, seconds) => {
-
-                blockchain[connector.id] = connector;
-            },
-            requestStop: (connector) => {
-
-                blockchain[connector.id] = connector;
-            }
-        };
-
-        scMock = {
-            evses: {
-                useWallet: (wallet) => {
-                    return connectorModifiers
-                },
-                getById: (id) => {
-                    return blockchain[id] || Evse.deserialize({id, owner: config.id});
-                },
-                isPersisted: (connector: Evse) => !!blockchain[connector.id]
-            },
-            charging: {
-                useWallet: (wallet) => {
-                    return chargingModifiers
-                }
-            }
-        };
-
-        connectorLogic = new ConnectorLogic(config, scMock);
-    });
+    const id: string = "0x1000000001";
 
     beforeEach(() => {
-        blockchain = {};
-        cpoBackend = {};
+        connectorLogic = new ConnectorLogic();
     });
 
     describe("#register()", () => {
@@ -92,7 +45,8 @@ describe("ConnectorLogic", () => {
 
             expect(result.id).to.include(idToTest);
             expect(result.available).to.equal(true);
-            expect(result.owner).to.include(config.id);
+            expect(ToolKit.toPlugMask(result.plugTypes)).to.equal(72);
+            expect(result.owner).to.include(id);
         });
     });
 
@@ -104,7 +58,7 @@ describe("ConnectorLogic", () => {
 
             const results = await connectorLogic.registerAll({json: false});
 
-            const connectorIndexes = Object.keys(config.connectors);
+            const connectorIndexes = Object.keys(connectorLogic.client.connectors);
 
             expect(doRegisterSpy.callCount).to.be.equal(connectorIndexes.length);
             expect(results.length).to.be.equal(doRegisterSpy.callCount);
@@ -112,8 +66,8 @@ describe("ConnectorLogic", () => {
 
             doRegisterSpy.restore();
 
-            expect(results[0].available).to.be.equal(config.connectors[connectorIndexes[0]].available);
-            expect(results[0].owner).to.be.equal(config.id);
+            expect(results[0].available).to.be.equal(connectorLogic.client.connectors[connectorIndexes[0]].available);
+            expect(results[0].owner).to.be.equal(id);
         });
     });
 
@@ -121,16 +75,16 @@ describe("ConnectorLogic", () => {
 
         it("output info about the connector correclty", async () => {
 
-            const connector = Evse.deserialize({id: ToolKit.randomBytes32String(), owner: config.id});
+            const connector = Evse.deserialize({id: ToolKit.randomBytes32String(), owner: id});
             connector.plugTypes = ToolKit.fromPlugMask(16);
             connector.available = false;
 
-            blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id] = connector;
 
             const result = await connectorLogic.info({id: connector.id, json: false});
 
             expect(result.id).to.equal(connector.id);
-            expect(result.owner).to.equal(config.id);
+            expect(result.owner).to.equal(id);
             expect(result.plugTypes[0]).to.equal(connector.plugTypes[0]);
             expect(result.available).to.equal(connector.available);
         });
@@ -139,7 +93,7 @@ describe("ConnectorLogic", () => {
 
             const idToTest = ToolKit.randomBytes32String();
 
-            const isPersistedSpy = sinon.spy(scMock.evses, "isPersisted");
+            const isPersistedSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "isPersisted");
 
             const result = await connectorLogic.info({id: idToTest, json: false});
             isPersistedSpy.restore();
@@ -162,8 +116,8 @@ describe("ConnectorLogic", () => {
             connector.available = true;
             connector.stationId = ToolKit.randomBytes32String();
 
-            blockchain[connector.id] = connector;
-            cpoBackend[connector.id] = {
+            TestShareChargeProvider.blockchain[connector.id] = connector;
+            TestBridgeProvider.backend[connector.id] = {
                 available: true
             };
 
@@ -179,8 +133,8 @@ describe("ConnectorLogic", () => {
             connector.available = false;
             connector.stationId = ToolKit.randomBytes32String();
 
-            blockchain[connector.id] = connector;
-            cpoBackend[connector.id] = {
+            TestShareChargeProvider.blockchain[connector.id] = connector;
+            TestBridgeProvider.backend[connector.id] = {
                 available: true
             };
 
@@ -190,14 +144,14 @@ describe("ConnectorLogic", () => {
             expect(result.state.ev).to.be.equal(false);
         });
 
-        it("should return false if bridge is unavailable", async () => {
+        it("should return false if bridge is unavailable in CPO backend", async () => {
 
             const connector = new Evse();
             connector.available = true;
             connector.stationId = ToolKit.randomBytes32String();
 
-            blockchain[connector.id] = connector;
-            cpoBackend[connector.id] = {
+            TestShareChargeProvider.blockchain[connector.id] = connector;
+            TestBridgeProvider.backend[connector.id] = {
                 available: false
             };
 
@@ -216,16 +170,16 @@ describe("ConnectorLogic", () => {
             const connector = new Evse();
             connector.available = false;
 
-            blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.evses, "getById");
-            const updateSpy = sinon.spy(connectorModifiers, "update");
+            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const updateSpy = sinon.spy(TestShareChargeProvider.connectorModifiers, "update");
 
             const result = await connectorLogic.enable({id: connector.id, json: false});
             getByIdSpy.restore();
             updateSpy.restore();
 
-            expect(blockchain[connector.id].available).to.be.true;
+            expect(TestShareChargeProvider.blockchain[connector.id].available).to.be.true;
             expect(result.success).to.be.true;
             expect(getByIdSpy.calledOnce).to.be.true;
             expect(updateSpy.calledOnce).to.be.true;
@@ -236,16 +190,16 @@ describe("ConnectorLogic", () => {
             const connector = new Evse();
             connector.available = true;
 
-            blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.evses, "getById");
-            const updateSpy = sinon.spy(connectorModifiers, "update");
+            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const updateSpy = sinon.spy(TestShareChargeProvider.connectorModifiers, "update");
 
             const result = await connectorLogic.enable({id: connector.id, json: false});
             getByIdSpy.restore();
             updateSpy.restore();
 
-            expect(blockchain[connector.id].available).to.be.true;
+            expect(TestShareChargeProvider.blockchain[connector.id].available).to.be.true;
             expect(result.success).to.be.false;
             expect(getByIdSpy.calledOnce).to.be.true;
             expect(updateSpy.notCalled).to.be.true;
@@ -259,16 +213,16 @@ describe("ConnectorLogic", () => {
             const connector = new Evse();
             connector.available = true;
 
-            blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.evses, "getById");
-            const updateSpy = sinon.spy(connectorModifiers, "update");
+            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const updateSpy = sinon.spy(TestShareChargeProvider.connectorModifiers, "update");
 
             const result = await connectorLogic.disable({id: connector.id, json: false});
             updateSpy.restore();
             getByIdSpy.restore();
 
-            expect(blockchain[connector.id].available).to.be.false;
+            expect(TestShareChargeProvider.blockchain[connector.id].available).to.be.false;
             expect(result.success).to.be.true;
             expect(getByIdSpy.calledOnce).to.be.true;
             expect(updateSpy.calledOnce).to.be.true;
@@ -279,17 +233,17 @@ describe("ConnectorLogic", () => {
             const connector = new Evse();
             connector.available = false;
 
-            blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.evses, "getById");
-            const updateSpy = sinon.spy(connectorModifiers, "update");
+            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const updateSpy = sinon.spy(TestShareChargeProvider.connectorModifiers, "update");
 
             const result = await connectorLogic.disable({id: connector.id, json: false});
 
             getByIdSpy.restore();
             updateSpy.restore();
 
-            expect(blockchain[connector.id].available).to.be.false;
+            expect(TestShareChargeProvider.blockchain[connector.id].available).to.be.false;
             expect(result.success).to.be.false;
             expect(getByIdSpy.calledOnce).to.be.true;
             expect(updateSpy.notCalled).to.be.true;
@@ -302,10 +256,10 @@ describe("ConnectorLogic", () => {
 
             const connector = new Evse();
             connector.available = true;
-            blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id] = connector;
 
-            const requestStartSpy = sinon.spy(chargingModifiers, "requestStart");
-            const getByIdSpy = sinon.spy(scMock.evses, "getById");
+            const requestStartSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStart");
+            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
 
             const result = await connectorLogic.start({id: connector.id, seconds: 100, json: false});
 
@@ -322,10 +276,10 @@ describe("ConnectorLogic", () => {
 
             const connector = new Evse();
             connector.available = false;
-            blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id] = connector;
 
-            const requestStartSpy = sinon.spy(chargingModifiers, "requestStart");
-            const getByIdSpy = sinon.spy(scMock.evses, "getById");
+            const requestStartSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStart");
+            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
 
             const result = await connectorLogic.start({id: connector.id, seconds: 100, json: false});
 
@@ -346,10 +300,10 @@ describe("ConnectorLogic", () => {
 
             const connector = new Evse();
             connector.available = false;
-            blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id] = connector;
 
-            const requestStopSpy = sinon.spy(chargingModifiers, "requestStop");
-            const getByIdSpy = sinon.spy(scMock.evses, "getById");
+            const requestStopSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStop");
+            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
 
             const result = await connectorLogic.stop({id: connector.id, seconds: 100, json: false});
             requestStopSpy.restore();
@@ -365,9 +319,9 @@ describe("ConnectorLogic", () => {
 
             const connector = new Evse();
             connector.available = true;
-            blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[connector.id] = connector;
 
-            const getByIdSpy = sinon.spy(scMock.evses, "getById");
+            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
 
             const result = await connectorLogic.stop({id: connector.id, seconds: 100, json: false});
             getByIdSpy.restore();
@@ -381,7 +335,7 @@ describe("ConnectorLogic", () => {
 
             const connector = new Evse();
 
-            const getByIdSpy = sinon.spy(scMock.evses, "getById");
+            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
             const result = await connectorLogic.stop({id: connector.id, seconds: 100, json: false});
             getByIdSpy.restore();
 

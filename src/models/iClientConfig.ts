@@ -1,15 +1,10 @@
 import IBridge from './iBridge';
 
 export default interface IClientConfig {
-    test?: boolean;
-    bridge: IBridge;
-    statusUpdateInterval?: number;
-    id: string;
-    pass: string;
+    bridgePath: string;
+    connectorsPath: string;
     seed: string;
     stage: string;
     gasPrice: number;
     provider: string;
-    connectors: any;
-    logger: any;
 }

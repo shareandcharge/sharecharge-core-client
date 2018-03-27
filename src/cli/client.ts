@@ -1,39 +1,34 @@
-import ClientLogic from './client.logic';
-import { loadConfigFromFile } from '../utils/config';
+import ClientLogic from "./client.logic";
+import ConfigProvider from "../services/configProvider";
 
-const clientLogic = new ClientLogic(loadConfigFromFile("./config/config.yaml"));
+const clientLogic = new ClientLogic();
 
 export const clientHandler = (yargs) => {
     yargs
-        .usage('Usage: sc client [options]')
-        .config('config', 'Path to plaintext config file', loadConfigFromFile)
+        .usage("Usage: sc client [options]")
+        .config("config", "Path to plaintext config file", ConfigProvider.loadConfigFromFile)
         .options({
-            'id': {
-                describe: 'The client ID used to filter EV charge requests',
-                type: 'string'
+            "id": {
+                describe: "The client ID used to filter EV charge requests",
+                type: "string"
             },
-            'pass': {
-                describe: 'The password of the user\'s Ethereum address for confirming charge sessions',
-                type: 'string',
-                default: ''
+            "seed": {
+                describe: "The password of the user\'s Ethereum address for confirming charge sessions",
+                type: "string",
+                default: ""
             },
-            'bridge': {
-                describe: 'Path to the bridge which the Core Client should connect to',
-                type: 'string'
+            "bridgePath": {
+                describe: "Path to the bridge which the Core Client should connect to",
+                type: "string"
             },
-            'connectors': {
-                describe: 'Path to the connector data if registration of connectors required',
-                type: 'string'
+            "connectorsPath": {
+                describe: "Path to the connector data if registration of connectors required",
+                type: "string"
             },
-            'stage': {
-                describe: 'Specify on what stage we want to be',
-                type: 'string'
+            "stage": {
+                describe: "Specify on what stage we want to be",
+                type: "string"
             },
-            'status-interval': {
-                describe: 'Specify interval between connector status updates from bridge',
-                type: 'number',
-                default: 30000
-            }
         })
 
         .command("start",

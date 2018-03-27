@@ -1,13 +1,13 @@
-import { loadConfigFromFile } from "../utils/config";
 import ConnectorLogic from "./connector.logic";
+import ConfigProvider from "../services/configProvider";
 
-const connectorLogic = new ConnectorLogic(loadConfigFromFile("./config/config.yaml"));
+const connectorLogic = new ConnectorLogic();
 
 export default (yargs) => {
 
     yargs
         .usage("Usage: sc cp <command> [options]")
-        .config("config", "Path to plaintext config file", loadConfigFromFile)
+        .config("config", "Path to plaintext config file", ConfigProvider.loadConfigFromFile)
         .demandCommand(1)
 
         .command("register [id]",

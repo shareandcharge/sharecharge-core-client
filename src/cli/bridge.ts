@@ -1,10 +1,6 @@
-import { loadConfigFromFile } from '../utils/config';
-import IClientConfig from "../models/iClientConfig";
 import BridgeLogic from "./bridge.logic";
 
-const config: IClientConfig = loadConfigFromFile('./config/config.yaml');
-
-const bridgeLogic = new BridgeLogic(config);
+const bridgeLogic = new BridgeLogic();
 
 export default (yargs) => {
 

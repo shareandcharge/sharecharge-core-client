@@ -3,7 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import { loadConfigFromFile } from '../utils/config';
-import { logger } from '../utils/logger';
+import { loggingProvider } from '../services/logger';
 
 // const config = loadConfigFromFile('./config/config.yaml');
 

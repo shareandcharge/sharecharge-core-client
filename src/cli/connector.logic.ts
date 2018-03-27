@@ -1,32 +1,25 @@
-import { Evse, ShareCharge, Wallet } from "sharecharge-lib";
-import IClientConfig from "../models/iClientConfig";
+import { Evse, PlugType } from "sharecharge-lib";
+import LogicBase from "./LogicBase"
 
-export default class ConnectorLogic {
-
-    private readonly wallet: Wallet;
-    private readonly sc: ShareCharge;
-
-    constructor(private config: IClientConfig, sc?: ShareCharge) {
-
-        this.wallet = new Wallet(this.config.seed);
-        this.sc = sc || new ShareCharge();
-    }
+export default class ConnectorLogic extends LogicBase {
 
     private async doRegister(connectorToRegister, id, stfu) {
 
-        let connector: Evse = await this.sc.evses.getById(id);
+        let connector: Evse = await this.client.sc.evses.getById(id);
 
-        connector.stationId = "0x12";
+        connector.stationId = "0x00";
         connector.available = connectorToRegister.available;
-        connector.plugTypes = connectorToRegister.plugTypes;
+        connector.plugTypes = connectorToRegister.plugTypes.map(type => {
+            return PlugType[type];
+        });
 
-        if (!await this.sc.evses.isPersisted(connector)) {
-            await this.sc.evses.useWallet(this.wallet).create(connector);
+        if (!await this.client.sc.evses.isPersisted(connector)) {
+            await this.client.sc.evses.useWallet(this.client.wallet).create(connector);
             if (!stfu) {
-                this.config.logger.info(`Connector with id ${id} created`);
+                this.client.logger.info(`Connector with id ${id} created`);
             }
         } else if (!stfu) {
-            this.config.logger.warn(`Connector with id ${id} already created`);
+            this.client.logger.warn(`Connector with id ${id} already created`);
         }
 
         return {
@@ -42,9 +35,9 @@ export default class ConnectorLogic {
 
         let result: any = null;
 
-        if (await this.sc.evses.isPersisted(Evse.deserialize({id}))) {
+        if (await this.client.sc.evses.isPersisted(Evse.deserialize({id}))) {
 
-            const connector: Evse = await this.sc.evses.getById(id);
+            const connector: Evse = await this.client.sc.evses.getById(id);
 
             result = {
                 id: connector.id,
@@ -61,26 +54,31 @@ export default class ConnectorLogic {
     public register = async (argv) => {
 
         if (!argv.json) {
-            this.config.logger.info(`Registering Connector with id: ${argv.id}`);
+            this.client.logger.info(`Registering Connector with id: ${argv.id}`);
         }
 
-        const connector = this.config.connectors[argv.id];
+        let result: any = {
+            id: argv.id,
+            success: false
+        };
+
+        const connector = this.client.connectors[argv.id];
 
         if (!connector) {
 
             if (argv.json) {
-                this.config.logger.info(JSON.stringify({}, null, 2));
+                this.client.logger.info(JSON.stringify({}, null, 2));
             } else {
                 console.error(`No Connector found with id ${argv.id} in configuration.`);
             }
         }
 
-        const result = await this.doRegister(connector, argv.id, argv.json);
+        result = await this.doRegister(connector, argv.id, argv.json);
 
         if (argv.json) {
-            this.config.logger.info(JSON.stringify(result, null, 2));
+            this.client.logger.info(JSON.stringify(result, null, 2));
         } else {
-            this.config.logger.info("All done");
+            this.client.logger.info("All done");
         }
 
         return result;
@@ -89,24 +87,24 @@ export default class ConnectorLogic {
     public registerAll = async (argv) => {
 
         if (!argv.json) {
-            this.config.logger.info("Registering all Connectors from the configuration");
+            this.client.logger.info("Registering all Connectors from the configuration");
         }
 
-        const ids = Object.keys(this.config.connectors);
+        const ids = Object.keys(this.client.connectors);
 
         const results: any[] = [];
 
         for (let id of ids) {
 
-            const cp = this.config.connectors[id];
+            const cp = this.client.connectors[id];
             const result = await this.doRegister(cp, id, argv.json);
             results.push(result);
         }
 
         if (argv.json) {
-            this.config.logger.info(JSON.stringify(results, null, 2))
+            this.client.logger.info(JSON.stringify(results, null, 2))
         } else {
-            this.config.logger.info("All done");
+            this.client.logger.info("All done");
         }
 
         return results;
@@ -115,24 +113,24 @@ export default class ConnectorLogic {
     public info = async (argv) => {
 
         if (!argv.json) {
-            this.config.logger.info(`Getting Info for Connector ${argv.id}`);
+            this.client.logger.info(`Getting Info for Connector ${argv.id}`);
         }
 
         const result: any = await this.getInformation(argv.id);
 
         if (result) {
             if (!argv.json) {
-                this.config.logger.info("ID:", result.id);
-                this.config.logger.info("Owner:", result.owner);
-                this.config.logger.info("StationId:", result.stationId);
-                this.config.logger.info("Available:", result.available);
-                this.config.logger.info("PlugTypes:", result.plugTypes);
+                this.client.logger.info("ID:", result.id);
+                this.client.logger.info("Owner:", result.owner);
+                this.client.logger.info("StationId:", result.stationId);
+                this.client.logger.info("Available:", result.available);
+                this.client.logger.info("PlugTypes:", result.plugTypes);
             } else {
                 console.log(JSON.stringify(result, null, 2));
             }
         } else {
             if (!argv.json) {
-                this.config.logger.warn("Connector not registered");
+                this.client.logger.warn("Connector not registered");
             } else {
                 console.log(JSON.stringify({}, null, 2));
             }
@@ -144,9 +142,8 @@ export default class ConnectorLogic {
     public infoAll = async (argv) => {
 
         if (!argv.json) {
-            this.config.logger.info("Getting all Connector infos from EV Network");
+            this.client.logger.info("Getting all Connector infos from EV Network");
         }
-
 
         throw new Error("cannot get all info ");
     };
@@ -162,19 +159,19 @@ export default class ConnectorLogic {
         };
 
         if (!argv.json) {
-            this.config.logger.info("Getting status for Connector with id:", argv.id);
+            this.client.logger.info("Getting status for Connector with id:", argv.id);
         }
 
-        const connector = await this.sc.evses.getById(argv.id);
+        const connector = await this.client.sc.evses.getById(argv.id);
 
         result.state.ev = connector.available;
-        result.state.bridge = await this.config.bridge.connectorStatus(argv.id);
+        result.state.bridge = await this.client.bridge.connectorStatus(argv.id);
 
         if (argv.json) {
             console.log(JSON.stringify(result, null, 2));
         } else {
-            this.config.logger.info("EV Network:\t", result.state.ev);
-            this.config.logger.info("CPO Backend:\t", result.state.bridge);
+            this.client.logger.info("EV Network:\t", result.state.ev);
+            this.client.logger.info("CPO Backend:\t", result.state.bridge);
         }
 
         return result;
@@ -188,22 +185,29 @@ export default class ConnectorLogic {
         };
 
         if (!argv.json) {
-            this.config.logger.info(`Disabling Connector with id: ${argv.id} for client: ${this.config.id}`);
+            this.client.logger.info(`Disabling Connector with id: ${argv.id}`);
         }
 
-        const connector = await this.sc.evses.getById(argv.id);
+        const connector = await this.client.sc.evses.getById(argv.id);
 
-        // only disable if available
-        if (connector.available) {
-            connector.available = false;
-            await this.sc.evses.useWallet(this.wallet).update(connector);
-            result.success = true;
+        if (await this.client.sc.evses.isPersisted(connector)) {
+
+            // only disable if available
+            if (connector.available) {
+                connector.available = false;
+                await this.client.sc.evses.useWallet(this.client.wallet).update(connector);
+                result.success = true;
+            } else if (!argv.json) {
+                this.client.logger.info("Connector already disabled");
+            }
+        } else if (!argv.json) {
+            this.client.logger.info("Connector not registered");
         }
 
         if (argv.json) {
             console.log(JSON.stringify(result, null, 2));
         } else {
-            this.config.logger.info("Success:", result.success);
+            this.client.logger[result.success ? "info" : "warn"]("Success:", result.success);
         }
 
         return result;
@@ -216,23 +220,32 @@ export default class ConnectorLogic {
             success: false
         };
 
-        const connector = await this.sc.evses.getById(argv.id);
+        const connector = await this.client.sc.evses.getById(argv.id);
 
-        if (!argv.json) {
-            this.config.logger.info("Enabling Connector with id:", connector.id, "for client:", this.config.id);
-        }
+        // only enable if persisted
+        if (await this.client.sc.evses.isPersisted(connector)) {
 
-        // only enable if disabled
-        if (!connector.available) {
-            connector.available = true;
-            await this.sc.evses.useWallet(this.wallet).update(connector);
-            result.success = true;
+            if (!argv.json) {
+                this.client.logger.info(`Enabling Connector with id: ${connector.id}`);
+            }
+
+            // only enable if disabled
+            if (!connector.available) {
+                connector.available = true;
+                await this.client.sc.evses.useWallet(this.client.wallet).update(connector);
+                result.success = true;
+            } else if (!argv.json) {
+                this.client.logger.info("Connector already enabled");
+            }
+
+        } else if (!argv.json) {
+            this.client.logger.info("Connector not registered");
         }
 
         if (argv.json) {
             console.log(JSON.stringify(result, null, 2));
         } else {
-            this.config.logger.info("Success:", result.success);
+            this.client.logger[result.success ? "info" : "warn"]("Success:", result.success);
         }
 
         return result;
@@ -245,34 +258,36 @@ export default class ConnectorLogic {
             success: false
         };
 
-        const connector = await this.sc.evses.getById(argv.id);
+        const connector = await this.client.sc.evses.getById(argv.id);
 
         if (!argv.json) {
-            this.config.logger.info(`Starting charge on ${connector.id} for ${argv.seconds} seconds...`);
+            this.client.logger.info(`Starting charge on ${connector.id} for ${argv.seconds} seconds...`);
         }
 
-        if (await this.sc.evses.isPersisted(connector)) {
+        if (await this.client.sc.evses.isPersisted(connector)) {
 
             // only charge if available
             if (connector.available) {
 
-                await this.sc.charging.useWallet(this.wallet).requestStart(connector, argv.seconds);
-
+                await this.client.sc.charging.useWallet(this.client.wallet).requestStart(connector, argv.seconds);
                 result.success = true;
+
                 if (!argv.json) {
-                    this.config.logger.info("Charge started");
+                    this.client.logger.info("Charge started");
                 }
 
             } else if (!argv.json) {
-                this.config.logger.warn("Connector not available");
+                this.client.logger.warn("Connector not available");
             }
 
         } else if (!argv.json) {
-            this.config.logger.warn("Connector not registered");
+            this.client.logger.warn("Connector not registered");
         }
 
         if (argv.json) {
             console.log(JSON.stringify(result, null, 2));
+        } else {
+            this.client.logger[result.success ? "info" : "warn"]("Success:", result.success);
         }
 
         return result;
@@ -285,34 +300,36 @@ export default class ConnectorLogic {
             success: false
         };
 
-        const connector = await this.sc.evses.getById(argv.id);
+        const connector = await this.client.sc.evses.getById(argv.id);
 
         if (!argv.json) {
-            this.config.logger.info("Stopping charge on Connector with ID:", connector.id);
+            this.client.logger.info("Stopping charge on Connector with ID:", connector.id);
         }
 
-        if (this.sc.evses.isPersisted(connector)) {
+        if (this.client.sc.evses.isPersisted(connector)) {
 
             // only stop if not available
             if (!connector.available) {
 
-                await this.sc.charging.useWallet(this.wallet).requestStop(connector);
+                await this.client.sc.charging.useWallet(this.client.wallet).requestStop(connector);
                 result.success = true;
 
                 if (!argv.json) {
-                    this.config.logger.info("Charge stopped");
+                    this.client.logger.info("Charge stopped");
                 }
 
             } else if (!argv.json) {
-                this.config.logger.warn("No charge running, nothing to stop");
+                this.client.logger.warn("No charge running, nothing to stop");
             }
 
         } else if (!argv.json) {
-            this.config.logger.warn("Connector not registered");
+            this.client.logger.warn("Connector not registered");
         }
 
         if (argv.json) {
             console.log(JSON.stringify(result, null, 2));
+        } else {
+            this.client.logger[result.success ? "info" : "warn"]("Success:", result.success);
         }
 
         return result;

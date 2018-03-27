@@ -1,9 +1,6 @@
-import IClientConfig from "../models/iClientConfig";
+import LogicBase from "./LogicBase"
 
-export default class BridgeLogic {
-
-    constructor(private config: IClientConfig) {
-    }
+export default class BridgeLogic extends LogicBase {
 
     public status = async (argv) => {
 
@@ -15,17 +12,17 @@ export default class BridgeLogic {
         };
 
         if (!argv.json) {
-            this.config.logger.info("Getting status of bridge.");
+            this.client.logger.info("Getting status of bridge.");
         }
 
-        result.name = this.config.bridge.name;
-        result.bridge.isAvailable = await this.config.bridge.health();
+        result.name = this.client.bridge.name;
+        result.bridge.isAvailable = await this.client.bridge.health();
 
         if (argv.json) {
-            this.config.logger.info(JSON.stringify(result, null, 2));
+            this.client.logger.info(JSON.stringify(result, null, 2));
         } else {
-            this.config.logger.info("Bridge Available:", result.bridge.isAvailable);
-            this.config.logger.info("Bridge name:", result.name)
+            this.client.logger.info("Bridge Available:", result.bridge.isAvailable);
+            this.client.logger.info("Bridge name:", result.name)
         }
 
         return result;

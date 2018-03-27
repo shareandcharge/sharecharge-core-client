@@ -1,20 +1,11 @@
-import IClientConfig from "../models/iClientConfig";
+import LogicBase from "./LogicBase"
 
-export default class ClientLogic {
-
-    constructor(private config: IClientConfig) {
-    }
+export default class ClientLogic extends LogicBase {
 
     public start = async (argv) => {
 
-        const config = argv.config ? argv : this.config;
-
-        if (!config.id) {
-            this.config.logger.warn('No Client ID found in configuration!');
-        }
-
-        if (!config.pass) {
-            this.config.logger.warn('No Ethereum password found in configuration!');
+        if (!this.client.config.seed) {
+            this.client.logger.warn("No seed configured!");
         }
 
         // todo start client ;)

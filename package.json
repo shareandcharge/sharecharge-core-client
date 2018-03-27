@@ -17,9 +17,11 @@
   "dependencies": {
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
+    "inversify": "^4.11.1",
     "js-yaml": "^3.10.0",
     "jsonwebtoken": "^8.1.1",
     "progress": "^2.0.0",
+    "reflect-metadata": "^0.1.12",
     "sharecharge-lib": "git+ssh://git@github.com/motionwerkGmbH/sharecharge-lib.git#domain",
     "sinon": "^4.4.8",
     "toml": "^2.3.3"

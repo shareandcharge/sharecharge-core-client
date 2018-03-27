@@ -1,14 +1,23 @@
 {
   "0x1000000001": {
-    "plugTypes": 16,
+    "plugTypes": [
+      "CHAdeMO",
+      "CCS"
+    ],
     "available": true
   },
   "0x1000000002": {
-    "plugTypes": 256,
+    "plugTypes": [
+      "CHAdeMO",
+      "Typ1"
+    ],
     "available": true
   },
   "0x1000000003": {
-    "plugTypes": 1024,
+    "plugTypes": [
+      "CHAdeMO",
+      "TeslaSupercharger"
+    ],
     "available": false
   }
 }

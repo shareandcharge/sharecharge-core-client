@@ -1,4 +1,3 @@
-import IStatusObject from "./iStatusObject";
 import IResult from "./iResult";
 
 export default interface IBridge {

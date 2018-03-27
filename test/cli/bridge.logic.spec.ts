@@ -1,25 +1,25 @@
 import * as mocha from 'mocha';
 import { expect } from 'chai';
-import * as sinon from "sinon";
 
 import BridgeLogic from "../../src/cli/bridge.logic";
-import IClientConfig from "../../src/models/iClientConfig";
-import { loadConfigFromFile } from "../../src/utils/config";
-import IBridge from "../../src/models/iBridge";
+import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
+import { Symbols } from "../../src/symbols";
 
-const testConfigPath = "./test/config.yaml";
+import TestConfigProvider from "../testConfigProvider";
+import TestLoggingProvider from "../testLoggingProvider";
+import TestShareChargeProvider from "../testShareChargeProvider";
+import TestBridgeProvider from "../testBridgeProvider";
 
 describe('BridgeLogic', () => {
 
-    let config: IClientConfig, bridgeLogic: BridgeLogic;
+    let bridgeLogic: BridgeLogic;
 
     beforeEach(() => {
-        config = loadConfigFromFile(testConfigPath);
-        config.logger = {
-            info: () => {
-            }
-        };
-        bridgeLogic = new BridgeLogic(config);
+        bridgeLogic = new BridgeLogic();
+        ShareChargeCoreClient.rebind(Symbols.LoggingProvider, TestLoggingProvider);
+        ShareChargeCoreClient.rebind(Symbols.BridgeProvider, TestBridgeProvider);
+        ShareChargeCoreClient.rebind(Symbols.ShareChargeProvider, TestShareChargeProvider);
+        ShareChargeCoreClient.rebind(Symbols.ConfigProvider, TestConfigProvider);
     });
 
     describe("#status()", () => {
@@ -38,14 +38,8 @@ describe('BridgeLogic', () => {
 
         it('should return not available if it is not available', async () => {
 
-            config.bridge = <IBridge>{
-                async health(): Promise<boolean> {
-                    return false;
-                }
-            };
-
-            const bl = new BridgeLogic(config);
-            const result = await bl.status({});
+            TestBridgeProvider.healthy = false;
+            const result = await bridgeLogic.status({});
             expect(result.bridge.isAvailable).to.equal(false);
         });
     });
