@@ -1,5 +1,5 @@
 import { Evse, PlugType } from "sharecharge-lib";
-import LogicBase from "./LogicBase"
+import LogicBase from "./logicBase"
 
 export default class ConnectorLogic extends LogicBase {
 

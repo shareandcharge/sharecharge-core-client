@@ -1,4 +1,4 @@
-import LogicBase from "./LogicBase"
+import LogicBase from "./logicBase"
 
 export default class BridgeLogic extends LogicBase {
 
