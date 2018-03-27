@@ -42,6 +42,12 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
             useWallet: (wallet) => {
                 return TestShareChargeProvider.chargingModifiers
             }
+        },
+        on: () => {
+
+        },
+        startListening: () => {
+
         }
     };
 
