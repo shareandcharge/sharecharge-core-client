@@ -14,7 +14,7 @@ describe('BridgeLogic', () => {
 
     let bridgeLogic: BridgeLogic;
 
-    beforeEach(() => {
+    before(() => {
         bridgeLogic = new BridgeLogic();
         ShareChargeCoreClient.rebind(Symbols.LoggingProvider, TestLoggingProvider);
         ShareChargeCoreClient.rebind(Symbols.BridgeProvider, TestBridgeProvider);

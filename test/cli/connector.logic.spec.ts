@@ -18,9 +18,7 @@ describe("ConnectorLogic", () => {
 
     let connectorLogic: ConnectorLogic;
 
-    const id: string = "0x1000000001";
-
-    beforeEach(() => {
+    before(() => {
         connectorLogic = new ConnectorLogic();
         ShareChargeCoreClient.rebind(Symbols.LoggingProvider, TestLoggingProvider);
         ShareChargeCoreClient.rebind(Symbols.ShareChargeProvider, TestShareChargeProvider);

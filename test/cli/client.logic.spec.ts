@@ -11,7 +11,7 @@ describe('ClientLogic', () => {
 
     let clientLogic: ClientLogic;
 
-    beforeEach(() => {
+    before(() => {
         clientLogic = new ClientLogic();
         ShareChargeCoreClient.rebind(Symbols.LoggingProvider, TestLoggingProvider);
         ShareChargeCoreClient.rebind(Symbols.ConfigProvider, TestConfigProvider);
