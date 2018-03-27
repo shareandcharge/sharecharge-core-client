@@ -1,4 +1,5 @@
 import LogicBase from "./logicBase"
+import ShareChargeCoreClient from "../shareChargeCoreClient";
 
 export default class ClientLogic extends LogicBase {
 
@@ -8,7 +9,7 @@ export default class ClientLogic extends LogicBase {
             this.client.logger.warn("No seed configured!");
         }
 
-        // todo start client ;)
+        ShareChargeCoreClient.getInstance().run();
 
         return true;
     };

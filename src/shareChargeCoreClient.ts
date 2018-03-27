@@ -48,6 +48,54 @@ export default class ShareChargeCoreClient {
         return this.configProvider;
     }
 
+    private static shortenId(id) {
+        return id.replace(/0+$/g, "").toLowerCase()
+    }
+
+    public run() {
+
+        this.sc.on("StartRequested", async (result) => {
+            const id = ShareChargeCoreClient.shortenId(result.evseId);
+            const evse = this.connectors[id];
+            if (evse) {
+                this.logger.info(`Received start request for evse with id: ${id}`);
+
+                const success = this.bridge.connectorStatus(result.evseId);
+                const evse = await this.sc.evses.getById(id);
+
+                if (success) {
+                    await this.sc.charging.useWallet(this.wallet).confirmStart(evse, result.controller);
+                    this.logger.info(`Confirmed start for evse with id: ${id}`);
+                } else {
+                    this.logger.error("Err");
+                    await this.sc.charging.useWallet(this.wallet).error(evse, result.controller, 0x7);
+                }
+            }
+        });
+
+        this.sc.on("StopRequested", async (result) => {
+            const id = ShareChargeCoreClient.shortenId(result.evseId);
+            const evse = this.connectors[id];
+            if (evse) {
+                this.logger.info(`Received stop request for evse with id: ${id}`);
+
+                const success = this.bridge.connectorStatus(id);
+                const evse = await this.sc.evses.getById(id);
+
+                if (success) {
+                    await this.sc.charging.useWallet(this.wallet).confirmStop(evse, result.controller);
+                    this.logger.info(`Confirmed stop for evse with id: ${id}`);
+                } else {
+                    this.logger.error("Err");
+                    await this.sc.charging.useWallet(this.wallet).error(evse, result.controller, 0x3);
+                }
+            }
+        });
+
+        this.sc.startListening();
+        this.logger.info(`Listening for events`);
+    }
+
     static getInstance(): ShareChargeCoreClient {
 
         if (!ShareChargeCoreClient.container) {
