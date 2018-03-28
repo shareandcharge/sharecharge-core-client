@@ -1,5 +1,4 @@
 import IBridge from '../models/iBridge';
-import StatusObject from "../models/iStatusObject";
 
 export default class ErrorBridge implements IBridge {
 
@@ -9,7 +8,7 @@ export default class ErrorBridge implements IBridge {
     }
 
     get name(): string {
-        return 'test2';
+        return this.constructor.name;
     }
 
     async health(): Promise<boolean> {
