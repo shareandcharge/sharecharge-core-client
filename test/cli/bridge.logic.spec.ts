@@ -1,5 +1,5 @@
-import * as mocha from 'mocha';
-import { expect } from 'chai';
+import * as mocha from "mocha";
+import { expect } from "chai";
 
 import BridgeLogic from "../../src/cli/bridge.logic";
 import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
@@ -10,7 +10,7 @@ import TestLoggingProvider from "../testLoggingProvider";
 import TestShareChargeProvider from "../testShareChargeProvider";
 import TestBridgeProvider from "../testBridgeProvider";
 
-describe('BridgeLogic', () => {
+describe("BridgeLogic", () => {
 
     let bridgeLogic: BridgeLogic;
 
@@ -24,19 +24,19 @@ describe('BridgeLogic', () => {
 
     describe("#status()", () => {
 
-        it('should return the configured bridge correctly', async () => {
+        it("should return the configured bridge correctly", async () => {
 
             const result = await bridgeLogic.status({});
-            expect(result.name).to.equal("test1");
+            expect(result.name).to.equal("MockBridge");
         });
 
-        it('should return available in normal cases', async () => {
+        it("should return available in normal cases", async () => {
 
             const result = await bridgeLogic.status({});
             expect(result.bridge.isAvailable).to.equal(true);
         });
 
-        it('should return not available if it is not available', async () => {
+        it("should return not available if it is not available", async () => {
 
             TestBridgeProvider.healthy = false;
             const result = await bridgeLogic.status({});
