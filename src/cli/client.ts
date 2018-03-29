@@ -21,8 +21,8 @@ export const clientHandler = (yargs) => {
                 describe: "Path to the bridge which the Core Client should connect to",
                 type: "string"
             },
-            "connectorsPath": {
-                describe: "Path to the connector data if registration of connectors required",
+            "evsesPath": {
+                describe: "Path to the evse data if registration of evses required",
                 type: "string"
             },
             "stage": {

@@ -23,8 +23,12 @@ export default class ErrorBridge implements IBridge {
         return {data: 50};
     }
 
-    async connectorStatus(id?: string): Promise<any> {
+    async evseStatus(id?: string): Promise<any> {
         return true;
+    }
+
+    async cdr(id?: string): Promise<any> {
+        return {};
     }
 
     startUpdater(interval?: number): void {

@@ -1,4 +1,5 @@
 import IResult from "./iResult";
+import ICDR from "./iCDR";
 
 export default interface IBridge {
     name: string;
@@ -13,5 +14,7 @@ export default interface IBridge {
 
     stopUpdater(): void;
 
-    connectorStatus(id?: string): Promise<any>;
+    evseStatus(id?: string): Promise<any>;
+
+    cdr(id?: string): Promise<ICDR>;
 }

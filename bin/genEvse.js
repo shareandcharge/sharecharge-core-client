@@ -22,4 +22,4 @@ for (let i = 0; i < quantity; i++) {
     }
 }
 
-fs.writeFileSync('./connectorsXL.json', JSON.stringify(data, null, 2));
+fs.writeFileSync('./evsesXL.json', JSON.stringify(data, null, 2));

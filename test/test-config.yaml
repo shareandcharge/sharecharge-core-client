@@ -1,6 +1,6 @@
 --- 
   bridgePath: ../bridges/MockBridge
-  connectorsPath: ../../test/test-connectors.json
+  evsesPath: ../../test/test-evses.json
   stage: "local"
   seed: "filter march urge naive sauce distance under copy payment slow just cool"
   gasPrice: 2

@@ -1,6 +1,6 @@
 import * as yargs from "yargs";
 import bridgeHandler from "./bridge"
-import cpHandler from "./connector";
+import cpHandler from "./evse";
 import { clientHandler } from "./client"
 
 const argv = yargs
@@ -11,7 +11,7 @@ const argv = yargs
     .option("json", {
         describe: "generate json output"
     })
-    .command("connector", "Connector commands", cpHandler, (argv) => {
+    .command("evse", "evse commands", cpHandler, (argv) => {
         // this command has sub commands, exit
         yargs.showHelp();
     })

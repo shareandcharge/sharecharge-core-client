@@ -3,6 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import LoggingProvider from "../services/loggingProvider";
+import ICDR from '../models/iCDR';
 
 const logger = new LoggingProvider().obtain();
 const app = express();
@@ -18,26 +19,29 @@ sc.on('StationCreated', result => {
 sc.on('StationUpdated', result => {
     console.log(result);
 });
-sc.on('ConnectorCreated', result => {
+sc.on('EvseCreated', result => {
     console.log(result);
 });
-sc.on('ConnectorUpdated', result => {
+sc.on('EvseUpdated', result => {
     console.log(result);
 });
 sc.on('StartRequested', result => {
-    // if result.connectorId is one of ours since this will receive ALL messages
-    // simulate delay of starting connector
+    // if result.evseId is one of ours since this will receive ALL messages
+    // simulate delay of starting evse
     setTimeout(async () => {
-        const connector = await sc.evses.getById(result.connectorId);
-        sc.charging.useWallet(wallet).confirmStart(connector, result.controller);
+        const evse = await sc.evses.getById(result.evseId);
+        sc.charging.useWallet(wallet).confirmStart(evse, result.controller);
     }, 500);
 });
 sc.on('StopRequested', result => {
-    // if result.connectorId is one of ours since this will receive ALL messages
-    // simulate delay of starting connector
+    // if result.evseId is one of ours since this will receive ALL messages
+    // simulate delay of starting evse
     setTimeout(async () => {
-        const connector = await sc.evses.getById(result.connectorId);
-        sc.charging.useWallet(wallet).confirmStop(connector, result.controller);
+        const evse = await sc.evses.getById(result.evseId);
+        // use bridge to stop then get cdr
+        // await bridge.stop(id);
+        const cdr: ICDR = { start: Date.now() - 60000, stop: Date.now(), energy: 10000 };
+        sc.charging.useWallet(wallet).confirmStop(evse, result.controller, cdr.start, cdr.stop, cdr.energy);
     }, 500);
 });
 sc.on('Error', result => {
@@ -86,70 +90,69 @@ app.post('/stations', verifyToken, async (req, res) => {
     res.send(station.id);
 });
 
-// create connector
-app.post('/connectors', verifyToken, async (req, res) => {
-    const connector = new Evse();
-    connector.plugTypes = ToolKit.fromPlugMask(req.body.plugTypes);
-    connector.available = true;
-    await sc.evses.useWallet(wallet).create(connector);
-    res.send(connector.id);
+// create evse
+app.post('/evses', verifyToken, async (req, res) => {
+    const evse = new Evse();
+    evse.available = true;
+    await sc.evses.useWallet(wallet).create(evse);
+    res.send(evse.id);
 });
 
-// get informations for one connector
-app.get('/connectors/:id', verifyToken, async (req, res) => {
+// get informations for one evse
+app.get('/evses/:id', verifyToken, async (req, res) => {
 
-    const connector = await sc.evses.getById(req.params.id);
-    const station = await sc.stations.getById(connector.stationId);
+    const evse = await sc.evses.getById(req.params.id);
+    const station = await sc.stations.getById(evse.stationId);
 
     let response = {
+        // change to evse data model
         lat: station.latitude,
         lng: station.longitude,
         price: 0,
         priceModel: 0,
-        plugType: connector.plugTypes,
         openingHours: station.openingHours,
-        isAvailable: connector.available
+        isAvailable: evse.available
     }
     res.send(response);
 });
 
-//Get status of the connector
+//Get status of the evse
 // app.get('/status/:id', async (req, res) => {
 //     let body = {
-//         "CP status ": (await sc.connectors.getById(req.params.id)).available,
+//         "CP status ": (await sc.evses.getById(req.params.id)).available,
 //         "Bridge name ": bridge.name,
 //         "Bridge status ": await bridge.health()
 //     }
 //     res.send(body);
 // });
 
-//Disable the connector
+//Disable the evse
 app.put('/disable/:id', verifyToken, async (req, res) => {
-    const connector = await sc.evses.getById(req.params.id);
-    connector.available = false;
-    await sc.evses.useWallet(wallet).update(connector);
+    const evse = await sc.evses.getById(req.params.id);
+    evse.available = false;
+    await sc.evses.useWallet(wallet).update(evse);
     res.sendStatus(200);
 });
 
-//Enable the connector
+//Enable the evse
 app.put('/enable/:id', verifyToken, async (req, res) => {
-    const connector = await sc.evses.getById(req.params.id);
-    connector.available = true;
-    await sc.evses.useWallet(wallet).update(connector);
+    const evse = await sc.evses.getById(req.params.id);
+    evse.available = true;
+    await sc.evses.useWallet(wallet).update(evse);
     res.sendStatus(200);
 });
 
 //Request start
 app.put('/start/:id', verifyToken, async (req, res) => {
-    const connector = await sc.evses.getById(req.params.id);
-    await sc.charging.useWallet(wallet).requestStart(connector, 10);
+    const evse = await sc.evses.getById(req.params.id);
+    await sc.charging.useWallet(wallet).requestStart(evse, 10, 0);
     res.send(200);
 });
 
 // Stop endpoint
 app.put('/stop/:id', verifyToken, async (req, res) => {
-    const connector = await sc.evses.getById(req.params.id);
-    await sc.charging.useWallet(wallet).requestStop(connector);
+    const evse = await sc.evses.getById(req.params.id);
+    await sc.charging.useWallet(wallet).requestStop(evse);
     // clearTimeout(to);
     // const stop = await contract.sendTx('confirmStop', req.params.id);
     // console.log("Charging stoped");

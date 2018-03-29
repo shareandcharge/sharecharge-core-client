@@ -7,35 +7,39 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
 
     public static blockchain: object = {};
 
-    public static connectorModifiers = {
-        create: (connector) => {
+    public static evseModifiers = {
+        create: (evse) => {
 
-            TestShareChargeProvider.blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[evse.id] = evse;
         },
-        update: (connector) => {
+        update: (evse) => {
 
-            TestShareChargeProvider.blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[evse.id] = evse;
         }
     };
 
     public static chargingModifiers = {
-        requestStart: (connector, seconds) => {
+        requestStart: (evse, seconds) => {
 
-            TestShareChargeProvider.blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[evse.id] = evse;
         },
-        requestStop: (connector) => {
+        requestStop: (evse) => {
 
-            TestShareChargeProvider.blockchain[connector.id] = connector;
+            TestShareChargeProvider.blockchain[evse.id] = evse;
         }
     };
 
     public static scMock = {
         evses: {
             useWallet: (wallet: Wallet, keyIndex: number = 0) => {
-                return TestShareChargeProvider.connectorModifiers
+                return TestShareChargeProvider.evseModifiers
             },
             getById: (id) => {
-                return TestShareChargeProvider.blockchain[id] || Evse.deserialize({id});
+                return TestShareChargeProvider.blockchain[id] || Evse.deserialize({
+                    id,
+                    owner: '0x0',
+                    currency: '0x455552'
+                });
             }
         },
         charging: {

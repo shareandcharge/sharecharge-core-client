@@ -5,17 +5,17 @@ import { Symbols } from "../symbols";
 import * as fs from "fs";
 
 @injectable()
-export default class ConnectorsProvider {
+export default class EvseProvider {
 
-    private connectors: any[];
+    private evses: any[];
 
     constructor(@inject(Symbols.ConfigProvider) private configProvider: IClientConfig) {
-        this.connectors = ConnectorsProvider.loadConnectorsFromPath(this.configProvider.connectorsPath);
+        this.evses = EvseProvider.loadEvsesFromPath(this.configProvider.evsesPath);
     }
 
-    private static loadConnectorsFromPath(connectorPath) {
+    private static loadEvsesFromPath(evsesPath) {
 
-        const fullPath = path.join(__dirname, connectorPath);
+        const fullPath = path.join(__dirname, evsesPath);
 
         // console.log("Conpath", fullPath);
 
@@ -29,6 +29,6 @@ export default class ConnectorsProvider {
     }
 
     obtain() {
-        return this.connectors;
+        return this.evses;
     }
 }

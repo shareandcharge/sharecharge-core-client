@@ -36,7 +36,7 @@ A `config.yaml` is provided with default configuration values in the root direct
 --- 
   bridge: ./testBridge1
   statusInterval: 2000
-  connectors: ./connectors.json
+  evse: ./evses.json
   test: true
   id: 123
   pass: 123

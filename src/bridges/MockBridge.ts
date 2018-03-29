@@ -23,8 +23,16 @@ export default class MockBridge implements IBridge {
         return {data: 50};
     }
 
-    async connectorStatus(id?: string): Promise<any> {
+    async evseStatus(id?: string): Promise<any> {
         return true;
+    }
+
+    async cdr(id?: string): Promise<any> {
+        return {
+            start: Date.now() - 60000,
+            stop: Date.now(),
+            energy: 10000
+        };
     }
 
     startUpdater(interval?: number): void {

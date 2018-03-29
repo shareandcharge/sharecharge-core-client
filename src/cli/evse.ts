@@ -1,7 +1,7 @@
-import ConnectorLogic from "./connector.logic";
+import EvseLogic from "./evse.logic";
 import ConfigProvider from "../services/configProvider";
 
-const connectorLogic = new ConnectorLogic();
+const evseLogic = new EvseLogic();
 
 export default (yargs) => {
 
@@ -20,7 +20,7 @@ export default (yargs) => {
                         (yargs) => {
                             // no id in this case, srly
                             yargs.default("id", "");
-                        }, connectorLogic.registerAll);
+                        }, evseLogic.registerAll);
 
                 yargs
                     .positional("id", {
@@ -30,7 +30,7 @@ export default (yargs) => {
                     .string("_")
                     .demand("id");
 
-            }, connectorLogic.register)
+            }, evseLogic.register)
 
         .command("status [id]",
             "Returns the current status of the Charge Point with given id",
@@ -42,7 +42,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id")
-            }, connectorLogic.status)
+            }, evseLogic.status)
 
         .command("info [id]",
             "Returns the current info of the Charge Point with given id",
@@ -54,7 +54,7 @@ export default (yargs) => {
                         (yargs) => {
                             // no id in this case, srly
                             yargs.default("id", "");
-                        }, connectorLogic.infoAll);
+                        }, evseLogic.infoAll);
 
                 yargs
                     .positional("id", {
@@ -64,7 +64,7 @@ export default (yargs) => {
                     .string("_")
                     .demand("id");
 
-            }, connectorLogic.info)
+            }, evseLogic.info)
 
         .command("disable [id]",
             "Disables the Charge Point with given id",
@@ -76,7 +76,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id");
-            }, connectorLogic.disable)
+            }, evseLogic.disable)
 
         .command("enable [id]",
             "Enables the Charge Point with given id",
@@ -88,7 +88,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id");
-            }, connectorLogic.enable)
+            }, evseLogic.enable)
 
         .command("start [id] [seconds]",
             "Start a charging session at a given Charge Point",
@@ -106,7 +106,7 @@ export default (yargs) => {
                     .string("_")
                     .demand("id")
 
-            }, connectorLogic.start)
+            }, evseLogic.start)
 
         .command("stop [id]",
             "Stops a charging session at a given Charge Point",
@@ -118,5 +118,5 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("id")
-            }, connectorLogic.stop);
+            }, evseLogic.stop);
 }

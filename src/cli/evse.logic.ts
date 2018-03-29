@@ -1,33 +1,27 @@
-import { Evse, PlugType } from "sharecharge-lib";
+import { Evse } from "sharecharge-lib";
 import LogicBase from "./logicBase"
 
-export default class ConnectorLogic extends LogicBase {
+export default class EvseLogic extends LogicBase {
 
-    private async doRegister(connectorToRegister, id, stfu) {
+    private async doRegister(evseToRegister, id, stfu) {
 
-        let connector: Evse = await this.client.sc.evses.getById(id);
+        // let evse: Evse = await this.client.sc.evses.getById(id);
+        let evse = new Evse();
+        evse.stationId = evseToRegister.stationId;
+        evse.currency = evseToRegister.currency;
+        evse.basePrice = evseToRegister.basePrice;
+        evse.tariffId = evseToRegister.tariffId;
+        evse.available = evseToRegister.available;
 
-        connector.stationId = "0x00";
-        connector.available = connectorToRegister.available;
-        connector.plugTypes = connectorToRegister.plugTypes.map(type => {
-            return PlugType[type];
-        });
-
-        if (connector.owner.startsWith("0x00")) {
-            await this.client.sc.evses.useWallet(this.client.wallet).create(connector);
-            if (!stfu) {
-                this.client.logger.info(`Connector with id ${id} created`);
-            }
-        } else if (!stfu) {
-            this.client.logger.warn(`Connector with id ${id} already created`);
-        }
-
+        await this.client.sc.evses.useWallet(this.client.wallet).create(evse);
+        // this.client.logger.info(`evse with id ${id} created`);
+        
         return {
-            id: connector.id,
-            owner: connector.owner,
-            stationId: connector.stationId,
-            available: connector.available,
-            plugTypes: connector.plugTypes
+            id: evse.id,
+            owner: evse.owner,
+            stationId: evse.stationId,
+            available: evse.available,
+            
         }
     }
 
@@ -35,16 +29,14 @@ export default class ConnectorLogic extends LogicBase {
 
         let result: any = null;
 
-        const connector: Evse = await this.client.sc.evses.getById(id);
+        const evse: Evse = await this.client.sc.evses.getById(id);
 
-        if (!connector.owner.startsWith("0x00")) {
+        if (!evse.owner.startsWith("0x00")) {
             result = {
-                id: connector.id,
-                owner: connector.owner,
-                stationId: connector.stationId,
-                available: connector.available,
-                plugTypes: connector.plugTypes
-
+                id: evse.id,
+                owner: evse.owner,
+                stationId: evse.stationId,
+                available: evse.available,
             }
         }
 
@@ -54,7 +46,7 @@ export default class ConnectorLogic extends LogicBase {
     public register = async (argv) => {
 
         if (!argv.json) {
-            this.client.logger.info(`Registering Connector with id: ${argv.id}`);
+            this.client.logger.info(`Registering evse with id: ${argv.id}`);
         }
 
         let result: any = {
@@ -62,18 +54,18 @@ export default class ConnectorLogic extends LogicBase {
             success: false
         };
 
-        const connector = this.client.connectors[argv.id];
+        const evse = this.client.evses[argv.id];
 
-        if (!connector) {
+        if (!evse) {
 
             if (argv.json) {
                 this.client.logger.info(JSON.stringify({}, null, 2));
             } else {
-                console.error(`No Connector found with id ${argv.id} in configuration.`);
+                console.error(`No evse found with id ${argv.id} in configuration.`);
             }
         }
 
-        result = await this.doRegister(connector, argv.id, argv.json);
+        result = await this.doRegister(evse, argv.id, argv.json);
 
         if (argv.json) {
             this.client.logger.info(JSON.stringify(result, null, 2));
@@ -87,16 +79,16 @@ export default class ConnectorLogic extends LogicBase {
     public registerAll = async (argv) => {
 
         if (!argv.json) {
-            this.client.logger.info("Registering all Connectors from the configuration");
+            this.client.logger.info("Registering all evses from the configuration");
         }
 
-        const ids = Object.keys(this.client.connectors);
+        const ids = Object.keys(this.client.evses);
 
         const results: any[] = [];
 
         for (let id of ids) {
 
-            const cp = this.client.connectors[id];
+            const cp = this.client.evses[id];
             const result = await this.doRegister(cp, id, argv.json);
             results.push(result);
         }
@@ -113,7 +105,7 @@ export default class ConnectorLogic extends LogicBase {
     public info = async (argv) => {
 
         if (!argv.json) {
-            this.client.logger.info(`Getting Info for Connector ${argv.id}`);
+            this.client.logger.info(`Getting Info for evse ${argv.id}`);
         }
 
         const result: any = await this.getInformation(argv.id);
@@ -124,13 +116,12 @@ export default class ConnectorLogic extends LogicBase {
                 this.client.logger.info("Owner:", result.owner);
                 this.client.logger.info("StationId:", result.stationId);
                 this.client.logger.info("Available:", result.available);
-                this.client.logger.info("PlugTypes:", result.plugTypes);
             } else {
                 console.log(JSON.stringify(result, null, 2));
             }
         } else {
             if (!argv.json) {
-                this.client.logger.warn("Connector not registered");
+                this.client.logger.warn("evse not registered");
             } else {
                 console.log(JSON.stringify({}, null, 2));
             }
@@ -142,7 +133,7 @@ export default class ConnectorLogic extends LogicBase {
     public infoAll = async (argv) => {
 
         if (!argv.json) {
-            this.client.logger.info("Getting all Connector infos from EV Network");
+            this.client.logger.info("Getting all evse infos from EV Network");
         }
 
         throw new Error("cannot get all info ");
@@ -159,15 +150,15 @@ export default class ConnectorLogic extends LogicBase {
         };
 
         if (!argv.json) {
-            this.client.logger.info("Getting status for Connector with id:", argv.id);
+            this.client.logger.info("Getting status for evse with id:", argv.id);
         }
 
-        const connector = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getById(argv.id);
 
-        if (!connector.owner.startsWith("0x00")) {
+        if (!evse.owner.startsWith("0x00")) {
 
-            result.state.ev = connector.available;
-            result.state.bridge = await this.client.bridge.connectorStatus(argv.id);
+            result.state.ev = evse.available;
+            result.state.bridge = await this.client.bridge.evseStatus(argv.id);
         }
 
         if (argv.json) {
@@ -188,23 +179,23 @@ export default class ConnectorLogic extends LogicBase {
         };
 
         if (!argv.json) {
-            this.client.logger.info(`Disabling Connector with id: ${argv.id}`);
+            this.client.logger.info(`Disabling evse with id: ${argv.id}`);
         }
 
-        const connector = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getById(argv.id);
 
-        if (!connector.owner.startsWith("0x00")) {
+        if (!evse.owner.startsWith("0x00")) {
 
             // only disable if available
-            if (connector.available) {
-                connector.available = false;
-                await this.client.sc.evses.useWallet(this.client.wallet).update(connector);
+            if (evse.available) {
+                evse.available = false;
+                await this.client.sc.evses.useWallet(this.client.wallet).update(evse);
                 result.success = true;
             } else if (!argv.json) {
-                this.client.logger.info("Connector already disabled");
+                this.client.logger.info("evse already disabled");
             }
         } else if (!argv.json) {
-            this.client.logger.info("Connector not registered");
+            this.client.logger.info("evse not registered");
         }
 
         if (argv.json) {
@@ -223,26 +214,26 @@ export default class ConnectorLogic extends LogicBase {
             success: false
         };
 
-        const connector = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getById(argv.id);
 
         // only enable if persisted
-        if (!connector.owner.startsWith("0x00")) {
+        if (!evse.owner.startsWith("0x00")) {
 
             if (!argv.json) {
-                this.client.logger.info(`Enabling Connector with id: ${connector.id}`);
+                this.client.logger.info(`Enabling evse with id: ${evse.id}`);
             }
 
             // only enable if disabled
-            if (!connector.available) {
-                connector.available = true;
-                await this.client.sc.evses.useWallet(this.client.wallet).update(connector);
+            if (!evse.available) {
+                evse.available = true;
+                await this.client.sc.evses.useWallet(this.client.wallet).update(evse);
                 result.success = true;
             } else if (!argv.json) {
-                this.client.logger.info("Connector already enabled");
+                this.client.logger.info("evse already enabled");
             }
 
         } else if (!argv.json) {
-            this.client.logger.info("Connector not registered");
+            this.client.logger.info("evse not registered");
         }
 
         if (argv.json) {
@@ -261,18 +252,18 @@ export default class ConnectorLogic extends LogicBase {
             success: false
         };
 
-        const connector = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getById(argv.id);
 
         if (!argv.json) {
-            this.client.logger.info(`Starting charge on ${connector.id} for ${argv.seconds} seconds...`);
+            this.client.logger.info(`Starting charge on ${evse.id} for ${argv.seconds} seconds...`);
         }
 
-        if (!connector.owner.startsWith("0x00")) {
+        if (!evse.owner.startsWith("0x00")) {
 
             // only charge if available
-            if (connector.available) {
+            if (evse.available) {
 
-                await this.client.sc.charging.useWallet(this.client.wallet).requestStart(connector, argv.seconds);
+                await this.client.sc.charging.useWallet(this.client.wallet).requestStart(evse, argv.seconds, argv.energy);
                 result.success = true;
 
                 if (!argv.json) {
@@ -280,11 +271,11 @@ export default class ConnectorLogic extends LogicBase {
                 }
 
             } else if (!argv.json) {
-                this.client.logger.warn("Connector not available");
+                this.client.logger.warn("evse not available");
             }
 
         } else if (!argv.json) {
-            this.client.logger.warn("Connector not registered");
+            this.client.logger.warn("evse not registered");
         }
 
         if (argv.json) {
@@ -303,18 +294,18 @@ export default class ConnectorLogic extends LogicBase {
             success: false
         };
 
-        const connector = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getById(argv.id);
 
         if (!argv.json) {
-            this.client.logger.info("Stopping charge on Connector with ID:", connector.id);
+            this.client.logger.info("Stopping charge on evse with ID:", evse.id);
         }
 
-        if (!connector.owner.startsWith("0x00")) {
+        if (!evse.owner.startsWith("0x00")) {
 
             // only stop if not available
-            if (!connector.available) {
+            if (!evse.available) {
 
-                await this.client.sc.charging.useWallet(this.client.wallet).requestStop(connector);
+                await this.client.sc.charging.useWallet(this.client.wallet).requestStop(evse);
                 result.success = true;
 
                 if (!argv.json) {
@@ -326,7 +317,7 @@ export default class ConnectorLogic extends LogicBase {
             }
 
         } else if (!argv.json) {
-            this.client.logger.warn("Connector not registered");
+            this.client.logger.warn("evse not registered");
         }
 
         if (argv.json) {

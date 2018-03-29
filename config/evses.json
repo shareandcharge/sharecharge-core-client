@@ -1,0 +1,23 @@
+{
+  "0x01": {
+    "stationId": "0x1",
+    "currency": "EUR",
+    "basePrice": 500,
+    "tariffId": 1,
+    "available": true
+  },
+  "0x02": {
+    "stationId": "0x1",
+    "currency": "EUR",
+    "basePrice": 500,
+    "tariffId": 1,
+    "available": true
+  },
+  "0x03": {
+    "stationId": "0x2",
+    "currency": "EUR",
+    "basePrice": 500,
+    "tariffId": 1,
+    "available": true
+  }
+}

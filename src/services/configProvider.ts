@@ -16,8 +16,8 @@ export default class ConfigProvider implements IClientConfig {
         return this.config.bridgePath;
     }
 
-    get connectorsPath() {
-        return this.config.connectorsPath;
+    get evsesPath() {
+        return this.config.evsesPath;
     }
 
     get gasPrice() {
@@ -47,7 +47,7 @@ export default class ConfigProvider implements IClientConfig {
     private static createConfig(argv: any): IClientConfig {
         return <IClientConfig>{
             bridgePath: argv.bridgePath,
-            connectorsPath: argv.connectorsPath,
+            evsesPath: argv.evsesPath,
             stage: argv.stage,
             seed: argv.seed,
             gasPrice: argv.gasPrice,

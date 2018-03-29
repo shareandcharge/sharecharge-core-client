@@ -16,7 +16,7 @@ export default class TestBridgeProvider extends BridgeProvider {
     obtain() {
         const bridge = super.obtain();
 
-        bridge.connectorStatus = async (id: string): Promise<any> => {
+        bridge.evseStatus = async (id: string): Promise<any> => {
 
             return TestBridgeProvider.backend[id].available;
         };
