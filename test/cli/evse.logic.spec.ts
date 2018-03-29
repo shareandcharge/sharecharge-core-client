@@ -252,26 +252,26 @@ describe("EvseLogic", () => {
 
     describe("#start()", () => {
 
-        it("should start charging on available evse", async () => {
+        // it("should start charging on available evse", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
-            evse.available = true;
+        //     const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+        //     evse.available = true;
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+        //     TestShareChargeProvider.blockchain[evse.id] = evse;
 
-            const requestStartSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStart");
-            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+        //     const requestStartSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStart");
+        //     const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
 
-            const result = await evseLogic.start({id: evse.id, seconds: 100, json: false});
+        //     const result = await evseLogic.start({id: evse.id, seconds: 100, json: false});
 
-            requestStartSpy.restore();
-            getByIdSpy.restore();
+        //     requestStartSpy.restore();
+        //     getByIdSpy.restore();
 
-            expect(result.success).to.be.true;
-            expect(result.id).to.be.equal(evse.id);
-            expect(requestStartSpy.calledOnce).to.be.true;
-            expect(getByIdSpy.calledOnce).to.be.true;
-        });
+        //     expect(result.success).to.be.true;
+        //     expect(result.id).to.be.equal(evse.id);
+        //     expect(requestStartSpy.calledOnce).to.be.true;
+        //     expect(getByIdSpy.calledOnce).to.be.true;
+        // });
 
         it("should not start charging on unavailable evse", async () => {
 
