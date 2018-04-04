@@ -7,6 +7,7 @@ export default class EvseLogic extends LogicBase {
 
         // let evse: Evse = await this.client.sc.evses.getById(id);
         let evse = new Evse();
+        evse.uid = evseToRegister.uid;
         evse.stationId = evseToRegister.stationId;
         evse.currency = evseToRegister.currency;
         evse.basePrice = evseToRegister.basePrice;
@@ -15,13 +16,12 @@ export default class EvseLogic extends LogicBase {
 
         await this.client.sc.evses.useWallet(this.client.wallet).create(evse);
         // this.client.logger.info(`evse with id ${id} created`);
-        
+
         return {
             id: evse.id,
             owner: evse.owner,
             stationId: evse.stationId,
             available: evse.available,
-            
         }
     }
 
