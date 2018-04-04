@@ -9,6 +9,16 @@ const logger = new LoggingProvider().obtain();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.listen(PORT, function () {
+    logger.info('API server running on http://localhost:' + PORT);
+});
+
+export const config = {
+    stage: process.env.sc_stage || "local",
+    provider: process.env.sc_provider || 'http://localhost:8545',
+    gasPrice: 18000000000
+};
+
 const sc = ShareCharge.getInstance();
 const wallet = new Wallet('filter march urge naive sauce distance under copy payment slow just cool');
 
@@ -53,35 +63,23 @@ let to;
 app.use(bodyParser.json()); // support json bodies
 app.use(bodyParser.urlencoded({extended: true}));  //support encoded bodies
 
-export const listen = () => {
-    app.listen(PORT, function () {
-        logger.info('API server running on http://localhost:' + PORT);
-    });
+// export const listen = () => {
+//     app.listen(PORT, function () {
+//         logger.info('API server running on http://localhost:' + PORT);
+//     });
 
-    // CREATING JW TOKEN
-    jwt.sign({user: 'test'}, 'secretkey', {expiresIn: '2m'}, (err, token) => {
-        if (err) {
-            logger.info(err);
-        } else {
-            logger.info("Your json web token: ", token);
-        }
-    });
-};
+//     // CREATING JW TOKEN
+//     jwt.sign({user: 'test'}, 'secretkey', {expiresIn: '2m'}, (err, token) => {
+//         if (err) {
+//             logger.info(err);
+//         } else {
+//             logger.info("Your json web token: ", token);
+//         }
+//     });
+// };
 
-// get all stations
-app.get('/stations', verifyToken, async (req, res) => {
-    const stations = await sc.stations.getAll();
-    res.send(stations.map((station: Station) => Station.serialize(station)));
-});
-
-// get single station
-app.get('/stations/:id', verifyToken, async (req, res) => {
-    const station = await sc.stations.getById(req.params.id);
-    res.send(Station.serialize(station));
-});
-
-// create station
-app.post('/stations', verifyToken, async (req, res) => {
+// create station 
+app.post('/api/stations', verifyToken, async (req, res) => {
     const station = new Station();
     station.latitude = req.body.latitude;
     station.longitude = req.body.longitude;
@@ -90,69 +88,79 @@ app.post('/stations', verifyToken, async (req, res) => {
     res.send(station.id);
 });
 
-// create evse
-app.post('/evses', verifyToken, async (req, res) => {
-    const evse = new Evse();
-    evse.available = true;
-    await sc.evses.useWallet(wallet).create(evse);
-    res.send(evse.id);
+// get all stations 
+app.get('/api/stations', verifyToken, async (req, res) => {
+    const stations = await sc.stations.getAll();
+    res.send(stations.map((station: Station) => Station.serialize(station)));
 });
 
-// get informations for one evse
-app.get('/evses/:id', verifyToken, async (req, res) => {
+// get single station 
+app.get('/api/stations/:id', verifyToken, async (req, res) => {
+    const station = await sc.stations.getById(req.params.id);
+    res.send(Station.serialize(station));
+});
+
+
+// create connector 
+app.post('/api/evse', verifyToken, async (req, res) => {
+    const connector = new Evse();
+
+    connector.stationId = req.body.stationId;
+    connector.currency = req.body.currency;
+    connector.basePrice = req.body.basePrice;
+    connector.tariffId = req.body.tariffId;
+    connector.available = req.body.available;
+
+    await sc.evses.useWallet(wallet).create(connector);
+    res.send(connector.id);
+});
+
+// get informations for one connector 
+app.get('/api/evse/:id', verifyToken, async (req, res) => {
 
     const evse = await sc.evses.getById(req.params.id);
     const station = await sc.stations.getById(evse.stationId);
 
     let response = {
-        // change to evse data model
-        lat: station.latitude,
-        lng: station.longitude,
-        price: 0,
-        priceModel: 0,
-        openingHours: station.openingHours,
-        isAvailable: evse.available
+        id: evse.id,
+        stationId: evse.stationId,
+        owner: evse.owner,
+        basePrice: evse.basePrice,
+        currency: evse.currency,
+        tariffId: evse.tariffId,
+        available: evse.available
     }
     res.send(response);
 });
 
-//Get status of the evse
-// app.get('/status/:id', async (req, res) => {
-//     let body = {
-//         "CP status ": (await sc.evses.getById(req.params.id)).available,
-//         "Bridge name ": bridge.name,
-//         "Bridge status ": await bridge.health()
-//     }
-//     res.send(body);
-// });
-
-//Disable the evse
-app.put('/disable/:id', verifyToken, async (req, res) => {
-    const evse = await sc.evses.getById(req.params.id);
-    evse.available = false;
-    await sc.evses.useWallet(wallet).update(evse);
+//Disable the connector 
+app.put('/api/disable/:id', verifyToken, async (req, res) => {
+    
+    const connector = await sc.evses.getById(req.params.id);
+    connector.available = false;
+    await sc.evses.useWallet(wallet).update(connector);
     res.sendStatus(200);
 });
 
-//Enable the evse
-app.put('/enable/:id', verifyToken, async (req, res) => {
-    const evse = await sc.evses.getById(req.params.id);
-    evse.available = true;
-    await sc.evses.useWallet(wallet).update(evse);
+//Enable the connector -1
+app.put('/api/enable/:id', verifyToken, async (req, res) => {
+    const connector = await sc.evses.getById(req.params.id);
+    connector.available = true;
+    await sc.evses.useWallet(wallet).update(connector);
     res.sendStatus(200);
 });
 
-//Request start
-app.put('/start/:id', verifyToken, async (req, res) => {
-    const evse = await sc.evses.getById(req.params.id);
-    await sc.charging.useWallet(wallet).requestStart(evse, 10, 0);
+//Request start -0
+app.put('/api/start/:id', verifyToken, async (req, res) => {
+    const connector = await sc.evses.getById(req.params.id);
+    // await sc.charging.useWallet(wallet).requestStart(connector, 10);
     res.send(200);
 });
 
-// Stop endpoint
-app.put('/stop/:id', verifyToken, async (req, res) => {
-    const evse = await sc.evses.getById(req.params.id);
-    await sc.charging.useWallet(wallet).requestStop(evse);
+// Stop endpoint -0 
+app.put('/api/stop/:id', verifyToken, async (req, res) => {
+    const connector = await sc.evses.getById(req.params.id);
+    await sc.charging.useWallet(wallet).requestStop(connector);
     // clearTimeout(to);
     // const stop = await contract.sendTx('confirmStop', req.params.id);
     // console.log("Charging stoped");
@@ -160,36 +168,14 @@ app.put('/stop/:id', verifyToken, async (req, res) => {
     res.send(200);
 });
 
-//BRIDGE
-// app.get('/bridge/status', verifyToken, async (req, res) => {
-//     let body = {
-//         "Bridge name ": bridge.name,
-//         "Bridge status ": await bridge.health()
-//     }
-//     res.send(body);
-// });
-
-//CONFIGURATION
-app.get('/config', verifyToken, (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err, authData) => {
-        if (err) {
-            res.sendStatus(403);
-        } else {
-            logger.info(PORT.toString());
-            const port = PORT;
-            // res.send(port);
-        }
-    });
-});
-
 // CREATING JW TOKEN
-jwt.sign({user: 'test'}, 'secretkey', {expiresIn: '20m'}, (err, token) => {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log("Your json web token: ", token);
-    }
-});
+// jwt.sign({user: 'test'}, 'secretkey', {expiresIn: '20m'}, (err, token) => {
+//     if (err) {
+//         console.log(err);
+//     } else {
+//         console.log("Your json web token: ", token);
+//     }
+// });
 
 // Verify Token
 function verifyToken(req, res, next) {
