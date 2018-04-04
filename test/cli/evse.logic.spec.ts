@@ -99,7 +99,7 @@ describe("EvseLogic", () => {
 
         it("should return true if evse and bridge are available", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
             evse.available = true;
             evse.stationId = ToolKit.randomBytes32String();
 
@@ -128,7 +128,7 @@ describe("EvseLogic", () => {
 
         it("should return false if evse is unavailable", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
             evse.available = false;
             evse.stationId = ToolKit.randomBytes32String();
 
@@ -145,7 +145,7 @@ describe("EvseLogic", () => {
 
         it("should return false if bridge is unavailable in CPO backend", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
             evse.available = true;
             evse.stationId = ToolKit.randomBytes32String();
 
@@ -166,7 +166,7 @@ describe("EvseLogic", () => {
 
         it("should enable a disabled evse", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
             evse.available = false;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
@@ -187,7 +187,7 @@ describe("EvseLogic", () => {
 
         it("should return error if already enabled", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
             evse.available = true;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
@@ -210,7 +210,7 @@ describe("EvseLogic", () => {
 
         it("should disable an enabled evse", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
             evse.available = true;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
@@ -230,7 +230,7 @@ describe("EvseLogic", () => {
 
         it("should return error of already disabled", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
             evse.available = false;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
@@ -275,7 +275,7 @@ describe("EvseLogic", () => {
 
         it("should not start charging on unavailable evse", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
             evse.available = false;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
@@ -300,7 +300,7 @@ describe("EvseLogic", () => {
 
         it("should stop charging on a currently charging evse", async () => {
 
-            const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
             evse.available = false;
             TestShareChargeProvider.blockchain[evse.id] = evse;
 
