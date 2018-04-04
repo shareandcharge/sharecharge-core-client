@@ -101,21 +101,21 @@ app.get('/api/stations/:id', verifyToken, async (req, res) => {
 });
 
 
-// create connector 
+// create evse 
 app.post('/api/evse', verifyToken, async (req, res) => {
-    const connector = new Evse();
+    const evse = new Evse();
 
-    connector.stationId = req.body.stationId;
-    connector.currency = req.body.currency;
-    connector.basePrice = req.body.basePrice;
-    connector.tariffId = req.body.tariffId;
-    connector.available = req.body.available;
+    evse.stationId = req.body.stationId;
+    evse.currency = req.body.currency;
+    evse.basePrice = req.body.basePrice;
+    evse.tariffId = req.body.tariffId;
+    evse.available = req.body.available;
 
-    await sc.evses.useWallet(wallet).create(connector);
-    res.send(connector.id);
+    await sc.evses.useWallet(wallet).create(evse);
+    res.send(evse.id);
 });
 
-// get informations for one connector 
+// get informations for one evse 
 app.get('/api/evse/:id', verifyToken, async (req, res) => {
 
     const evse = await sc.evses.getById(req.params.id);
@@ -133,34 +133,34 @@ app.get('/api/evse/:id', verifyToken, async (req, res) => {
     res.send(response);
 });
 
-//Disable the connector 
+//Disable the evse 
 app.put('/api/disable/:id', verifyToken, async (req, res) => {
     
-    const connector = await sc.evses.getById(req.params.id);
-    connector.available = false;
-    await sc.evses.useWallet(wallet).update(connector);
+    const evse = await sc.evses.getById(req.params.id);
+    evse.available = false;
+    await sc.evses.useWallet(wallet).update(evse);
     res.sendStatus(200);
 });
 
-//Enable the connector -1
+//Enable the evse
 app.put('/api/enable/:id', verifyToken, async (req, res) => {
-    const connector = await sc.evses.getById(req.params.id);
-    connector.available = true;
-    await sc.evses.useWallet(wallet).update(connector);
+    const evse = await sc.evses.getById(req.params.id);
+    evse.available = true;
+    await sc.evses.useWallet(wallet).update(evse);
     res.sendStatus(200);
 });
 
-//Request start -0
+//Request start
 app.put('/api/start/:id', verifyToken, async (req, res) => {
-    const connector = await sc.evses.getById(req.params.id);
+    const evse = await sc.evses.getById(req.params.id);
     // await sc.charging.useWallet(wallet).requestStart(connector, 10);
     res.send(200);
 });
 
 // Stop endpoint -0 
 app.put('/api/stop/:id', verifyToken, async (req, res) => {
-    const connector = await sc.evses.getById(req.params.id);
-    await sc.charging.useWallet(wallet).requestStop(connector);
+    const evse = await sc.evses.getById(req.params.id);
+    await sc.charging.useWallet(wallet).requestStop(evse);
     // clearTimeout(to);
     // const stop = await contract.sendTx('confirmStop', req.params.id);
     // console.log("Charging stoped");
