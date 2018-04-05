@@ -1,8 +1,13 @@
+import { Subject } from 'rxjs';
+
 import IBridge from '../models/iBridge';
 
 export default class MockBridge implements IBridge {
 
     updater: any;
+
+    private autoStop = new Subject<any>();
+    autoStop$ = this.autoStop.asObservable();
 
     constructor() {
     }

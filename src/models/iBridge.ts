@@ -1,8 +1,11 @@
+import { Observable } from 'rxjs';
 import IResult from "./iResult";
 import ICDR from "./iCDR";
 
 export default interface IBridge {
     name: string;
+
+    autoStop$: Observable<any>;
 
     health(): Promise<boolean>;
 
