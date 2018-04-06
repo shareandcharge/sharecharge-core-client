@@ -1,23 +1,20 @@
 {
-  "0x01": {
-    "uid": "FR138E1ETG5578567YU8D",
-    "stationId": "0x01",
+  "FR138E1ETG5578567YU8D": {
+    "stationUid": "0x01",
     "currency": "EUR",
     "basePrice": 500,
     "tariffId": 1,
     "available": true
   },
-  "0x02": {
-    "uid": "FR222E1ETG5578567YU8D",
-    "stationId": "0x02",
+  "FR222E1ETG5578567YU8D": {
+    "stationUid": "0x01",
     "currency": "EUR",
     "basePrice": 500,
     "tariffId": 1,
     "available": true
   },
-  "0x03": {
-    "uid": "FR333E1ETG5578567YU8D",
-    "stationId": "0x03",
+  "FR333E1ETG5578567YU8D": {
+    "stationUid": "0x02",
     "currency": "EUR",
     "basePrice": 500,
     "tariffId": 1,

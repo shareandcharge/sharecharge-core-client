@@ -6,6 +6,7 @@ import { Evse, Wallet, ToolKit } from "sharecharge-lib";
 export default class TestShareChargeProvider extends ShareChargeProvider {
 
     public static blockchain: object = {};
+    public static readonly owner = "0x123456789";
 
     public static evseModifiers = {
         create: (evse) => {
@@ -36,10 +37,26 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
             },
             getById: (id) => {
                 return TestShareChargeProvider.blockchain[id] || Evse.deserialize({
-                    id,
-                    owner: '0x0',
-                    currency: '0x455552'
+                    id: id,
+                    owner: TestShareChargeProvider.owner
                 });
+            },
+            getByUid: (uid) => {
+
+                let result: Evse = new Evse();
+
+                for (let key of Object.keys(TestShareChargeProvider.blockchain)) {
+
+                    const e = TestShareChargeProvider.blockchain[key];
+
+                    if (e.uid === uid) {
+                        result = e;
+
+                        break;
+                    }
+                }
+
+                return result;
             }
         },
         charging: {

@@ -27,21 +27,52 @@ describe("EvseLogic", () => {
         ShareChargeCoreClient.rebind(Symbols.EvseProvider, EvseProvider);
     });
 
+    beforeEach(() => {
+        TestShareChargeProvider.blockchain = {};
+    });
+
     describe("#register()", () => {
 
         it("should register a evse correctly", async () => {
 
-            const idToTest = "0x1000000001";
+            const uidToTest = "FR448E1ETG5578567YU8D";
 
             const doRegisterSpy = sinon.spy(evseLogic, "doRegister");
+            const createSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "create");
 
-            const result = await evseLogic.register({id: idToTest, json: false});
+            const result = await evseLogic.register({id: uidToTest, json: false});
+            doRegisterSpy.restore();
+            createSpy.restore();
 
             expect(doRegisterSpy.calledOnce).to.be.true;
-            doRegisterSpy.restore();
 
             // expect(result.id).to.include(idToTest);
             expect(result.available).to.equal(true);
+            expect(result.id).to.equal(uidToTest);
+            expect(createSpy.calledOnce).to.be.true;
+        });
+
+        it("should not register a evse with the same id twice", async () => {
+
+            const uidToTest = "FR448E1ETG5578567YU8D";
+
+            TestShareChargeProvider.blockchain[uidToTest] = new Evse();
+            TestShareChargeProvider.blockchain[uidToTest].uid = uidToTest;
+            TestShareChargeProvider.blockchain[uidToTest].available = true;
+            TestShareChargeProvider.blockchain[uidToTest]._owner = ToolKit.randomBytes32String();
+
+            const doRegisterSpy = sinon.spy(evseLogic, "doRegister");
+            const createSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "create");
+
+            const result = await evseLogic.register({id: uidToTest, json: false});
+            doRegisterSpy.restore();
+            createSpy.restore();
+
+            expect(result.available).to.be.true;
+            expect(result.id).to.equal(uidToTest);
+
+            expect(doRegisterSpy.calledOnce).to.be.true;
+            expect(createSpy.notCalled).to.be.true;
         });
     });
 
@@ -62,6 +93,7 @@ describe("EvseLogic", () => {
             doRegisterSpy.restore();
 
             expect(results[0].available).to.be.equal(evseLogic.client.evses[evseIndexes[0]].available);
+            expect(results[0].id).to.be.equal(evseIndexes[0]);
         });
     });
 
@@ -75,9 +107,9 @@ describe("EvseLogic", () => {
             TestShareChargeProvider.blockchain[evse.id] = evse;
             TestShareChargeProvider.blockchain[evse.id]._owner = ToolKit.randomBytes32String();
 
-            const result = await evseLogic.info({id: evse.id, json: false});
+            const result = await evseLogic.info({id: evse.uid, json: false});
 
-            expect(result.id).to.equal(evse.id);
+            expect(result.id).to.equal(evse.uid);
             expect(result.available).to.equal(evse.available);
         });
 
@@ -99,16 +131,18 @@ describe("EvseLogic", () => {
 
         it("should return true if evse and bridge are available", async () => {
 
-            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({
+                uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552'
+            });
             evse.available = true;
             evse.stationId = ToolKit.randomBytes32String();
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
-            TestBridgeProvider.backend[evse.id] = {
+            TestBridgeProvider.backend[evse.uid] = {
                 available: true
             };
 
-            const result = await evseLogic.status({id: evse.id, json: false});
+            const result = await evseLogic.status({id: evse.uid, json: false});
 
             expect(result.state.bridge).to.be.equal(true);
             expect(result.state.ev).to.be.equal(true);
@@ -128,16 +162,18 @@ describe("EvseLogic", () => {
 
         it("should return false if evse is unavailable", async () => {
 
-            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({
+                uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552'
+            });
             evse.available = false;
             evse.stationId = ToolKit.randomBytes32String();
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
-            TestBridgeProvider.backend[evse.id] = {
+            TestBridgeProvider.backend[evse.uid] = {
                 available: true
             };
 
-            const result = await evseLogic.status({id: evse.id, json: false});
+            const result = await evseLogic.status({id: evse.uid, json: false});
 
             expect(result.state.bridge).to.be.equal(true);
             expect(result.state.ev).to.be.equal(false);
@@ -145,16 +181,19 @@ describe("EvseLogic", () => {
 
         it("should return false if bridge is unavailable in CPO backend", async () => {
 
-            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({
+                uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552'
+            });
+
             evse.available = true;
             evse.stationId = ToolKit.randomBytes32String();
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
-            TestBridgeProvider.backend[evse.id] = {
+            TestBridgeProvider.backend[evse.uid] = {
                 available: false
             };
 
-            const result = await evseLogic.status({id: evse.id, json: false});
+            const result = await evseLogic.status({id: evse.uid, json: false});
 
             expect(result.state.bridge).to.be.equal(false);
             expect(result.state.ev).to.be.equal(true);
@@ -166,42 +205,48 @@ describe("EvseLogic", () => {
 
         it("should enable a disabled evse", async () => {
 
-            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({
+                uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552'
+            });
             evse.available = false;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
-            TestShareChargeProvider.blockchain[evse.id]._owner = ToolKit.randomBytes32String();
 
-            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
             const updateSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "update");
 
-            const result = await evseLogic.enable({id: evse.id, json: false});
-            getByIdSpy.restore();
+            const result = await evseLogic.enable({id: evse.uid, json: false});
+
+            getByUidSpy.restore();
             updateSpy.restore();
 
             expect(TestShareChargeProvider.blockchain[evse.id].available).to.be.true;
             expect(result.success).to.be.true;
-            expect(getByIdSpy.calledOnce).to.be.true;
+            expect(getByUidSpy.calledOnce).to.be.true;
             expect(updateSpy.calledOnce).to.be.true;
         });
 
         it("should return error if already enabled", async () => {
 
-            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({
+                uid: '0x0',
+                owner: ToolKit.randomBytes32String(), currency: '0x455552'
+            });
+
             evse.available = true;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
 
-            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
             const updateSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "update");
 
-            const result = await evseLogic.enable({id: evse.id, json: false});
-            getByIdSpy.restore();
+            const result = await evseLogic.enable({id: evse.uid, json: false});
+            getByUidSpy.restore();
             updateSpy.restore();
 
             expect(TestShareChargeProvider.blockchain[evse.id].available).to.be.true;
             expect(result.success).to.be.false;
-            expect(getByIdSpy.calledOnce).to.be.true;
+            expect(getByUidSpy.calledOnce).to.be.true;
             expect(updateSpy.notCalled).to.be.true;
         });
     });
@@ -210,42 +255,47 @@ describe("EvseLogic", () => {
 
         it("should disable an enabled evse", async () => {
 
-            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({
+                uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552'
+            });
             evse.available = true;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
 
-            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
             const updateSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "update");
 
-            const result = await evseLogic.disable({id: evse.id, json: false});
+            const result = await evseLogic.disable({id: evse.uid, json: false});
+
             updateSpy.restore();
-            getByIdSpy.restore();
+            getByUidSpy.restore();
 
             expect(TestShareChargeProvider.blockchain[evse.id].available).to.be.false;
             expect(result.success).to.be.true;
-            expect(getByIdSpy.calledOnce).to.be.true;
+            expect(getByUidSpy.calledOnce).to.be.true;
             expect(updateSpy.calledOnce).to.be.true;
         });
 
         it("should return error of already disabled", async () => {
 
-            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({
+                uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552'
+            });
             evse.available = false;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
 
-            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
             const updateSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "update");
 
-            const result = await evseLogic.disable({id: evse.id, json: false});
+            const result = await evseLogic.disable({id: evse.uid, json: false});
 
-            getByIdSpy.restore();
+            getByUidSpy.restore();
             updateSpy.restore();
 
             expect(TestShareChargeProvider.blockchain[evse.id].available).to.be.false;
             expect(result.success).to.be.false;
-            expect(getByIdSpy.calledOnce).to.be.true;
+            expect(getByUidSpy.calledOnce).to.be.true;
             expect(updateSpy.notCalled).to.be.true;
         });
     });
@@ -275,23 +325,25 @@ describe("EvseLogic", () => {
 
         it("should not start charging on unavailable evse", async () => {
 
-            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({
+                uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552'
+            });
             evse.available = false;
 
             TestShareChargeProvider.blockchain[evse.id] = evse;
 
             const requestStartSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStart");
-            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
 
-            const result = await evseLogic.start({id: evse.id, seconds: 100, json: false});
+            const result = await evseLogic.start({id: evse.uid, seconds: 100, json: false});
 
             requestStartSpy.restore();
-            getByIdSpy.restore();
+            getByUidSpy.restore();
 
             expect(result.success).to.be.false;
-            expect(result.id).to.be.equal(evse.id);
+            expect(result.id).to.be.equal(evse.uid);
             expect(requestStartSpy.notCalled).to.be.true;
-            expect(getByIdSpy.calledOnce).to.be.true;
+            expect(getByUidSpy.calledOnce).to.be.true;
         });
 
     });
@@ -300,21 +352,23 @@ describe("EvseLogic", () => {
 
         it("should stop charging on a currently charging evse", async () => {
 
-            const evse = Evse.deserialize({uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552' });
+            const evse = Evse.deserialize({
+                uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552'
+            });
             evse.available = false;
             TestShareChargeProvider.blockchain[evse.id] = evse;
 
             const requestStopSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStop");
-            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
 
-            const result = await evseLogic.stop({id: evse.id, seconds: 100, json: false});
+            const result = await evseLogic.stop({id: evse.uid, seconds: 100, json: false});
             requestStopSpy.restore();
-            getByIdSpy.restore();
+            getByUidSpy.restore();
 
             expect(result.success).to.be.true;
-            expect(result.id).to.be.equal(evse.id);
+            expect(result.id).to.be.equal(evse.uid);
             expect(requestStopSpy.calledOnce).to.be.true;
-            expect(getByIdSpy.calledOnce).to.be.true;
+            expect(getByUidSpy.calledOnce).to.be.true;
         });
 
         it("should return an error if evse is not charging", async () => {
@@ -323,14 +377,14 @@ describe("EvseLogic", () => {
             evse.available = true;
             TestShareChargeProvider.blockchain[evse.id] = evse;
 
-            const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
+            const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
 
-            const result = await evseLogic.stop({id: evse.id, seconds: 100, json: false});
-            getByIdSpy.restore();
+            const result = await evseLogic.stop({id: evse.uid, seconds: 100, json: false});
+            getByUidSpy.restore();
 
             expect(result.success).to.be.false;
-            expect(result.id).to.be.equal(evse.id);
-            expect(getByIdSpy.calledOnce).to.be.true;
+            expect(result.id).to.be.equal(evse.uid);
+            expect(getByUidSpy.calledOnce).to.be.true;
         });
 
         // it("should return an error on an unregistered evse", async () => {

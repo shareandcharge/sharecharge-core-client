@@ -3,37 +3,49 @@ import LogicBase from "./logicBase"
 
 export default class EvseLogic extends LogicBase {
 
-    private async doRegister(evseToRegister, id, stfu) {
+    private async doRegister(evseToRegister, uid, stfu) {
 
-        // let evse: Evse = await this.client.sc.evses.getById(id);
-        let evse = new Evse();
-        evse.uid = evseToRegister.uid;
-        evse.stationId = evseToRegister.stationId;
-        evse.currency = evseToRegister.currency;
-        evse.basePrice = evseToRegister.basePrice;
-        evse.tariffId = evseToRegister.tariffId;
-        evse.available = evseToRegister.available;
+        let evse: Evse = await this.client.sc.evses.getByUid(uid);
+        let success = false;
 
-        await this.client.sc.evses.useWallet(this.client.wallet).create(evse);
-        // this.client.logger.info(`evse with id ${id} created`);
+        if (evse.owner.startsWith("0x00")) {
+
+            evse = new Evse();
+            evse.uid = uid;
+            evse.stationId = evseToRegister.stationUid;
+            evse.currency = evseToRegister.currency;
+            evse.basePrice = evseToRegister.basePrice;
+            evse.tariffId = evseToRegister.tariffId;
+            evse.available = evseToRegister.available;
+
+            await this.client.sc.evses.useWallet(this.client.wallet).create(evse);
+
+            success = true;
+            if (!stfu) {
+                this.client.logger.info(`evse with uid ${uid} created`);
+            }
+        } else if (!stfu) {
+            this.client.logger.warn(`evse with uid ${uid} already registerterd`);
+        }
 
         return {
-            id: evse.id,
+            id: evse.uid,
             owner: evse.owner,
             stationId: evse.stationId,
             available: evse.available,
+            success
         }
     }
 
-    private async getInformation(id) {
+    private async getInformation(uid) {
 
         let result: any = null;
 
-        const evse: Evse = await this.client.sc.evses.getById(id);
+        const evse: Evse = await this.client.sc.evses.getByUid(uid);
 
         if (!evse.owner.startsWith("0x00")) {
             result = {
-                id: evse.id,
+                id: evse.uid,
                 owner: evse.owner,
                 stationId: evse.stationId,
                 available: evse.available,
@@ -46,26 +58,21 @@ export default class EvseLogic extends LogicBase {
     public register = async (argv) => {
 
         if (!argv.json) {
-            this.client.logger.info(`Registering evse with id: ${argv.id}`);
+            this.client.logger.info(`Registering evse with uid: ${argv.id}`);
         }
 
         let result: any = {
-            id: argv.id,
+            uid: argv.id,
             success: false
         };
 
         const evse = this.client.evses[argv.id];
 
-        if (!evse) {
-
-            if (argv.json) {
-                this.client.logger.info(JSON.stringify({}, null, 2));
-            } else {
-                console.error(`No evse found with id ${argv.id} in configuration.`);
-            }
+        if (evse) {
+            result = await this.doRegister(evse, argv.id, argv.json);
+        } else if (!argv.json) {
+            this.client.logger.error(`No evse found with uid ${argv.id} in configuration.`);
         }
-
-        result = await this.doRegister(evse, argv.id, argv.json);
 
         if (argv.json) {
             this.client.logger.info(JSON.stringify(result, null, 2));
@@ -82,14 +89,13 @@ export default class EvseLogic extends LogicBase {
             this.client.logger.info("Registering all evses from the configuration");
         }
 
-        const ids = Object.keys(this.client.evses);
-
         const results: any[] = [];
+        const evseUids = Object.keys(this.client.evses);
 
-        for (let id of ids) {
+        for (let evseUid of evseUids) {
 
-            const cp = this.client.evses[id];
-            const result = await this.doRegister(cp, id, argv.json);
+            const evse = this.client.evses[evseUid];
+            const result = await this.doRegister(evse, evseUid, argv.json);
             results.push(result);
         }
 
@@ -153,7 +159,7 @@ export default class EvseLogic extends LogicBase {
             this.client.logger.info("Getting status for evse with id:", argv.id);
         }
 
-        const evse = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getByUid(argv.id);
 
         if (!evse.owner.startsWith("0x00")) {
 
@@ -182,7 +188,7 @@ export default class EvseLogic extends LogicBase {
             this.client.logger.info(`Disabling evse with id: ${argv.id}`);
         }
 
-        const evse = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getByUid(argv.id);
 
         if (!evse.owner.startsWith("0x00")) {
 
@@ -214,7 +220,7 @@ export default class EvseLogic extends LogicBase {
             success: false
         };
 
-        const evse = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getByUid(argv.id);
 
         // only enable if persisted
         if (!evse.owner.startsWith("0x00")) {
@@ -252,7 +258,7 @@ export default class EvseLogic extends LogicBase {
             success: false
         };
 
-        const evse = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getByUid(argv.id);
 
         if (!argv.json) {
             this.client.logger.info(`Starting charge on ${evse.id} for ${argv.seconds} seconds...`);
@@ -294,7 +300,7 @@ export default class EvseLogic extends LogicBase {
             success: false
         };
 
-        const evse = await this.client.sc.evses.getById(argv.id);
+        const evse = await this.client.sc.evses.getByUid(argv.id);
 
         if (!argv.json) {
             this.client.logger.info("Stopping charge on evse with ID:", evse.id);

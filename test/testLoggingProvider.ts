@@ -11,6 +11,8 @@ export default class TestLoggingProvider extends LoggingProvider {
             info: () => {
             },
             warn: () => {
+            },
+            error: () => {
             }
         }
 
