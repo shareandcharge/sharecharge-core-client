@@ -1,4 +1,5 @@
 --- 
+  #bridgePath: ../../../sharecharge-iot-bridge/src/bridge
   bridgePath: ../bridges/MockBridge
   evsesPath: ../../config/evses.json
   stationsPath: ../../config/stations.json

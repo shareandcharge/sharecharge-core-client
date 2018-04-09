@@ -57,7 +57,8 @@ export default class ShareChargeCoreClient {
     public run() {
 
         // console.log(this.evses);
-        const evseUids = Object.values(this.evses).map(evse => evse.uid);
+        const evseUids = Object.keys(this.evses);
+        console.log(evseUids);
 
         this.sc.on("StartRequested", async (result) => {
             const id = result.evseId;
