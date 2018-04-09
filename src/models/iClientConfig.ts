@@ -2,6 +2,7 @@ import IBridge from './iBridge';
 
 export default interface IClientConfig {
     bridgePath: string;
+    stationsPath: string;
     evsesPath: string;
     seed: string;
     stage: string;

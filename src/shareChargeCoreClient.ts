@@ -10,6 +10,7 @@ import BridgeProvider from "./services/bridgeProvider";
 import WalletProvider from "./services/walletProvider";
 import IClientConfig from "./models/iClientConfig";
 import EvseProvider from "./services/evseProvider";
+import StationProvider from "./services/stationProvider";
 
 @injectable()
 export default class ShareChargeCoreClient {
@@ -21,6 +22,7 @@ export default class ShareChargeCoreClient {
                 @inject(Symbols.ShareChargeProvider) private shareChargeProvider: ShareChargeProvider,
                 @inject(Symbols.WalletProvider) private walletProvider: WalletProvider,
                 @inject(Symbols.EvseProvider) private evseProvider: EvseProvider,
+                @inject(Symbols.StationProvider) private stationProvider: StationProvider,
                 @inject(Symbols.LoggingProvider) private loggingProvider: LoggingProvider) {
     }
 
@@ -30,6 +32,10 @@ export default class ShareChargeCoreClient {
 
     get evses(): any[] {
         return this.evseProvider.obtain();
+    }
+
+    get stations(): any[] {
+        return this.stationProvider.obtain();
     }
 
     get bridge(): IBridge {
@@ -48,20 +54,16 @@ export default class ShareChargeCoreClient {
         return this.configProvider;
     }
 
-    private static shortenId(id) {
-        return id.replace(/0+$/g, "").toLowerCase()
-    }
-
     public run() {
 
         // console.log(this.evses);
         const evseUids = Object.values(this.evses).map(evse => evse.uid);
-        
+
         this.sc.on("StartRequested", async (result) => {
             const id = result.evseId;
             const evse = await this.sc.evses.getById(id);
             this.logger.debug(`Start requested for evse with uid: ${evse.uid}`);
-            
+
             if (evseUids.includes(evse.uid)) {
                 try {
                     await this.bridge.start(result);
@@ -73,12 +75,12 @@ export default class ShareChargeCoreClient {
                 }
             }
         });
-        
+
         this.sc.on("StopRequested", async (result) => {
             const id = result.evseId;
             const evse = await this.sc.evses.getById(id);
             this.logger.debug(`Stop requested for evse with uid: ${evse.uid}`);
-                
+
             if (evseUids.includes(evse.uid)) {
                 try {
                     await this.bridge.stop(result);
@@ -88,17 +90,33 @@ export default class ShareChargeCoreClient {
                 } catch (err) {
                     this.logger.error("Err");
                     await this.sc.charging.useWallet(this.wallet).error(evse, result.controller, 1);
-                }    
+                }
             }
+        });
+
+        this.sc.on("StationCreated", async (result) => {
+            this.logger.info(`Station created with id: ${result.stationId}`);
+        });
+
+        this.sc.on("StationUpdated", async (result) => {
+            this.logger.info(`Station updated with id: ${result.stationId}`);
+        });
+
+        this.sc.on("EvseCreated", async (result) => {
+            this.logger.info(`Evse created with id: ${result.evseId}`);
+        });
+
+        this.sc.on("EvseUpdated", async (result) => {
+            this.logger.info(`Evse updated with id: ${result.evseId}`);
         });
 
         this.bridge.autoStop$.subscribe(async (result) => {
             const evse = await this.sc.evses.getById(result.evseId);
-            const cdr = await this.bridge.cdr();            
+            const cdr = await this.bridge.cdr();
             await this.sc.charging.useWallet(this.wallet).confirmStop(evse, result.controller, cdr.start, cdr.stop, cdr.energy);
             this.logger.info(`Confirmed stop for evse with uid: ${evse.uid}`);
         });
-        
+
         this.sc.startListening();
         this.logger.info(`Connected to bridge: ${this.bridge.name}`);
         this.logger.info(`Listening for events`);
@@ -113,6 +131,7 @@ export default class ShareChargeCoreClient {
             container.bind<LoggingProvider>(Symbols.LoggingProvider).to(LoggingProvider).inSingletonScope();
             container.bind<BridgeProvider>(Symbols.BridgeProvider).to(BridgeProvider).inSingletonScope();
             container.bind<EvseProvider>(Symbols.EvseProvider).to(EvseProvider).inSingletonScope();
+            container.bind<StationProvider>(Symbols.StationProvider).to(StationProvider).inSingletonScope();
             container.bind<WalletProvider>(Symbols.WalletProvider).to(WalletProvider).inSingletonScope();
             ShareChargeCoreClient.container = container;
         }

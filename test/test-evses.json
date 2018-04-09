@@ -1,20 +1,20 @@
 {
   "FR448E1ETG5578567YU8D": {
-    "stationId": "0x1",
+    "stationId": "0x11",
     "currency": "EUR",
     "basePrice": 500,
     "tariffId": 1,
     "available": true
   },
   "FR558E1ETG5578567YU8D": {
-    "stationId": "0x1",
+    "stationId": "0x11",
     "currency": "EUR",
     "basePrice": 500,
     "tariffId": 1,
     "available": true
   },
   "FR668E1ETG5578567YU8D": {
-    "stationId": "0x2",
+    "stationId": "0x22",
     "currency": "EUR",
     "basePrice": 500,
     "tariffId": 1,

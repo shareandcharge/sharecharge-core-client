@@ -6,7 +6,7 @@ const evseLogic = new EvseLogic();
 export default (yargs) => {
 
     yargs
-        .usage("Usage: sc cp <command> [options]")
+        .usage("Usage: sc evse <command> [options]")
         .config("config", "Path to plaintext config file", ConfigProvider.loadConfigFromFile)
         .demandCommand(1)
 

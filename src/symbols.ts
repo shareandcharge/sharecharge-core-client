@@ -4,5 +4,6 @@ export const Symbols = {
     LoggingProvider: Symbol.for("LoggingProvider"),
     BridgeProvider: Symbol.for("BridgeProvider"),
     WalletProvider: Symbol.for("WalletProvider"),
-    EvseProvider: Symbol.for("EvseProvider")
+    EvseProvider: Symbol.for("EvseProvider"),
+    StationProvider: Symbol.for("StationProvider")
 };

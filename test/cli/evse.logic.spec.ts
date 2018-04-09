@@ -3,7 +3,6 @@ import { expect } from 'chai';
 import * as sinon from "sinon";
 
 import { Evse, ToolKit } from "sharecharge-lib";
-
 import EvseLogic from "../../src/cli/evse.logic";
 import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
 import { Symbols } from "../../src/symbols";
@@ -28,7 +27,7 @@ describe("EvseLogic", () => {
     });
 
     beforeEach(() => {
-        TestShareChargeProvider.blockchain = {};
+        TestShareChargeProvider.blockchain.evses = {};
     });
 
     describe("#register()", () => {
@@ -56,10 +55,10 @@ describe("EvseLogic", () => {
 
             const uidToTest = "FR448E1ETG5578567YU8D";
 
-            TestShareChargeProvider.blockchain[uidToTest] = new Evse();
-            TestShareChargeProvider.blockchain[uidToTest].uid = uidToTest;
-            TestShareChargeProvider.blockchain[uidToTest].available = true;
-            TestShareChargeProvider.blockchain[uidToTest]._owner = ToolKit.randomBytes32String();
+            TestShareChargeProvider.blockchain.evses[uidToTest] = new Evse();
+            TestShareChargeProvider.blockchain.evses[uidToTest].uid = uidToTest;
+            TestShareChargeProvider.blockchain.evses[uidToTest].available = true;
+            TestShareChargeProvider.blockchain.evses[uidToTest]._owner = ToolKit.randomBytes32String();
 
             const doRegisterSpy = sinon.spy(evseLogic, "doRegister");
             const createSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "create");
@@ -104,8 +103,8 @@ describe("EvseLogic", () => {
             const evse = new Evse();
             evse.available = false;
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
-            TestShareChargeProvider.blockchain[evse.id]._owner = ToolKit.randomBytes32String();
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id]._owner = ToolKit.randomBytes32String();
 
             const result = await evseLogic.info({id: evse.uid, json: false});
 
@@ -137,7 +136,7 @@ describe("EvseLogic", () => {
             evse.available = true;
             evse.stationId = ToolKit.randomBytes32String();
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
             TestBridgeProvider.backend[evse.uid] = {
                 available: true
             };
@@ -168,7 +167,7 @@ describe("EvseLogic", () => {
             evse.available = false;
             evse.stationId = ToolKit.randomBytes32String();
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
             TestBridgeProvider.backend[evse.uid] = {
                 available: true
             };
@@ -188,7 +187,7 @@ describe("EvseLogic", () => {
             evse.available = true;
             evse.stationId = ToolKit.randomBytes32String();
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
             TestBridgeProvider.backend[evse.uid] = {
                 available: false
             };
@@ -210,7 +209,7 @@ describe("EvseLogic", () => {
             });
             evse.available = false;
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
 
             const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
             const updateSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "update");
@@ -220,7 +219,7 @@ describe("EvseLogic", () => {
             getByUidSpy.restore();
             updateSpy.restore();
 
-            expect(TestShareChargeProvider.blockchain[evse.id].available).to.be.true;
+            expect(TestShareChargeProvider.blockchain.evses[evse.id].available).to.be.true;
             expect(result.success).to.be.true;
             expect(getByUidSpy.calledOnce).to.be.true;
             expect(updateSpy.calledOnce).to.be.true;
@@ -235,7 +234,7 @@ describe("EvseLogic", () => {
 
             evse.available = true;
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
 
             const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
             const updateSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "update");
@@ -244,7 +243,7 @@ describe("EvseLogic", () => {
             getByUidSpy.restore();
             updateSpy.restore();
 
-            expect(TestShareChargeProvider.blockchain[evse.id].available).to.be.true;
+            expect(TestShareChargeProvider.blockchain.evses[evse.id].available).to.be.true;
             expect(result.success).to.be.false;
             expect(getByUidSpy.calledOnce).to.be.true;
             expect(updateSpy.notCalled).to.be.true;
@@ -260,7 +259,7 @@ describe("EvseLogic", () => {
             });
             evse.available = true;
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
 
             const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
             const updateSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "update");
@@ -270,7 +269,7 @@ describe("EvseLogic", () => {
             updateSpy.restore();
             getByUidSpy.restore();
 
-            expect(TestShareChargeProvider.blockchain[evse.id].available).to.be.false;
+            expect(TestShareChargeProvider.blockchain.evses[evse.id].available).to.be.false;
             expect(result.success).to.be.true;
             expect(getByUidSpy.calledOnce).to.be.true;
             expect(updateSpy.calledOnce).to.be.true;
@@ -283,7 +282,7 @@ describe("EvseLogic", () => {
             });
             evse.available = false;
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
 
             const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
             const updateSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "update");
@@ -293,7 +292,7 @@ describe("EvseLogic", () => {
             getByUidSpy.restore();
             updateSpy.restore();
 
-            expect(TestShareChargeProvider.blockchain[evse.id].available).to.be.false;
+            expect(TestShareChargeProvider.blockchain.evses[evse.id].available).to.be.false;
             expect(result.success).to.be.false;
             expect(getByUidSpy.calledOnce).to.be.true;
             expect(updateSpy.notCalled).to.be.true;
@@ -307,7 +306,7 @@ describe("EvseLogic", () => {
         //     const evse = Evse.deserialize({owner: ToolKit.randomBytes32String(), currency: '0x455552' });
         //     evse.available = true;
 
-        //     TestShareChargeProvider.blockchain[evse.id] = evse;
+        //     TestShareChargeProvider.blockchain.evses[evse.id] = evse;
 
         //     const requestStartSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStart");
         //     const getByIdSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getById");
@@ -330,7 +329,7 @@ describe("EvseLogic", () => {
             });
             evse.available = false;
 
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
 
             const requestStartSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStart");
             const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
@@ -356,7 +355,7 @@ describe("EvseLogic", () => {
                 uid: '0x0', owner: ToolKit.randomBytes32String(), currency: '0x455552'
             });
             evse.available = false;
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
 
             const requestStopSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStop");
             const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
@@ -375,7 +374,7 @@ describe("EvseLogic", () => {
 
             const evse = new Evse();
             evse.available = true;
-            TestShareChargeProvider.blockchain[evse.id] = evse;
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
 
             const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
 

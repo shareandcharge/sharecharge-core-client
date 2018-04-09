@@ -1,6 +1,7 @@
 --- 
   bridgePath: ../bridges/MockBridge
   evsesPath: ../../config/evses.json
+  stationsPath: ../../config/stations.json
   stage: "local"
   provider: "http://localhost:8545"
   seed: "filter march urge naive sauce distance under copy payment slow just warm"

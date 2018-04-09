@@ -3,7 +3,7 @@ import ConfigProvider from "../services/configProvider";
 
 const clientLogic = new ClientLogic();
 
-export const clientHandler = (yargs) => {
+export default (yargs) => {
     yargs
         .usage("Usage: sc client [options]")
         .config("config", "Path to plaintext config file", ConfigProvider.loadConfigFromFile)
