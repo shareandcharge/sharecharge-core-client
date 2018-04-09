@@ -40,7 +40,7 @@ sc.on('StartRequested', result => {
     // simulate delay of starting evse
     setTimeout(async () => {
         const evse = await sc.evses.getById(result.evseId);
-        sc.charging.useWallet(wallet).confirmStart(evse, result.controller);
+        sc.charging.useWallet(wallet).confirmStart(evse);
     }, 500);
 });
 sc.on('StopRequested', result => {
@@ -51,7 +51,7 @@ sc.on('StopRequested', result => {
         // use bridge to stop then get cdr
         // await bridge.stop(id);
         const cdr: ICDR = { start: Date.now() - 60000, stop: Date.now(), energy: 10000 };
-        sc.charging.useWallet(wallet).confirmStop(evse, result.controller, cdr.start, cdr.stop, cdr.energy);
+        sc.charging.useWallet(wallet).confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
     }, 500);
 });
 sc.on('Error', result => {

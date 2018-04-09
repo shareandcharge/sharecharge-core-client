@@ -67,11 +67,11 @@ export default class ShareChargeCoreClient {
             if (evseUids.includes(evse.uid)) {
                 try {
                     await this.bridge.start(result);
-                    await this.sc.charging.useWallet(this.wallet).confirmStart(evse, result.controller);
+                    await this.sc.charging.useWallet(this.wallet).confirmStart(evse);
                     this.logger.info(`Confirmed start for evse with uid: ${evse.uid}`);
                 } catch (err) {
                     this.logger.error("Err");
-                    await this.sc.charging.useWallet(this.wallet).error(evse, result.controller, 0);
+                    await this.sc.charging.useWallet(this.wallet).error(evse, 0);
                 }
             }
         });
@@ -85,12 +85,12 @@ export default class ShareChargeCoreClient {
                 try {
                     await this.bridge.stop(result);
                     const cdr = await this.bridge.cdr(result);
-                    await this.sc.charging.useWallet(this.wallet).confirmStop(evse, result.controller, cdr.start, cdr.stop, cdr.energy);
+                    await this.sc.charging.useWallet(this.wallet).confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
                     this.logger.info(`Confirmed stop for evse with uid: ${evse.uid}`);
                 } catch (err) {
                     this.logger.error("Err");
-                    await this.sc.charging.useWallet(this.wallet).error(evse, result.controller, 1);
-                }
+                    await this.sc.charging.useWallet(this.wallet).error(evse, 1);
+                }    
             }
         });
 
@@ -112,8 +112,8 @@ export default class ShareChargeCoreClient {
 
         this.bridge.autoStop$.subscribe(async (result) => {
             const evse = await this.sc.evses.getById(result.evseId);
-            const cdr = await this.bridge.cdr();
-            await this.sc.charging.useWallet(this.wallet).confirmStop(evse, result.controller, cdr.start, cdr.stop, cdr.energy);
+            const cdr = await this.bridge.cdr();            
+            await this.sc.charging.useWallet(this.wallet).confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
             this.logger.info(`Confirmed stop for evse with uid: ${evse.uid}`);
         });
 
