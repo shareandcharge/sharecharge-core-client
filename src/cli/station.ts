@@ -11,12 +11,12 @@ export default (yargs) => {
         .demandCommand(1)
 
         .command("register [id]",
-            "Registers a Charge Point with given id in the EV Network",
+            "Registers a Station with given id in the EV Network",
             (yargs) => {
 
                 yargs
                     .command("all",
-                        "Registers all Charge Points in the EV Network",
+                        "Registers all Stations in the EV Network",
                         (yargs) => {
                             // no id in this case, srly
                             yargs.default("id", "");
@@ -24,7 +24,7 @@ export default (yargs) => {
 
                 yargs
                     .positional("id", {
-                        describe: "a unique identifier for the Charge Point",
+                        describe: "a unique identifier for the Station",
                         type: "string"
                     })
                     .string("_")

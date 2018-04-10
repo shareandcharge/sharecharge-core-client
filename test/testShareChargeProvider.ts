@@ -35,6 +35,15 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
         }
     };
 
+    public static stationBatchModifiers = {
+        create: (...stations) => {
+
+            for (let station of stations) {
+                TestShareChargeProvider.blockchain.stations[station.id] = station;
+            }
+        }
+    };
+
     public static stationModifiers = {
         create: (station) => {
 
@@ -43,6 +52,9 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
         update: (station) => {
 
             TestShareChargeProvider.blockchain.stations[station.id] = station;
+        },
+        batch: () => {
+            return TestShareChargeProvider.stationBatchModifiers;
         }
     };
 

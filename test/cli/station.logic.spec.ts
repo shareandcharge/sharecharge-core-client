@@ -56,18 +56,14 @@ describe("StationLogic", () => {
 
         it("should register all stations correctly", async () => {
 
-            const doRegisterSpy = sinon.spy(stationLogic, "doRegister");
-
+            const createSpy = sinon.spy(TestShareChargeProvider.stationBatchModifiers, "create");
             const results = await stationLogic.registerAll({json: false});
+            createSpy.restore();
 
             const stationIndexes = Object.keys(stationLogic.client.stations);
 
-            expect(doRegisterSpy.callCount).to.be.equal(stationIndexes.length);
-            expect(results.length).to.be.equal(doRegisterSpy.callCount);
+            expect(createSpy.calledOnce).to.be.true;
             expect(results.length).to.be.equal(stationIndexes.length);
-
-            doRegisterSpy.restore();
-
             expect(results[0].id).to.be.equal(stationIndexes[0]);
             expect(results[0].latitude).to.be.equal(stationLogic.client.stations[stationIndexes[0]].latitude);
             expect(results[0].longitude).to.be.equal(stationLogic.client.stations[stationIndexes[0]].longitude);

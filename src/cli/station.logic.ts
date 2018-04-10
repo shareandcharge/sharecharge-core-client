@@ -70,22 +70,68 @@ export default class StationLogic extends LogicBase {
             this.client.logger.info("Registering all stations from the configuration");
         }
 
-        const results: any[] = [];
+        let results: any = {};
+        const stations: Station[] = [];
+
         const stationIds = Object.keys(this.client.stations);
 
         for (let stationId of stationIds) {
 
-            const station = this.client.stations[stationId];
-            const result = await this.doRegister(station, stationId, argv.json);
-            results.push(result);
+            const stationToRegister = this.client.stations[stationId];
+            let station: Station = await this.client.sc.stations.getById(stationId);
+
+            results[stationId] = {
+                id: station.id,
+                owner: station.owner,
+                latitude: station.latitude,
+                longitude: station.longitude,
+                openingHours: station.openingHours,
+                success: false
+            };
+
+            if (station.owner.startsWith("0x00")) {
+
+                station = Station.deserialize({id: stationId, openingHours: "0x0"});
+                results[stationId].latitude = stationToRegister.latitude;
+                station.latitude = stationToRegister.latitude;
+                results[stationId].longitude = stationToRegister.longitude;
+                station.longitude = stationToRegister.longitude;
+                results[stationId].openingHours = stationToRegister.openingHours;
+                station.openingHours = OpeningHours.decode(stationToRegister.openingHours);
+
+                stations.push(station);
+
+            } else if (!argv.json) {
+                this.client.logger.warn(`Station with id ${stationId} already registered!`);
+            }
         }
 
+        if (stations.length > 0) {
+            await this.client.sc.stations.useWallet(this.client.wallet).batch().create(...stations);
+        }
+
+        for (let station of stations) {
+            results[station.id].success = true;
+
+            if (!argv.json) {
+                this.client.logger.info(`Station with id ${station.id} created`);
+            }
+        }
+
+        // format back to old results
+        results = Object.keys(results).map(function (resultIndex) {
+            let result = results[resultIndex];
+            result.id = resultIndex;
+            return result;
+        });
+
         if (argv.json) {
-            this.client.logger.info(JSON.stringify(results, null, 2))
+            console.log(JSON.stringify(results, null, 2))
         } else {
-            this.client.logger.info("All done");
+            this.client.logger.info(`All done, ${stations.length} Stations created`);
         }
 
         return results;
     };
+
 }
