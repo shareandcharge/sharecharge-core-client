@@ -70,7 +70,7 @@ export default class ShareChargeCoreClient {
                     await this.sc.charging.useWallet(this.wallet).confirmStart(evse);
                     this.logger.info(`Confirmed start for evse with uid: ${evse.uid}`);
                 } catch (err) {
-                    this.logger.error("Err");
+                    this.logger.error(`Error starting charge on ${evse.uid}: ${err.message}`);
                     await this.sc.charging.useWallet(this.wallet).error(evse, 0);
                 }
             }
@@ -88,26 +88,26 @@ export default class ShareChargeCoreClient {
                     await this.sc.charging.useWallet(this.wallet).confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
                     this.logger.info(`Confirmed stop for evse with uid: ${evse.uid}`);
                 } catch (err) {
-                    this.logger.error("Err");
+                    this.logger.error(`Error stopping charge on ${evse.uid}: ${err.message}`);
                     await this.sc.charging.useWallet(this.wallet).error(evse, 1);
                 }
             }
         });
 
         this.sc.on("StationCreated", async (result) => {
-            this.logger.info(`Station created with id: ${result.stationId}`);
+            this.logger.debug(`Station created with id: ${result.stationId}`);
         });
 
         this.sc.on("StationUpdated", async (result) => {
-            this.logger.info(`Station updated with id: ${result.stationId}`);
+            this.logger.debug(`Station updated with id: ${result.stationId}`);
         });
 
         this.sc.on("EvseCreated", async (result) => {
-            this.logger.info(`Evse created with id: ${result.evseId}`);
+            this.logger.debug(`Evse created with id: ${result.evseId}`);
         });
 
         this.sc.on("EvseUpdated", async (result) => {
-            this.logger.info(`Evse updated with id: ${result.evseId}`);
+            this.logger.debug(`Evse updated with id: ${result.evseId}`);
         });
 
         this.bridge.autoStop$.subscribe(async (result) => {

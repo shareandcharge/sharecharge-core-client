@@ -8,7 +8,7 @@ export default class LoggingProvider {
 
     constructor() {
         this.logger = new Logger({
-            level: 'debug',
+            level: 'info',
             transports: [
                 new transports.Console({
                     timestamp: true,

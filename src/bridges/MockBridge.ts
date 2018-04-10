@@ -36,7 +36,7 @@ export default class MockBridge implements IBridge {
         return {
             start: Date.now() - 60000,
             stop: Date.now(),
-            energy: 10000
+            energy: 10
         };
     }
 
