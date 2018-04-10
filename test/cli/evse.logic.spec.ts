@@ -79,18 +79,14 @@ describe("EvseLogic", () => {
 
         it("should register all evses correctly", async () => {
 
-            const doRegisterSpy = sinon.spy(evseLogic, "doRegister");
-
+            const createSpy = sinon.spy(TestShareChargeProvider.evseBatchModifiers, "create");
             const results = await evseLogic.registerAll({json: false});
+            createSpy.restore();
 
             const evseIndexes = Object.keys(evseLogic.client.evses);
 
-            expect(doRegisterSpy.callCount).to.be.equal(evseIndexes.length);
-            expect(results.length).to.be.equal(doRegisterSpy.callCount);
+            expect(createSpy.calledOnce).to.be.true;
             expect(results.length).to.be.equal(evseIndexes.length);
-
-            doRegisterSpy.restore();
-
             expect(results[0].available).to.be.equal(evseLogic.client.evses[evseIndexes[0]].available);
             expect(results[0].id).to.be.equal(evseIndexes[0]);
         });

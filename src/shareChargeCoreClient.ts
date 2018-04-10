@@ -58,7 +58,6 @@ export default class ShareChargeCoreClient {
 
         // console.log(this.evses);
         const evseUids = Object.keys(this.evses);
-        console.log(evseUids);
 
         this.sc.on("StartRequested", async (result) => {
             const id = result.evseId;
@@ -91,7 +90,7 @@ export default class ShareChargeCoreClient {
                 } catch (err) {
                     this.logger.error("Err");
                     await this.sc.charging.useWallet(this.wallet).error(evse, 1);
-                }    
+                }
             }
         });
 
@@ -113,7 +112,7 @@ export default class ShareChargeCoreClient {
 
         this.bridge.autoStop$.subscribe(async (result) => {
             const evse = await this.sc.evses.getById(result.evseId);
-            const cdr = await this.bridge.cdr();            
+            const cdr = await this.bridge.cdr();
             await this.sc.charging.useWallet(this.wallet).confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
             this.logger.info(`Confirmed stop for evse with uid: ${evse.uid}`);
         });

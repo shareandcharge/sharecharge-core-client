@@ -90,7 +90,7 @@ export default (yargs) => {
                     .demand("id");
             }, evseLogic.enable)
 
-        .command("start [id] [seconds]",
+        .command("start [id] [seconds] [energy]",
             "Start a charging session at a given Charge Point",
             (yargs) => {
                 yargs
@@ -102,6 +102,11 @@ export default (yargs) => {
                         describe: "time to rent in seconds",
                         type: "number",
                         default: 10
+                    })
+                    .positional("energy", {
+                        describe: "scotty, energy",
+                        type: "number",
+                        default: 22
                     })
                     .string("_")
                     .demand("id")

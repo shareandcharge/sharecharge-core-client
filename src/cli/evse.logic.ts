@@ -22,10 +22,10 @@ export default class EvseLogic extends LogicBase {
 
             success = true;
             if (!stfu) {
-                this.client.logger.info(`evse with uid ${uid} created`);
+                this.client.logger.info(`Evse with uid ${uid} created`);
             }
         } else if (!stfu) {
-            this.client.logger.warn(`evse with uid ${uid} already registerterd`);
+            this.client.logger.warn(`Evse with uid ${uid} already registered`);
         }
 
         return {
@@ -89,20 +89,64 @@ export default class EvseLogic extends LogicBase {
             this.client.logger.info("Registering all evses from the configuration");
         }
 
-        const results: any[] = [];
+        let results: any = {};
+        const evses: Evse[] = [];
+
         const evseUids = Object.keys(this.client.evses);
 
         for (let evseUid of evseUids) {
 
-            const evse = this.client.evses[evseUid];
-            const result = await this.doRegister(evse, evseUid, argv.json);
-            results.push(result);
+            const evseToRegister = this.client.evses[evseUid];
+
+            let evse: Evse = await this.client.sc.evses.getByUid(evseUid);
+
+            results[evseUid] = {
+                owner: evse.owner,
+                stationId: evse.stationId,
+                available: evse.available,
+                success: false
+            };
+
+            if (evse.owner.startsWith("0x00")) {
+
+                evse = new Evse();
+                evse.uid = evseUid;
+                evse.stationId = evseToRegister.stationId;
+                evse.currency = evseToRegister.currency;
+                evse.basePrice = evseToRegister.basePrice;
+                evse.tariffId = evseToRegister.tariffId;
+                evse.available = evseToRegister.available;
+
+                evses.push(evse);
+
+            } else if (!argv.json) {
+                this.client.logger.warn(`Evse with uid ${evseUid} already registered!`);
+            }
         }
 
+        if (evses.length > 0) {
+            await this.client.sc.evses.useWallet(this.client.wallet).batch().create(...evses);
+        }
+
+        for (let evse of evses) {
+            results[evse.uid].success = true;
+
+            if (!argv.json) {
+                this.client.logger.info(`Evse with uid ${evse.uid} created`);
+            }
+        }
+
+        // format back to old results
+        results = Object.keys(results).map(function (resultIndex) {
+            let result = results[resultIndex];
+            result.id = resultIndex;
+            return result;
+        });
+
         if (argv.json) {
-            this.client.logger.info(JSON.stringify(results, null, 2))
+            console.log(JSON.stringify(results, null, 2))
         } else {
-            this.client.logger.info("All done");
+            this.client.logger.info(`All done, ${evses.length} Evses created`);
         }
 
         return results;
@@ -127,7 +171,7 @@ export default class EvseLogic extends LogicBase {
             }
         } else {
             if (!argv.json) {
-                this.client.logger.warn("evse not registered");
+                this.client.logger.warn("Evse not registered");
             } else {
                 console.log(JSON.stringify({}, null, 2));
             }
@@ -198,10 +242,10 @@ export default class EvseLogic extends LogicBase {
                 await this.client.sc.evses.useWallet(this.client.wallet).update(evse);
                 result.success = true;
             } else if (!argv.json) {
-                this.client.logger.info("evse already disabled");
+                this.client.logger.info("Evse already disabled");
             }
         } else if (!argv.json) {
-            this.client.logger.info("evse not registered");
+            this.client.logger.info("Evse not registered");
         }
 
         if (argv.json) {
@@ -235,11 +279,11 @@ export default class EvseLogic extends LogicBase {
                 await this.client.sc.evses.useWallet(this.client.wallet).update(evse);
                 result.success = true;
             } else if (!argv.json) {
-                this.client.logger.info("evse already enabled");
+                this.client.logger.info("Evse already enabled");
             }
 
         } else if (!argv.json) {
-            this.client.logger.info("evse not registered");
+            this.client.logger.info("Evse not registered");
         }
 
         if (argv.json) {
@@ -273,15 +317,15 @@ export default class EvseLogic extends LogicBase {
                 result.success = true;
 
                 if (!argv.json) {
-                    this.client.logger.info("Charge started");
+                    this.client.logger.info(`Charge started on Evse with uid: ${evse.uid}`);
                 }
 
             } else if (!argv.json) {
-                this.client.logger.warn("evse not available");
+                this.client.logger.warn("Evse not available");
             }
 
         } else if (!argv.json) {
-            this.client.logger.warn("evse not registered");
+            this.client.logger.warn("Evse not registered");
         }
 
         if (argv.json) {
@@ -319,11 +363,11 @@ export default class EvseLogic extends LogicBase {
                 }
 
             } else if (!argv.json) {
-                this.client.logger.warn("No charge running, nothing to stop");
+                this.client.logger.warn("Evse not charging, nothing to stop");
             }
 
         } else if (!argv.json) {
-            this.client.logger.warn("evse not registered");
+            this.client.logger.warn("Evse not registered");
         }
 
         if (argv.json) {

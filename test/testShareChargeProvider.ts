@@ -12,6 +12,15 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
 
     public static readonly owner = "0x123456789";
 
+    public static evseBatchModifiers = {
+        create: (...evses) => {
+
+            for (let evse of evses) {
+                TestShareChargeProvider.blockchain.evses[evse.id] = evse;
+            }
+        }
+    };
+
     public static evseModifiers = {
         create: (evse) => {
 
@@ -20,6 +29,9 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
         update: (evse) => {
 
             TestShareChargeProvider.blockchain.evses[evse.id] = evse;
+        },
+        batch: () => {
+            return TestShareChargeProvider.evseBatchModifiers;
         }
     };
 
