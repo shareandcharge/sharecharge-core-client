@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import ConfigProvider from "../services/configProvider";
 import { Symbols } from "../symbols";
-import { Wallet } from "sharecharge-lib";
+import { Wallet } from "@motionwerk/sharecharge-lib";
 
 @injectable()
 export default class WalletProvider {

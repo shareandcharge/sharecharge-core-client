@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import ShareChargeProvider from "../src/services/shareChargeProvider";
-import { Evse, Wallet, Station } from "sharecharge-lib";
+import { Evse, Wallet, Station } from "@motionwerk/sharecharge-lib";
 
 @injectable()
 export default class TestShareChargeProvider extends ShareChargeProvider {

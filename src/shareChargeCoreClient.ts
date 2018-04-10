@@ -1,4 +1,4 @@
-import { ShareCharge, Wallet } from "sharecharge-lib";
+import { ShareCharge, Wallet } from "@motionwerk/sharecharge-lib";
 import "reflect-metadata";
 import LoggingProvider from "./services/loggingProvider";
 import IBridge from "./models/iBridge";

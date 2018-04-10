@@ -1,4 +1,4 @@
-import { ShareCharge, Wallet, Station, ToolKit, OpeningHours, Evse } from 'sharecharge-lib';
+import { ShareCharge, Wallet, Station, ToolKit, OpeningHours, Evse } from '@motionwerk/sharecharge-lib';
 import * as jwt from 'jsonwebtoken';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
@@ -78,7 +78,7 @@ app.use(bodyParser.urlencoded({extended: true}));  //support encoded bodies
 //     });
 // };
 
-// create station 
+// create station
 app.post('/api/stations', verifyToken, async (req, res) => {
     const station = new Station();
     station.latitude = req.body.latitude;
@@ -88,20 +88,20 @@ app.post('/api/stations', verifyToken, async (req, res) => {
     res.send(station.id);
 });
 
-// get all stations 
+// get all stations
 app.get('/api/stations', verifyToken, async (req, res) => {
     const stations = await sc.stations.getAll();
     res.send(stations.map((station: Station) => Station.serialize(station)));
 });
 
-// get single station 
+// get single station
 app.get('/api/stations/:id', verifyToken, async (req, res) => {
     const station = await sc.stations.getById(req.params.id);
     res.send(Station.serialize(station));
 });
 
 
-// create evse 
+// create evse
 app.post('/api/evse', verifyToken, async (req, res) => {
     const evse = new Evse();
 
@@ -115,7 +115,7 @@ app.post('/api/evse', verifyToken, async (req, res) => {
     res.send(evse.id);
 });
 
-// get informations for one evse 
+// get informations for one evse
 app.get('/api/evse/:id', verifyToken, async (req, res) => {
 
     const evse = await sc.evses.getById(req.params.id);
@@ -133,9 +133,9 @@ app.get('/api/evse/:id', verifyToken, async (req, res) => {
     res.send(response);
 });
 
-//Disable the evse 
+//Disable the evse
 app.put('/api/disable/:id', verifyToken, async (req, res) => {
-    
+
     const evse = await sc.evses.getById(req.params.id);
     evse.available = false;
     await sc.evses.useWallet(wallet).update(evse);
@@ -157,7 +157,7 @@ app.put('/api/start/:id', verifyToken, async (req, res) => {
     res.send(200);
 });
 
-// Stop endpoint -0 
+// Stop endpoint -0
 app.put('/api/stop/:id', verifyToken, async (req, res) => {
     const evse = await sc.evses.getById(req.params.id);
     await sc.charging.useWallet(wallet).requestStop(evse);

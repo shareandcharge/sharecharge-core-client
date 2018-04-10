@@ -1,4 +1,4 @@
-import { Station, OpeningHours } from "sharecharge-lib";
+import { Station, OpeningHours } from "@motionwerk/sharecharge-lib";
 import LogicBase from "./logicBase"
 
 export default class StationLogic extends LogicBase {

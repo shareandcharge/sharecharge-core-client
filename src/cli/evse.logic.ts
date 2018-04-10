@@ -1,4 +1,4 @@
-import { Evse } from "sharecharge-lib";
+import { Evse } from "@motionwerk/sharecharge-lib";
 import LogicBase from "./logicBase"
 
 export default class EvseLogic extends LogicBase {

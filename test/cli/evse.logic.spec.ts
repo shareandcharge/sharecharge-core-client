@@ -2,7 +2,7 @@ import * as mocha from 'mocha';
 import { expect } from 'chai';
 import * as sinon from "sinon";
 
-import { Evse, ToolKit } from "sharecharge-lib";
+import { Evse, ToolKit } from "@motionwerk/sharecharge-lib";
 import EvseLogic from "../../src/cli/evse.logic";
 import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
 import { Symbols } from "../../src/symbols";
