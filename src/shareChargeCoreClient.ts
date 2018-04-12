@@ -27,7 +27,7 @@ export default class ShareChargeCoreClient {
     }
 
     get sc(): ShareCharge {
-        return this.shareChargeProvider.obtain();
+        return this.shareChargeProvider.obtain(this.configProvider);
     }
 
     get evses(): any[] {
