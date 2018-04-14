@@ -355,7 +355,7 @@ export default class EvseLogic extends LogicBase {
             // only stop if not available
             if (!evse.available) {
 
-                await this.client.sc.charging.useWallet(this.client.wallet).requestStop(evse);
+                await this.client.sc.charging.useWallet(this.client.wallet).confirmStop(evse, Date.now() - 60000, Date.now(), 5);
                 result.success = true;
 
                 if (!argv.json) {
