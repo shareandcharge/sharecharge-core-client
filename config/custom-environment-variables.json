@@ -1,0 +1,6 @@
+{
+    "jwtPrivateKey": "sc_jwtPrivateKey",
+    "stage": "sc_local",
+    "provider": "sc_stage",
+    "gasPrice": "sc_gasprice"
+}
