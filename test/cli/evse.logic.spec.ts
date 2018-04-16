@@ -353,16 +353,16 @@ describe("EvseLogic", () => {
             evse.available = false;
             TestShareChargeProvider.blockchain.evses[evse.id] = evse;
 
-            const requestStopSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "requestStop");
+            const confirmStopSpy = sinon.spy(TestShareChargeProvider.chargingModifiers, "confirmStop");
             const getByUidSpy = sinon.spy(TestShareChargeProvider.scMock.evses, "getByUid");
 
             const result = await evseLogic.stop({id: evse.uid, seconds: 100, json: false});
-            requestStopSpy.restore();
+            confirmStopSpy.restore();
             getByUidSpy.restore();
 
             expect(result.success).to.be.true;
             expect(result.id).to.be.equal(evse.uid);
-            expect(requestStopSpy.calledOnce).to.be.true;
+            expect(confirmStopSpy.calledOnce).to.be.true;
             expect(getByUidSpy.calledOnce).to.be.true;
         });
 

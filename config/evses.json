@@ -2,7 +2,7 @@
   "FR138E1ETG5578567YU8D": {
     "stationId": "0x01",
     "currency": "EUR",
-    "basePrice": 500,
+    "basePrice": 1,
     "tariffId": 1,
     "available": true
   },

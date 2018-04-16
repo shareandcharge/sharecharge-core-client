@@ -66,6 +66,10 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
         requestStop: (evse) => {
 
             TestShareChargeProvider.blockchain.evses[evse.id] = evse;
+        },
+        confirmStop: (evse) => {
+
+            TestShareChargeProvider.blockchain.evses[evse.id] = evse;
         }
     };
 
