@@ -31,4 +31,27 @@ export default (yargs) => {
                     .demand("id");
 
             }, stationLogic.register)
+
+        .command("start [id] [seconds] [energy]",
+            "Start a charging session at a given Station",
+            (yargs) => {
+                yargs
+                    .positional("id", {
+                        describe: "a unique identifier for the Charge Point",
+                        type: "string",
+                    })
+                    .positional("seconds", {
+                        describe: "time to rent in seconds",
+                        type: "number",
+                        default: 10
+                    })
+                    .positional("energy", {
+                        describe: "scotty, energy",
+                        type: "number",
+                        default: 22
+                    })
+                    .string("_")
+                    .demand("id")
+
+            }, stationLogic.start)
 }

@@ -9,7 +9,6 @@ import ShareChargeProvider from "./services/shareChargeProvider";
 import BridgeProvider from "./services/bridgeProvider";
 import WalletProvider from "./services/walletProvider";
 import IClientConfig from "./models/iClientConfig";
-import EvseProvider from "./services/evseProvider";
 import StationProvider from "./services/stationProvider";
 
 @injectable()
@@ -21,7 +20,6 @@ export default class ShareChargeCoreClient {
                 @inject(Symbols.BridgeProvider) private bridgeProvider: BridgeProvider,
                 @inject(Symbols.ShareChargeProvider) private shareChargeProvider: ShareChargeProvider,
                 @inject(Symbols.WalletProvider) private walletProvider: WalletProvider,
-                @inject(Symbols.EvseProvider) private evseProvider: EvseProvider,
                 @inject(Symbols.StationProvider) private stationProvider: StationProvider,
                 @inject(Symbols.LoggingProvider) private loggingProvider: LoggingProvider) {
     }
@@ -30,12 +28,12 @@ export default class ShareChargeCoreClient {
         return this.shareChargeProvider.obtain(this.configProvider);
     }
 
-    get evses(): any[] {
-        return this.evseProvider.obtain();
+    get evses(): any {
+        return this.stationProvider.getEvses();
     }
 
-    get stations(): any[] {
-        return this.stationProvider.obtain();
+    get stations(): any {
+        return this.stationProvider.getStations();
     }
 
     get bridge(): IBridge {
@@ -130,7 +128,6 @@ export default class ShareChargeCoreClient {
             container.bind<ShareChargeProvider>(Symbols.ShareChargeProvider).to(ShareChargeProvider).inSingletonScope();
             container.bind<LoggingProvider>(Symbols.LoggingProvider).to(LoggingProvider).inSingletonScope();
             container.bind<BridgeProvider>(Symbols.BridgeProvider).to(BridgeProvider).inSingletonScope();
-            container.bind<EvseProvider>(Symbols.EvseProvider).to(EvseProvider).inSingletonScope();
             container.bind<StationProvider>(Symbols.StationProvider).to(StationProvider).inSingletonScope();
             container.bind<WalletProvider>(Symbols.WalletProvider).to(WalletProvider).inSingletonScope();
             ShareChargeCoreClient.container = container;

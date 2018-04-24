@@ -12,6 +12,7 @@ import TestShareChargeProvider from "../testShareChargeProvider";
 import TestBridgeProvider from "../testBridgeProvider";
 
 import StationProvider from "../../src/services/stationProvider";
+import { ToolKit } from "@motionwerk/sharecharge-lib";
 
 describe("StationLogic", () => {
 
@@ -34,19 +35,15 @@ describe("StationLogic", () => {
 
         it("should register a station correctly", async () => {
 
-            const idToTest = "0x11";
+            const idToTest = "one";
 
-            const doRegisterSpy = sinon.spy(stationLogic, "doRegister");
             const createSpy = sinon.spy(TestShareChargeProvider.stationModifiers, "create");
-
             const result = await stationLogic.register({id: idToTest, json: false});
-            doRegisterSpy.restore();
             createSpy.restore();
 
-            expect(doRegisterSpy.calledOnce).to.be.true;
             expect(createSpy.calledOnce).to.be.true;
 
-            expect(result.id).to.equal(idToTest);
+            expect(ToolKit.hexToString(result.id)).to.equal(idToTest);
             expect(result.latitude).to.equal(stationLogic.client.stations[idToTest].latitude);
             expect(result.longitude).to.equal(stationLogic.client.stations[idToTest].longitude);
         });

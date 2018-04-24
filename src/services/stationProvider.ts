@@ -3,11 +3,12 @@ import * as path from "path";
 import IClientConfig from "../models/iClientConfig";
 import { Symbols } from "../symbols";
 import * as fs from "fs";
+import { stat } from "fs";
 
 @injectable()
 export default class StationProvider {
 
-    private stations: any[];
+    private stations: any;
 
     constructor(@inject(Symbols.ConfigProvider) private configProvider: IClientConfig) {
         this.stations = StationProvider.loadStationsFromPath(this.configProvider.stationsPath);
@@ -28,7 +29,29 @@ export default class StationProvider {
         }
     }
 
-    obtain() {
+    getStations() {
         return this.stations;
+    }
+
+    getEvses() {
+
+        const evses = {};
+
+        Object.keys(this.stations)
+            .forEach((stationIndex) => {
+
+                const station = this.stations[stationIndex];
+
+                Object.keys(station.evses)
+                    .forEach((evseIndex) => {
+
+                        const evse = station.evses[evseIndex];
+                        evse.stationId = stationIndex;
+                    });
+
+                Object.assign(evses, station.evses);
+            });
+
+        return evses;
     }
 }

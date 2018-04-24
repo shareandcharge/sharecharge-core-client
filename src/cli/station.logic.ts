@@ -1,40 +1,7 @@
-import { Station, OpeningHours } from "@motionwerk/sharecharge-lib";
+import { Station, OpeningHours, ToolKit } from "@motionwerk/sharecharge-lib";
 import LogicBase from "./logicBase"
 
 export default class StationLogic extends LogicBase {
-
-    private async doRegister(stationToRegister, id, stfu) {
-
-        let station: Station = await this.client.sc.stations.getById(id);
-        let success = false;
-
-        if (station.owner.startsWith("0x00")) {
-
-            station = Station.deserialize({id, openingHours: "0x0"});
-            station.latitude = stationToRegister.latitude;
-            station.longitude = stationToRegister.longitude;
-            station.openingHours = OpeningHours.decode(stationToRegister.openingHours);
-
-            await this.client.sc.stations.useWallet(this.client.wallet).create(station);
-
-            success = true;
-
-            if (!stfu) {
-                this.client.logger.info(`station with id ${id} created`);
-            }
-        } else if (!stfu) {
-            this.client.logger.warn(`station with id ${id} already registerterd`);
-        }
-
-        return {
-            id: station.id,
-            owner: station.owner,
-            latitude: station.latitude,
-            longitude: station.longitude,
-            openingHours: station.openingHours,
-            success
-        }
-    }
 
     public register = async (argv) => {
 
@@ -47,10 +14,41 @@ export default class StationLogic extends LogicBase {
             success: false
         };
 
-        const station = this.client.stations[argv.id];
+        const stationToRegister = this.client.stations[argv.id];
 
-        if (station) {
-            result = await this.doRegister(station, argv.id, argv.json);
+        if (stationToRegister) {
+            const uid = ToolKit.asciiToHex(argv.id);
+
+            let station: Station = await this.client.sc.stations.getById(uid);
+            let success = false;
+
+            if (station.owner.startsWith("0x00")) {
+
+                station = Station.deserialize({id: uid, openingHours: "0x0"});
+                station.latitude = stationToRegister.latitude;
+                station.longitude = stationToRegister.longitude;
+                station.openingHours = OpeningHours.decode(stationToRegister.openingHours);
+
+                await this.client.sc.stations.useWallet(this.client.wallet).create(station);
+
+                success = true;
+
+                if (!argv.json) {
+                    this.client.logger.info(`station with id '${uid}' created`);
+                }
+            } else if (!argv.jso) {
+                this.client.logger.warn(`station with id '${uid}' already registerterd`);
+            }
+
+            result = {
+                id: station.id,
+                owner: station.owner,
+                latitude: station.latitude,
+                longitude: station.longitude,
+                openingHours: station.openingHours,
+                success
+            }
+
         } else if (!argv.json) {
             this.client.logger.error(`No station found with id ${argv.id} in configuration.`);
         }
@@ -78,10 +76,12 @@ export default class StationLogic extends LogicBase {
         for (let stationId of stationIds) {
 
             const stationToRegister = this.client.stations[stationId];
-            let station: Station = await this.client.sc.stations.getById(stationId);
+            const stationIdHex = ToolKit.asciiToHex(stationId);
+
+            let station: Station = await this.client.sc.stations.getById(stationIdHex);
 
             results[stationId] = {
-                id: station.id,
+                id: stationId,
                 owner: station.owner,
                 latitude: station.latitude,
                 longitude: station.longitude,
@@ -91,7 +91,7 @@ export default class StationLogic extends LogicBase {
 
             if (station.owner.startsWith("0x00")) {
 
-                station = Station.deserialize({id: stationId, openingHours: "0x0"});
+                station = Station.deserialize({id: stationIdHex, openingHours: "0x0"});
                 results[stationId].latitude = stationToRegister.latitude;
                 station.latitude = stationToRegister.latitude;
                 results[stationId].longitude = stationToRegister.longitude;
@@ -102,7 +102,7 @@ export default class StationLogic extends LogicBase {
                 stations.push(station);
 
             } else if (!argv.json) {
-                this.client.logger.warn(`Station with id ${stationId} already registered!`);
+                this.client.logger.warn(`Station with id '${stationId}' already registered!`);
             }
         }
 
@@ -111,10 +111,12 @@ export default class StationLogic extends LogicBase {
         }
 
         for (let station of stations) {
-            results[station.id].success = true;
+
+            const stationId = ToolKit.hexToString(station.id);
+            results[stationId].success = true;
 
             if (!argv.json) {
-                this.client.logger.info(`Station with id ${station.id} created`);
+                this.client.logger.info(`Station with id '${stationId}' created`);
             }
         }
 
@@ -134,4 +136,42 @@ export default class StationLogic extends LogicBase {
         return results;
     };
 
+    public start = async (argv) => {
+
+        if (!argv.json) {
+            this.client.logger.info(`Starting charge with station with id: ${argv.id}`);
+        }
+
+        let result: any = {
+            id: argv.id,
+            success: false
+        };
+
+        const station = await this.client.sc.stations.getById(ToolKit.asciiToHex(argv.id));
+
+        if (await this.client.sc.evses.anyFree(station)) {
+
+            const evses = await this.client.sc.evses.getByStation(station);
+
+            for (let i = 0; i < evses.length; i++) {
+
+                const evse = evses[i];
+
+                // find out what evse to start from the brige?
+                if (evse.available) {
+                    await this.client.sc.charging.useWallet(this.client.wallet).requestStart(evse, argv.seconds, argv.energy);
+                    result.success = true;
+                    if (!argv.json) {
+                        this.client.logger.info(`Started charge on evse with uid ${evse.uid}`);
+                    }
+                    break;
+                }
+            }
+
+        } else if (argv.json) {
+            this.client.logger.error("No evse free");
+        }
+
+        return result;
+    };
 }

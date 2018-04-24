@@ -1,19 +1,354 @@
 {
-  "0x01": {
+  "first": {
     "latitude": 51.454186,
     "longitude": 7.010363,
     "openingHours": "0024002400240024002400240024",
-    "evses": [
-      "FR138E1ETG5578567YU8D",
-      "FR222E1ETG5578567YU8D"
-    ]
+    "evses": {
+      "FR138E1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 1,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETG5578567YU8D1": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETG5578567YU8D2": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YU8D3": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETG5578567YU8D4": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETG5578567YU85D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YU68D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETG5578567YU87D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETG5578567YU8D8": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YU8D9": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETG5578567YU8D11": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETG5578567YU8D12": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YU8D22": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETG5578567YU8DD": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETG5578567YU8DD": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YU8DER": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETG5578567YU8D5": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETG5578567YU8D7": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YU8D8": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETG5578567YU800D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETG557833567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YU448D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1E55TG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ET66G5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E771ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      }
+    }
   },
-  "0x02": {
+  "second": {
     "latitude": 51.454286,
     "longitude": 7.010463,
     "openingHours": "0024002400240024002400240024",
-    "evses": [
-      "FR333E1ETG5578567YU8D"
-    ]
+    "evses": {
+      "FR138E1ETG557778567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETG5578567gYU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YU8jD": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETG557l8567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222lE1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR33o3E1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETGo5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222Eo1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333Eo1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138aE1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETaG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333Ea1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETsG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222dE1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333dE1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1fETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1EfTG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETGf5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138Ef1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1EfTfG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1ETG5578567YfU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138E1ETG5f578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETfG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR333E1fETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR138fE1ETG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      },
+      "FR222E1ETgG557ddd85ff67YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      }
+    }
+  },
+  "one_evse": {
+    "latitude": 52.454286,
+    "longitude": 8.010463,
+    "openingHours": "0024002400240024002400240024",
+    "evses": {
+      "FR333E1ETgG5578567YU8D": {
+        "currency": "EUR",
+        "basePrice": 2,
+        "tariffId": 1,
+        "available": true
+      }
+    }
+  },
+  "empty": {
+    "latitude": 52.454286,
+    "longitude": 8.010463,
+    "openingHours": "0024002400240024002400240024",
+    "evses": {
+    }
   }
 }

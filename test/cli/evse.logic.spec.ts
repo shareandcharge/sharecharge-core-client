@@ -11,7 +11,7 @@ import TestConfigProvider from "../testConfigProvider";
 import TestLoggingProvider from "../testLoggingProvider";
 import TestShareChargeProvider from "../testShareChargeProvider";
 import TestBridgeProvider from "../testBridgeProvider";
-import EvseProvider from "../../src/services/evseProvider";
+import StationProvider from "../../src/services/stationProvider";
 
 describe("EvseLogic", () => {
 
@@ -23,7 +23,7 @@ describe("EvseLogic", () => {
         ShareChargeCoreClient.rebind(Symbols.ShareChargeProvider, TestShareChargeProvider);
         ShareChargeCoreClient.rebind(Symbols.BridgeProvider, TestBridgeProvider);
         ShareChargeCoreClient.rebind(Symbols.ConfigProvider, TestConfigProvider);
-        ShareChargeCoreClient.rebind(Symbols.EvseProvider, EvseProvider);
+        ShareChargeCoreClient.rebind(Symbols.StationProvider, StationProvider);
     });
 
     beforeEach(() => {
@@ -36,16 +36,10 @@ describe("EvseLogic", () => {
 
             const uidToTest = "FR448E1ETG5578567YU8D";
 
-            const doRegisterSpy = sinon.spy(evseLogic, "doRegister");
             const createSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "create");
-
             const result = await evseLogic.register({id: uidToTest, json: false});
-            doRegisterSpy.restore();
             createSpy.restore();
 
-            expect(doRegisterSpy.calledOnce).to.be.true;
-
-            // expect(result.id).to.include(idToTest);
             expect(result.available).to.equal(true);
             expect(result.id).to.equal(uidToTest);
             expect(createSpy.calledOnce).to.be.true;
@@ -60,17 +54,13 @@ describe("EvseLogic", () => {
             TestShareChargeProvider.blockchain.evses[uidToTest].available = true;
             TestShareChargeProvider.blockchain.evses[uidToTest]._owner = ToolKit.randomBytes32String();
 
-            const doRegisterSpy = sinon.spy(evseLogic, "doRegister");
             const createSpy = sinon.spy(TestShareChargeProvider.evseModifiers, "create");
-
             const result = await evseLogic.register({id: uidToTest, json: false});
-            doRegisterSpy.restore();
             createSpy.restore();
 
             expect(result.available).to.be.true;
             expect(result.id).to.equal(uidToTest);
 
-            expect(doRegisterSpy.calledOnce).to.be.true;
             expect(createSpy.notCalled).to.be.true;
         });
     });
