@@ -5,5 +5,6 @@
   stationsPath: ../../config/stations.json
   stage: "local"
   provider: "http://localhost:8545"
-  seed: "filter march urge naive sauce distance under copy payment slow just warm"
+  seed: "filter march urge naive sauce distance under copy payment slow just cool"
   gasPrice: 2
+  tokenAddress: '0x666199475b6cADfc4479D1d28fBdE01EC019ED65'

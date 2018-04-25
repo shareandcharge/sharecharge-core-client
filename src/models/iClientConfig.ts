@@ -8,4 +8,5 @@ export default interface IClientConfig {
     stage: string;
     gasPrice: number;
     provider: string;
+    tokenAddress: string;
 }

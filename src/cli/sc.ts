@@ -1,8 +1,9 @@
 import * as yargs from "yargs";
-import bridgeHandler from "./bridge"
+import bridgeHandler from "./bridge";
 import evseHandler from "./evse";
-import clientHandler from "./client"
-import stationHandler from "./station"
+import clientHandler from "./client";
+import stationHandler from "./station";
+import mspHandler from "./msp";
 
 const argv = yargs
     .usage("Usage: sc <command> [options]")
@@ -26,6 +27,9 @@ const argv = yargs
     })
     .command("client", "Run the S&C Core Client", clientHandler, (argv) => {
         // this command has sub commands, exit
+        yargs.showHelp();
+    })
+    .command("msp", "MSP commands", mspHandler, (argv) => {
         yargs.showHelp();
     })
     .demandCommand(1)

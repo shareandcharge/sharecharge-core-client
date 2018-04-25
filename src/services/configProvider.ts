@@ -40,6 +40,10 @@ export default class ConfigProvider implements IClientConfig {
         return this.config.provider;
     }
 
+    get tokenAddress() {
+        return this.config.tokenAddress;
+    }
+
     public static loadConfigFromFile(filename: string): IClientConfig {
         const configPath = filename.startsWith("/") ? filename : path.join(__dirname, filename);
         const parser = new Parser();
@@ -56,7 +60,8 @@ export default class ConfigProvider implements IClientConfig {
             stage: argv.stage,
             seed: argv.seed,
             gasPrice: argv.gasPrice,
-            provider: argv.provider
+            provider: argv.provider,
+            tokenAddress: argv.tokenAddress
         };
     };
 }
