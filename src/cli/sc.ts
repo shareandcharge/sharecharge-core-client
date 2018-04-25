@@ -3,6 +3,7 @@ import bridgeHandler from "./bridge"
 import evseHandler from "./evse";
 import clientHandler from "./client"
 import stationHandler from "./station"
+import chargingHandler from "./charging"
 
 const argv = yargs
     .usage("Usage: sc <command> [options]")
@@ -25,6 +26,10 @@ const argv = yargs
         yargs.showHelp();
     })
     .command("client", "Run the S&C Core Client", clientHandler, (argv) => {
+        // this command has sub commands, exit
+        yargs.showHelp();
+    })
+    .command("charging", "charging commands", chargingHandler, (argv) => {
         // this command has sub commands, exit
         yargs.showHelp();
     })

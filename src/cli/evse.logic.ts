@@ -343,7 +343,7 @@ export default class EvseLogic extends LogicBase {
         const evse = await this.client.sc.evses.getByUid(argv.id);
 
         if (!argv.json) {
-            this.client.logger.info("Stopping charge on evse with ID:", evse.id);
+            this.client.logger.info("Stopping charge on evse with ID:", evse.uid);
         }
 
         if (!evse.owner.startsWith("0x00")) {
