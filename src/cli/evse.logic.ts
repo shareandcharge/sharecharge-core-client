@@ -1,41 +1,7 @@
-import { Evse } from "@motionwerk/sharecharge-lib";
+import { Evse, ToolKit } from "@motionwerk/sharecharge-lib";
 import LogicBase from "./logicBase"
 
 export default class EvseLogic extends LogicBase {
-
-    private async doRegister(evseToRegister, uid, stfu) {
-
-        let evse: Evse = await this.client.sc.evses.getByUid(uid);
-        let success = false;
-
-        if (evse.owner.startsWith("0x00")) {
-
-            evse = new Evse();
-            evse.uid = uid;
-            evse.stationId = evseToRegister.stationUid;
-            evse.currency = evseToRegister.currency;
-            evse.basePrice = evseToRegister.basePrice;
-            evse.tariffId = evseToRegister.tariffId;
-            evse.available = evseToRegister.available;
-
-            await this.client.sc.evses.useWallet(this.client.wallet).create(evse);
-
-            success = true;
-            if (!stfu) {
-                this.client.logger.info(`Evse with uid ${uid} created`);
-            }
-        } else if (!stfu) {
-            this.client.logger.warn(`Evse with uid ${uid} already registered`);
-        }
-
-        return {
-            id: evse.uid,
-            owner: evse.owner,
-            stationId: evse.stationId,
-            available: evse.available,
-            success
-        }
-    }
 
     private async getInformation(uid) {
 
@@ -66,10 +32,40 @@ export default class EvseLogic extends LogicBase {
             success: false
         };
 
-        const evse = this.client.evses[argv.id];
+        const evseToRegister = this.client.evses[argv.id];
 
-        if (evse) {
-            result = await this.doRegister(evse, argv.id, argv.json);
+        if (evseToRegister) {
+            let evse: Evse = await this.client.sc.evses.getByUid(argv.id);
+            let success = false;
+
+            if (evse.owner.startsWith("0x00")) {
+
+                evse = new Evse();
+                evse.uid = argv.id;
+                evse.stationId = ToolKit.asciiToHex(evseToRegister.stationId);
+                evse.currency = evseToRegister.currency;
+                evse.basePrice = evseToRegister.basePrice;
+                evse.tariffId = evseToRegister.tariffId;
+                evse.available = evseToRegister.available;
+
+                await this.client.sc.evses.useWallet(this.client.wallet).create(evse);
+
+                success = true;
+                if (!argv.json) {
+                    this.client.logger.info(`Evse with uid ${argv.id} created`);
+                }
+            } else if (!argv.json) {
+                this.client.logger.warn(`Evse with uid ${argv.id} already registered`);
+            }
+
+            result = {
+                id: evse.uid,
+                owner: evse.owner,
+                stationId: evse.stationId,
+                available: evse.available,
+                success
+            };
+
         } else if (!argv.json) {
             this.client.logger.error(`No evse found with uid ${argv.id} in configuration.`);
         }
@@ -111,7 +107,7 @@ export default class EvseLogic extends LogicBase {
 
                 evse = new Evse();
                 evse.uid = evseUid;
-                evse.stationId = evseToRegister.stationId;
+                evse.stationId = ToolKit.asciiToHex(evseToRegister.stationId);
                 evse.currency = evseToRegister.currency;
                 evse.basePrice = evseToRegister.basePrice;
                 evse.tariffId = evseToRegister.tariffId;
@@ -347,7 +343,7 @@ export default class EvseLogic extends LogicBase {
         const evse = await this.client.sc.evses.getByUid(argv.id);
 
         if (!argv.json) {
-            this.client.logger.info("Stopping charge on evse with ID:", evse.id);
+            this.client.logger.info("Stopping charge on evse with ID:", evse.uid);
         }
 
         if (!evse.owner.startsWith("0x00")) {
@@ -355,7 +351,13 @@ export default class EvseLogic extends LogicBase {
             // only stop if not available
             if (!evse.available) {
 
-                await this.client.sc.charging.useWallet(this.client.wallet).confirmStop(evse, Date.now() - 60000, Date.now(), 5);
+                await this.client.bridge.stop(result);
+                const cdr = await this.client.bridge.cdr(result);
+
+                await this.client.sc.charging
+                    .useWallet(this.client.wallet)
+                    .confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
+
                 result.success = true;
 
                 if (!argv.json) {

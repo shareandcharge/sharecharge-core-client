@@ -16,10 +16,6 @@ export default class ConfigProvider implements IClientConfig {
         return this.config.bridgePath;
     }
 
-    get evsesPath() {
-        return this.config.evsesPath;
-    }
-
     get stationsPath() {
         return this.config.stationsPath;
     }

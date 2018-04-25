@@ -1,6 +1,5 @@
 --- 
   bridgePath: ../bridges/MockBridge
-  evsesPath: ../../test/test-evses.json
   stationsPath: ../../test/test-stations.json
   stage: "local"
   seed: "filter march urge naive sauce distance under copy payment slow just cool"

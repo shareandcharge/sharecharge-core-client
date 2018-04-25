@@ -3,6 +3,7 @@ import bridgeHandler from "./bridge";
 import evseHandler from "./evse";
 import clientHandler from "./client";
 import stationHandler from "./station";
+import chargingHandler from "./charging";
 import mspHandler from "./msp";
 
 const argv = yargs
@@ -29,7 +30,11 @@ const argv = yargs
         // this command has sub commands, exit
         yargs.showHelp();
     })
-    .command("msp", "MSP commands", mspHandler, (argv) => {
+    .command("charging", "charging commands", chargingHandler, (argv) => {
+        // this command has sub commands, exit
+        yargs.showHelp();
+    })
+    .command("msp", "Mobility Service Provider commands", mspHandler, (argv) => {
         yargs.showHelp();
     })
     .demandCommand(1)

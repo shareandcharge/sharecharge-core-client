@@ -4,8 +4,10 @@ import { expect } from 'chai';
 import ClientLogic from "../../src/cli/client.logic";
 import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
 import { Symbols } from "../../src/symbols";
+
 import TestConfigProvider from "../testConfigProvider";
 import TestLoggingProvider from "../testLoggingProvider";
+import TestBridgeProvider from "../testBridgeProvider";
 
 describe('ClientLogic', () => {
 
@@ -14,6 +16,7 @@ describe('ClientLogic', () => {
     before(() => {
         clientLogic = new ClientLogic();
         ShareChargeCoreClient.rebind(Symbols.LoggingProvider, TestLoggingProvider);
+        ShareChargeCoreClient.rebind(Symbols.BridgeProvider, TestBridgeProvider);
         ShareChargeCoreClient.rebind(Symbols.ConfigProvider, TestConfigProvider);
     });
 
