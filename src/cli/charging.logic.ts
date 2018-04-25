@@ -43,5 +43,7 @@ export default class ChargingLogic extends LogicBase {
         } else {
             console.log(JSON.stringify(results, null, 2))
         }
+
+        return results;
     };
 }

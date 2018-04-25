@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import ShareChargeProvider from "../src/services/shareChargeProvider";
-import { Evse, Wallet, Station } from "@motionwerk/sharecharge-lib";
+import { Evse, Wallet, Station, ToolKit } from "@motionwerk/sharecharge-lib";
 
 @injectable()
 export default class TestShareChargeProvider extends ShareChargeProvider {
@@ -100,6 +100,12 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
                 }
 
                 return result;
+            },
+            getSession: (uid) => {
+
+                return {
+                    controller: ToolKit.randomBytes32String()
+                }
             }
         },
         stations: {
