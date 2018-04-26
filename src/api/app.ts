@@ -7,6 +7,7 @@ import evses from  './routes/evses';
 import stations from  './routes/stations';
 import charging from  './routes/charging';
 import auth from './routes/auth';
+import ocpi from './routes/ocpi/emsp';
 
 const logger = new LoggingProvider().obtain();
 const app = express();
@@ -26,6 +27,9 @@ const wallet = new Wallet('filter march urge naive sauce distance under copy pay
 
 app.use(bodyParser.json()); // support json bodies
 app.use(bodyParser.urlencoded({extended: true}));  //support encoded bodies
+
+app.use('/health', (req, res) => res.send('OK'));
+app.use('/ocpi', ocpi);
 
 app.use('/api/evses', evses(sc, wallet));
 app.use('/api/stations', stations(sc, wallet));

@@ -2,5 +2,9 @@
     "jwtPrivateKey": "secretkey",
     "stage": "local",
     "provider": "http://localhost:8545",
-    "gasPrice": 18000000000
+    "gasPrice": 18000000000,
+    "emspServer": "http://217.253.118.77:3000",
+    "emspToken": "SECURITY_DO_NOT_STORE_ON_GITHUB",
+    "cpoServer": "https://serviceqa.eoperate-portal.com",
+    "cpoToken": "SECURITY_DO_NOT_STORE_ON_GITHUB"
 }
