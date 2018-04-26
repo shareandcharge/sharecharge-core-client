@@ -309,7 +309,7 @@ export default class EvseLogic extends LogicBase {
             // only charge if available
             if (evse.available) {
 
-                await this.client.sc.charging.useWallet(this.client.wallet).requestStart(evse, argv.seconds, argv.energy);
+                await this.client.sc.charging.useWallet(this.client.wallet).requestStart(evse, argv.price);
                 result.success = true;
 
                 if (!argv.json) {
@@ -354,9 +354,7 @@ export default class EvseLogic extends LogicBase {
                 await this.client.bridge.stop(result);
                 const cdr = await this.client.bridge.cdr(result);
 
-                await this.client.sc.charging
-                    .useWallet(this.client.wallet)
-                    .confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
+                await this.client.sc.charging.useWallet(this.client.wallet).confirmStop(evse);
 
                 result.success = true;
 

@@ -5,6 +5,7 @@
   stationsPath: ../../config/stations.json
   stage: "local"
   provider: "http://localhost:8545"
+  # msp seed ending 'cool'; cpo seed ending 'warm' 
   seed: "filter march urge naive sauce distance under copy payment slow just cool"
   gasPrice: 2
-  tokenAddress: '0x666199475b6cADfc4479D1d28fBdE01EC019ED65'
+  tokenAddress: '0xD57B879a525F511A7279627cb605Ba802cf5cd1F'

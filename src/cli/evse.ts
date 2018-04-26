@@ -97,19 +97,14 @@ export default (yargs) => {
                     .positional("id", {
                         describe: "a unique identifier for the Charge Point",
                         type: "string",
+                        demand: true
                     })
-                    .positional("seconds", {
-                        describe: "time to rent in seconds",
+                    .positional("price", {
+                        describe: "estimated price of charge",
                         type: "number",
-                        default: 10
-                    })
-                    .positional("energy", {
-                        describe: "scotty, energy",
-                        type: "number",
-                        default: 22
+                        default: 100
                     })
                     .string("_")
-                    .demand("id")
 
             }, evseLogic.start)
 

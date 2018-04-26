@@ -70,7 +70,7 @@ export default class MspLogic extends LogicBase {
             return;
         }
         const driver = argv.driver;
-        const balance = await this.sc.token.balance(driver);
+        const balance = await this.sc.token.getBalance(driver);
          this.client.logger.info(`Balance: ${balance}`);
     }
     
@@ -84,12 +84,12 @@ export default class MspLogic extends LogicBase {
         const symbol = await this.sc.token.contract.call("symbol");
         this.client.logger.info(`Symbol:  ${symbol}`);
         this.client.logger.info(`Address: ${this.tokenAddress}`);
-        const owner = await this.sc.token.owner();
+        const owner = await this.sc.token.getOwner();
         this.client.logger.info(`Owner:   ${owner}`);
     }
 
     private isOwner = async () => {
-        const owner = await this.sc.token.owner();
+        const owner = await this.sc.token.getOwner();
         return owner.toLowerCase() === this.client.wallet.keychain[0].address;
     }
 } 
