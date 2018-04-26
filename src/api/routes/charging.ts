@@ -39,14 +39,13 @@ export default (sc: ShareCharge, wallet: Wallet) => {
             const evse = await sc.evses.getById(result.evseId);
             // use bridge to stop then get cdr
             // await bridge.stop(id);
-            const cdr: ICDR = { start: Date.now() - 60000, stop: Date.now(), energy: 10000 };
-            sc.charging.useWallet(wallet).confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
+            sc.charging.useWallet(wallet).confirmStop(evse);
         }, 500);
     });
 
     router.put('/start/:id', authenticate, async (req, res) => {
         const evse = await sc.evses.getById(req.params.id);
-        await sc.charging.useWallet(wallet).requestStart(evse, 1, 1);
+        await sc.charging.useWallet(wallet).requestStart(evse, req.params.price);
         res.sendStatus(200);
     });
 
