@@ -49,7 +49,6 @@ describe('ChargingLogic', () => {
             TestShareChargeProvider.blockchain.evses[uidToTest]._owner = ToolKit.randomBytes32String();
 
             const results = await chargingLogic.sessions({});
-            console.log(results);
             expect(results.length).to.equal(1);
             expect(results[0].evse).to.equal(uidToTest);
         });

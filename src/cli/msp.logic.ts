@@ -4,20 +4,13 @@ import LogicBase from "./logicBase"
 export default class MspLogic extends LogicBase {
 
     sc: ShareCharge;
-    tokenAddress: string;
 
     constructor() {
         super();
-        this.tokenAddress = this.client.config.tokenAddress;
-        this.sc = ShareCharge.getInstance({ tokenAddress: this.tokenAddress });
+        this.sc = ShareCharge.getInstance({ tokenAddress: this.client.config.tokenAddress });
     }
 
     public deploy = async (argv) => {
-
-        if (this.tokenAddress) {
-            this.client.logger.info("You have already provisioned an MSP Token Contract");
-            return;
-        }
 
         const name = argv.name.join(' ');
         const symbol = argv.symbol;
@@ -29,33 +22,22 @@ export default class MspLogic extends LogicBase {
     }
 
     public setAccess = async (argv) => {
-        if (!this.tokenAddress) {
-            this.client.logger.info("No token address specified in config");
-            return;
-        }
         const owner = await this.isOwner();
         if (!owner) {
             this.client.logger.info("You do not have the right to set access on this contract");
             return;
         }
-
         const charging = argv.charging;
         await this.sc.token.useWallet(this.client.wallet).setAccess(charging);
         this.client.logger.info(`Granted Charging Contract at ${charging} access to your MSP Token`)
     }
 
     public mint = async (argv) => {
-        if (!this.tokenAddress) {
-            this.client.logger.info("No token address specified in config");
-            return;
-        }
-
         const owner = await this.isOwner();
         if (!owner) {
             this.client.logger.info("You do not have the right to mint tokens for this contract");
             return;
         }
-
         const driver = argv.driver;
         const amount = argv.amount;
 
@@ -65,25 +47,17 @@ export default class MspLogic extends LogicBase {
     }
     
     public balance = async (argv) => {
-        if (!this.tokenAddress) {
-            this.client.logger.info("No token address specified in config");
-            return;
-        }
         const driver = argv.driver;
         const balance = await this.sc.token.getBalance(driver);
          this.client.logger.info(`Balance: ${balance}`);
     }
     
     public info = async () => {
-        if (!this.tokenAddress) {
-            this.client.logger.info("No token address specified in config");
-            return;
-        }
         const name = await this.sc.token.contract.call("name");
         this.client.logger.info(`Name:    ${name}`);
         const symbol = await this.sc.token.contract.call("symbol");
         this.client.logger.info(`Symbol:  ${symbol}`);
-        this.client.logger.info(`Address: ${this.tokenAddress}`);
+        this.client.logger.info(`Address: ${this.client.sc.token.address}`);
         const owner = await this.sc.token.getOwner();
         this.client.logger.info(`Owner:   ${owner}`);
     }

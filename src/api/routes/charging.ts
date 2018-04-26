@@ -45,7 +45,7 @@ export default (sc: ShareCharge, wallet: Wallet) => {
 
     router.put('/start/:id', authenticate, async (req, res) => {
         const evse = await sc.evses.getById(req.params.id);
-        await sc.charging.useWallet(wallet).requestStart(evse, req.params.price);
+        await sc.charging.useWallet(wallet).requestStart(evse, sc.token.address, req.params.price);
         res.sendStatus(200);
     });
 

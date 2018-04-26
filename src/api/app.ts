@@ -2,6 +2,7 @@ import { ShareCharge, Wallet } from '@motionwerk/sharecharge-lib';
 import * as config from 'config';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import "reflect-metadata";
 import LoggingProvider from "../services/loggingProvider";
 import evses from  './routes/evses';
 import stations from  './routes/stations';

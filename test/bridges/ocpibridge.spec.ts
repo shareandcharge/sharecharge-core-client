@@ -7,7 +7,7 @@ describe("OCPI Bridge", () => {
   before(() => { });
 
   describe("#register", () => {
-    it.only("should perform the OCPI registration process", async () => {
+    it("should perform the OCPI registration process", async () => {
       const bridge = new OCPIBridge();
       bridge.register();
     });

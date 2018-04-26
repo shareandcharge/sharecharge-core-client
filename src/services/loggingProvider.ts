@@ -1,5 +1,5 @@
 import { Logger, transports } from 'winston';
-import { injectable } from "inversify";
+import { injectable, inject } from "inversify";
 
 @injectable()
 export default class LoggingProvider {

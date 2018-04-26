@@ -34,9 +34,7 @@ export default class MockBridge implements IBridge {
 
     async cdr(id?: string): Promise<any> {
         return {
-            start: Date.now() - 60000,
-            stop: Date.now(),
-            energy: 10
+            price: 100
         };
     }
 

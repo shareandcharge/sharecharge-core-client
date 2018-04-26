@@ -83,7 +83,7 @@ export default class ShareChargeCoreClient {
                 try {
                     await this.bridge.stop(result);
                     const cdr = await this.bridge.cdr(result);
-                    await this.sc.charging.useWallet(this.wallet).confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
+                    await this.sc.charging.useWallet(this.wallet).confirmStop(evse);
                     this.logger.info(`Confirmed stop for evse with uid: ${evse.uid}`);
                 } catch (err) {
                     this.logger.error(`Error stopping charge on ${evse.uid}: ${err.message}`);
@@ -111,7 +111,7 @@ export default class ShareChargeCoreClient {
         this.bridge.autoStop$.subscribe(async (result) => {
             const evse = await this.sc.evses.getById(result.evseId);
             const cdr = await this.bridge.cdr();
-            await this.sc.charging.useWallet(this.wallet).confirmStop(evse, cdr.start, cdr.stop, cdr.energy);
+            await this.sc.charging.useWallet(this.wallet).confirmStop(evse);
             this.logger.info(`Confirmed stop for evse with uid: ${evse.uid}`);
         });
 
