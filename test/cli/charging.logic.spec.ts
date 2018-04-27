@@ -1,7 +1,7 @@
 import * as mocha from 'mocha';
 import { expect } from 'chai';
 
-import ChargingLogic from "../../src/cli/charging.logic";
+import ChargingLogic from "../../src/cli/cpo/charging.logic";
 import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
 import StationProvider from "../../src/services/stationProvider";
 

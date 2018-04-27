@@ -1,5 +1,5 @@
 import EvseLogic from "./evse.logic";
-import ConfigProvider from "../services/configProvider";
+import ConfigProvider from "../../services/configProvider";
 
 const evseLogic = new EvseLogic();
 

@@ -4,7 +4,7 @@
   evsesPath: ../../config/evses.json
   stationsPath: ../../config/stations.json
   stage: "local"
-  provider: "http://localhost:8545"
+  ethProvider: "http://localhost:8545"
   # msp seed ending 'cool'; cpo seed ending 'warm' 
   seed: "filter march urge naive sauce distance under copy payment slow just cool"
   gasPrice: 2

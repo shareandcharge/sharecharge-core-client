@@ -1,5 +1,5 @@
 import ChargingLogic from "./charging.logic";
-import ConfigProvider from "../services/configProvider";
+import ConfigProvider from "../../services/configProvider";
 
 const chargingoLogic = new ChargingLogic();
 

@@ -1,5 +1,5 @@
 import { Evse, ToolKit } from "@motionwerk/sharecharge-lib";
-import LogicBase from "./logicBase"
+import LogicBase from "../logicBase"
 
 export default class ChargingLogic extends LogicBase {
 

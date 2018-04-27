@@ -2,7 +2,7 @@ import * as mocha from 'mocha';
 import { expect } from 'chai';
 import * as sinon from "sinon";
 
-import StationLogic from "../../src/cli/station.logic";
+import StationLogic from "../../src/cli/cpo/station.logic";
 import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
 import { Symbols } from "../../src/symbols";
 

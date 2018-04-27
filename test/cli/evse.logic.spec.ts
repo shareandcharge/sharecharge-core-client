@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import * as sinon from "sinon";
 
 import { Evse, ToolKit } from "@motionwerk/sharecharge-lib";
-import EvseLogic from "../../src/cli/evse.logic";
+import EvseLogic from "../../src/cli/cpo/evse.logic";
 import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
 import { Symbols } from "../../src/symbols";
 

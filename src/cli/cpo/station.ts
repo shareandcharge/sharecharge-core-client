@@ -1,5 +1,5 @@
 import StationLogic from "./station.logic";
-import ConfigProvider from "../services/configProvider";
+import ConfigProvider from "../../services/configProvider";
 
 const stationLogic = new StationLogic();
 

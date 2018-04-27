@@ -1,10 +1,11 @@
 import * as yargs from "yargs";
-import bridgeHandler from "./bridge";
-import evseHandler from "./evse";
+import bridgeHandler from "./cpo/bridge";
+import evseHandler from "./cpo/evse";
 import clientHandler from "./client";
-import stationHandler from "./station";
-import chargingHandler from "./charging";
-import mspHandler from "./msp";
+import stationHandler from "./cpo/station";
+import chargingHandler from "./cpo/charging";
+import tokenHandler from "./msp/token";
+import storageHandler from "./cpo/storage";
 
 const argv = yargs
     .usage("Usage: sc <command> [options]")
@@ -34,7 +35,10 @@ const argv = yargs
         // this command has sub commands, exit
         yargs.showHelp();
     })
-    .command("msp", "Mobility Service Provider commands", mspHandler, (argv) => {
+    .command("token", "Mobility Service Provider commands", tokenHandler, (argv) => {
+        yargs.showHelp();
+    })
+    .command("store", "ipfs storage commands", storageHandler, (argv) => {
         yargs.showHelp();
     })
     .demandCommand(1)

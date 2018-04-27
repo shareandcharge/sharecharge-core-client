@@ -1,7 +1,7 @@
-import MspLogic from "./msp.logic";
-import ConfigProvider from "../services/configProvider";
+import TokenLogic from "./token.logic";
+import ConfigProvider from "../../services/configProvider";
 
-const mspLogic = new MspLogic();
+const tokenLogic = new TokenLogic();
 
 export default (yargs) => {
     yargs
@@ -9,7 +9,7 @@ export default (yargs) => {
         .config("config", "Path to plaintext config file", ConfigProvider.loadConfigFromFile)
         .demandCommand(1)
 
-        .command("deploy-token",
+        .command("deploy",
             "Deploy a new MSP Token Contract (warning: high gas cost!)",
             yargs => {
                 yargs
@@ -27,9 +27,9 @@ export default (yargs) => {
                         type: "string"
                     })
                     .demand("symbol");
-            }, mspLogic.deploy)
+            }, tokenLogic.deploy)
 
-        .command("set-access",
+        .command("authorize",
             "Authorize a Charging Contract to transfer driver funds to and from an escrow account",
             yargs => {
                 yargs
@@ -40,7 +40,7 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("charging")
-            }, mspLogic.setAccess)
+            }, tokenLogic.setAccess)
 
         .command("mint",
             "Mint tokens for an EV driver",
@@ -61,7 +61,7 @@ export default (yargs) => {
                         type: "number"
                     })
                     .demand("amount")
-            }, mspLogic.mint)
+            }, tokenLogic.mint)
 
         .command("balance",
             "Check balance of EV driver",
@@ -74,10 +74,10 @@ export default (yargs) => {
                     })
                     .string("_")
                     .demand("driver")
-            }, mspLogic.balance)
+            }, tokenLogic.balance)
 
         .command("info",
             "Check MSP Token information",
             {},
-            mspLogic.info)
+            tokenLogic.info)
 }

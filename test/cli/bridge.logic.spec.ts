@@ -1,7 +1,7 @@
 import * as mocha from "mocha";
 import { expect } from "chai";
 
-import BridgeLogic from "../../src/cli/bridge.logic";
+import BridgeLogic from "../../src/cli/cpo/bridge.logic";
 import ShareChargeCoreClient from "../../src/shareChargeCoreClient";
 import { Symbols } from "../../src/symbols";
 

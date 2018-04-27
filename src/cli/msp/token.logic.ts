@@ -1,7 +1,7 @@
 import { ShareCharge } from "@motionwerk/sharecharge-lib";
-import LogicBase from "./logicBase"
+import LogicBase from "../logicBase"
 
-export default class MspLogic extends LogicBase {
+export default class TokenLogic extends LogicBase {
 
     sc: ShareCharge;
 
