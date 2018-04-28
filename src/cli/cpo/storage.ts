@@ -16,25 +16,51 @@ export default (yargs) => {
                 yargs
                     .option("file", {
                         alias: 'f',
-                        describe: 'specify json file path containing array of location objects',
+                        describe: 'json file path containing array of location objects',
                         demand: true
                     });
 
             }, storageLogic.addLocation)
 
         .command("get-locations",
-            "Retrieve a location (charge point) on the Share&Charge EV Network",
+            "Retrieve a location (charge point) from the Share&Charge EV Network",
             (yargs) => {
 
                 yargs
                     .option("cpo", {
                         alias: 'c',
-                        describe: 'the address of the Charge Point Operator',
+                        describe: 'address of the Charge Point Operator (default: your wallet)',
                     })
                     .option("id", {
                         alias: 'i',
-                        describe: 'the global identifier of the Charge Point'
+                        describe: 'global identifier of a Charge Point'
                     })
                     .string("_")
             }, storageLogic.getLocation)
+
+        .command("add-tariffs",
+            "Add tariffs data on the Share&Charge EV Network",
+            (yargs) => {
+
+                yargs
+                    .option("file", {
+                        alias: 'f',
+                        describe: 'json file path containing tariffs data',
+                        demand: true
+                    })
+
+            }, storageLogic.addTariffs)
+
+        .command("get-tariffs",
+            "Retrieve CPO tariffs from the Share&Charge EV Network",
+            (yargs) => {
+
+                yargs
+                    .option("cpo", {
+                        alias: 'c',
+                        describe: 'address of the Charge Point Operator (default: your wallet)'
+                    })
+
+            }, storageLogic.getTariffs);
+
     }

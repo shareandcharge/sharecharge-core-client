@@ -15,30 +15,30 @@ const argv = yargs
     .option("json", {
         describe: "generate json output"
     })
-    .command("evse", "evse commands", evseHandler, (argv) => {
+    .command("evse", "Add and query evse data", evseHandler, (argv) => {
         // this command has sub commands, exit
         yargs.showHelp();
     })
-    .command("station", "station commands", stationHandler, (argv) => {
+    .command("station", "Add and query station data", stationHandler, (argv) => {
         // this command has sub commands, exit
         yargs.showHelp();
     })
-    .command("bridge", "Bridge commands", bridgeHandler, (argv) => {
+    .command("bridge", "Query the connected Bridge", bridgeHandler, (argv) => {
         // this command has sub commands, exit
         yargs.showHelp();
     })
-    .command("client", "Run the S&C Core Client", clientHandler, (argv) => {
+    .command("client", "Run the Share&Charge Core Client", clientHandler, (argv) => {
         // this command has sub commands, exit
         yargs.showHelp();
     })
-    .command("charging", "charging commands", chargingHandler, (argv) => {
+    .command("charging", "Command EV charging sessions", chargingHandler, (argv) => {
         // this command has sub commands, exit
         yargs.showHelp();
     })
-    .command("token", "Mobility Service Provider commands", tokenHandler, (argv) => {
+    .command("token", "Deploy and manage a Mobility Service Provider token", tokenHandler, (argv) => {
         yargs.showHelp();
     })
-    .command("store", "ipfs storage commands", storageHandler, (argv) => {
+    .command("store", "Add and query data stored on the Share&Charge EV Network", storageHandler, (argv) => {
         yargs.showHelp();
     })
     .demandCommand(1)
