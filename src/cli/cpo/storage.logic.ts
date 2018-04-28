@@ -14,9 +14,22 @@ export default class StorageLogic extends LogicBase {
 
         for (const location of locations) {
             const result = await this.client.sc.store.useWallet(this.client.wallet).addLocation(location);
-            this.client.logger.info(result);
+            console.log(result);
         }
 
+    }
+
+    public getLocation = async (argv) => {
+
+        const cpo = argv.cpo || this.client.wallet.keychain[0].address;
+
+        if (argv.id) {
+            const locations = await this.client.sc.store.getLocationById(cpo, argv.id);
+            console.log(locations);
+        } else {
+            const location = await this.client.sc.store.getLocationsByCPO(cpo);
+            console.log(location);
+        }
     }
 
 }

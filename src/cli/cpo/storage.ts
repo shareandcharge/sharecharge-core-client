@@ -10,7 +10,7 @@ export default (yargs) => {
         .demandCommand(1)
 
         .command("add-locations",
-            "Add a location (charge point) with on the Share&Charge EV Network",
+            "Add a location (charge point) on the Share&Charge EV Network",
             (yargs) => {
 
                 yargs
@@ -21,4 +21,20 @@ export default (yargs) => {
                     });
 
             }, storageLogic.addLocation)
+
+        .command("get-locations",
+            "Retrieve a location (charge point) on the Share&Charge EV Network",
+            (yargs) => {
+
+                yargs
+                    .option("cpo", {
+                        alias: 'c',
+                        describe: 'the address of the Charge Point Operator',
+                    })
+                    .option("id", {
+                        alias: 'i',
+                        describe: 'the global identifier of the Charge Point'
+                    })
+                    .string("_")
+            }, storageLogic.getLocation)
     }
