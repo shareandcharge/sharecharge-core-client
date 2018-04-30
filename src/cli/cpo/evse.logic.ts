@@ -308,11 +308,6 @@ export default class EvseLogic extends LogicBase {
 
             // only charge if available
             if (evse.available) {
-
-                console.log("Before! ");
-                console.log("client wallet", this.client.wallet);
-                console.log("Token address", this.client.sc.token.address);
-                console.log("argv price ", argv.price);
                 
                 await this.client.sc.charging.useWallet(this.client.wallet).requestStart(evse, this.client.sc.token.address, argv.price);
 
