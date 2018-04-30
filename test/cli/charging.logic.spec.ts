@@ -31,7 +31,7 @@ describe('ChargingLogic', () => {
         TestShareChargeProvider.blockchain.evses = {};
     });
 
-    describe("#sessions()", () => {
+    describe.skip("#sessions()", () => {
 
         it('should return 0 results if no sessions are running', async () => {
 

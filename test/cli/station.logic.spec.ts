@@ -14,7 +14,7 @@ import TestBridgeProvider from "../testBridgeProvider";
 import StationProvider from "../../src/services/stationProvider";
 import { ToolKit } from "@motionwerk/sharecharge-lib";
 
-describe("StationLogic", () => {
+describe.skip("StationLogic", () => {
 
     let stationLogic: StationLogic;
 

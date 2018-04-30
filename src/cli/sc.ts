@@ -16,33 +16,30 @@ const argv = yargs
     .option("json", {
         describe: "generate json output"
     })
-    .command("evse", "Add and query evse data", evseHandler, (argv) => {
-        // this command has sub commands, exit
+    // .command("evse", "Add and query evse data", evseHandler, (argv) => {
+    //     // this command has sub commands, exit
+    //     yargs.showHelp();
+    // })
+    // .command("station", "Add and query station data", stationHandler, (argv) => {
+    //     // this command has sub commands, exit
+    //     yargs.showHelp();
+    // })
+    .command("bridge", "Control the connected Bridge", bridgeHandler, (argv) => {
         yargs.showHelp();
     })
-    .command("station", "Add and query station data", stationHandler, (argv) => {
-        // this command has sub commands, exit
+    .command("cdr", "Access and filter Charge Detail Records", cdrHandler, (argv) => {
         yargs.showHelp();
     })
-    .command("bridge", "Query the connected Bridge", bridgeHandler, (argv) => {
-        // this command has sub commands, exit
+    .command("charging", "Control EV charging sessions", chargingHandler, (argv) => {
         yargs.showHelp();
     })
     .command("client", "Run the Share&Charge Core Client", clientHandler, (argv) => {
-        // this command has sub commands, exit
-        yargs.showHelp();
-    })
-    .command("charging", "Command EV charging sessions", chargingHandler, (argv) => {
-        // this command has sub commands, exit
-        yargs.showHelp();
-    })
-    .command("token", "Deploy and manage a Mobility Service Provider token", tokenHandler, (argv) => {
         yargs.showHelp();
     })
     .command("store", "Add and query data stored on the Share&Charge EV Network", storageHandler, (argv) => {
         yargs.showHelp();
     })
-    .command("cdr", "Charge detail record", cdrHandler, (argv) => {
+    .command("token", "Deploy and manage a Mobility Service Provider token", tokenHandler, (argv) => {
         yargs.showHelp();
     })
     .demandCommand(1)
