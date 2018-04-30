@@ -6,6 +6,7 @@ import stationHandler from "./cpo/station";
 import chargingHandler from "./cpo/charging";
 import tokenHandler from "./msp/token";
 import storageHandler from "./cpo/storage";
+import cdrHandler from "./cpo/cdr";
 
 const argv = yargs
     .usage("Usage: sc <command> [options]")
@@ -39,6 +40,9 @@ const argv = yargs
         yargs.showHelp();
     })
     .command("store", "Add and query data stored on the Share&Charge EV Network", storageHandler, (argv) => {
+        yargs.showHelp();
+    })
+    .command("cdr", "Charge detail record", cdrHandler, (argv) => {
         yargs.showHelp();
     })
     .demandCommand(1)

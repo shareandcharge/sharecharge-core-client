@@ -121,6 +121,7 @@ export default class TestShareChargeProvider extends ShareChargeProvider {
             }
         },
         charging: {
+            contract: { },
             useWallet: (wallet) => {
                 return TestShareChargeProvider.chargingModifiers
             }
