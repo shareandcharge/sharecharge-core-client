@@ -1,7 +1,6 @@
 --- 
   #bridgePath: ../../../sharecharge-iot-bridge/src/bridge
   bridgePath: ../bridges/MockBridge
-  evsesPath: ../../config/evses.json
   stationsPath: ../../config/stations.json
   stage: "local"
   ethProvider: "http://localhost:8545"
