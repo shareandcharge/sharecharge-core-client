@@ -39,5 +39,6 @@ app.use('/api/auth', auth);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
+    process.send({ msg: "started", args: ""});
     logger.info('API server running on http://localhost:' + port);
 });

@@ -25,6 +25,8 @@
     "joi": "^13.1.2",
     "js-yaml": "^3.10.0",
     "jsonwebtoken": "^8.1.1",
+    "nedb": "^1.8.0",
+    "node-ipc": "^9.1.1",
     "progress": "^2.0.0",
     "reflect-metadata": "^0.1.12",
     "request-promise": "^4.2.2",
