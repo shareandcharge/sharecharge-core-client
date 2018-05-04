@@ -97,4 +97,25 @@ export default (yargs) => {
                     })
             }, chargingLogic.confirmStop)
 
+        .command("cdr",
+            "Charge detail record",
+            (yargs) => {
+                yargs
+                    .option("sc-id", {
+                        alias: 's',
+                        describe: 'The unique Share&Charge identifier for the location',
+                        demand: true
+                    })
+                    .option("evse-id",{
+                        alias: 'e',
+                        describe: 'An identifier for the EVSE at the location',
+                        demand: true
+                    })
+                    .option("final-price", {
+                        alias: 'f',
+                        describe: 'An identifier for the finalPrice',
+                        demand: true
+                    })
+            }, chargingLogic.chargeDetailRecord)
+
 }

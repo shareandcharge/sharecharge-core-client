@@ -71,4 +71,9 @@ export default class ChargingLogic extends LogicBase {
         console.log('Successfully confirmed stop');
     }
 
+    public chargeDetailRecord = async (argv) => {
+        await this.client.sc.charging.useWallet(this.client.wallet).chargeDetailRecord(argv.scId, argv.evseId, argv.finalPrice);
+        console.log('Successfully called charge detail record');
+    }
+
 }
