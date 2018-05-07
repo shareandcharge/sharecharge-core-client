@@ -27,20 +27,14 @@ export default (yargs) => {
                         type: "string"
                     })
                     .demand("symbol");
-            }, tokenLogic.deploy)
 
-        .command("authorize",
-            "Authorize a Charging Contract to transfer driver funds to and from an escrow account",
-            yargs => {
                 yargs
                     .option("charging", {
                         alias: "c",
-                        describe: "the Charging contract address",
+                        describe: "The charging contract to grant access to your MSP token",
                         type: "string"
                     })
-                    .string("_")
-                    .demand("charging")
-            }, tokenLogic.setAccess)
+            }, tokenLogic.deploy)
 
         .command("mint",
             "Mint tokens for an EV driver",

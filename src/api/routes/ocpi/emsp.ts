@@ -14,10 +14,10 @@ const serverURL = config.get('emspServer');
 
 router.get('/emsp/versions', (req, res) => {
   res.send({
-      data: {
+      data: [{
           version: "2.1.1",
           url: `${serverURL}/ocpi/emsp/2.1.1`
-      },
+      }],
       status_code: 1000,
       status_message: "Success",
       timestamp: new Date()

@@ -14,22 +14,13 @@ export default class TokenLogic extends LogicBase {
 
         const name = argv.name.join(' ');
         const symbol = argv.symbol;
+        const charging = argv.charging || this.client.sc.charging.address;
 
         const result = await this.sc.token.useWallet(this.client.wallet).deploy(name, symbol);
-
-        this.client.logger.info(`New contract created at address ${result}.`);
-        this.client.logger.info(`Save this address in your config under "tokenAddress" to use it`);
-    }
-
-    public setAccess = async (argv) => {
-        const owner = await this.isOwner();
-        if (!owner) {
-            this.client.logger.info("You do not have the right to set access on this contract");
-            return;
-        }
-        const charging = argv.charging;
         await this.sc.token.useWallet(this.client.wallet).setAccess(charging);
-        this.client.logger.info(`Granted Charging Contract at ${charging} access to your MSP Token`)
+
+        this.client.logger.info(`New contract created at address ${result}`);
+        this.client.logger.info(`Save this address in your config under "tokenAddress" to use it`);
     }
 
     public mint = async (argv) => {

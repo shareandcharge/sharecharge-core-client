@@ -1,4 +1,4 @@
-import { Evse, ToolKit } from "@motionwerk/sharecharge-lib";
+import { Evse, ToolKit, Wallet } from "@motionwerk/sharecharge-lib";
 import LogicBase from "../logicBase"
 
 export default class ChargingLogic extends LogicBase {
@@ -49,6 +49,9 @@ export default class ChargingLogic extends LogicBase {
 
     public requestStart = async (argv) => {
         const token = argv.token || this.client.sc.token.address;
+        console.log('charging as', this.client.wallet.keychain[0].address);
+        // console.log('params', argv.scId, argv.evseId, token, argv.amount);
+
         await this.client.sc.charging.useWallet(this.client.wallet).requestStart(argv.scId, argv.evseId, token, argv.amount);
         console.log('Successfully requested start');
     }
@@ -66,6 +69,11 @@ export default class ChargingLogic extends LogicBase {
     public confirmStop = async (argv) => {
         await this.client.sc.charging.useWallet(this.client.wallet).confirmStop(argv.scId, argv.evseId);
         console.log('Successfully confirmed stop');
+    }
+
+    public chargeDetailRecord = async (argv) => {
+        await this.client.sc.charging.useWallet(this.client.wallet).chargeDetailRecord(argv.scId, argv.evseId, argv.finalPrice);
+        console.log('Successfully called charge detail record');
     }
 
 }

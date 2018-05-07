@@ -1,5 +1,6 @@
 import * as config from 'config';
 import * as express from 'express';
+
 const router = express.Router();
 
 const emspServer = config.get('emspServer');
@@ -21,7 +22,9 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  console.log(req);
+  console.log(req, res);
+  req.app.emit('registered', { req, res });
+  res.sendStatus(200);
 });
 
 export default router;
