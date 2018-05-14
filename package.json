@@ -10,9 +10,6 @@
     "geth-dev": "geth --dev --datadir=../.chaindata --dev.period 1 --rpc --rpcaddr 0.0.0.0 --ws --wsaddr 0.0.0.0 --wsorigins=* --wsapi=eth,personal,net,pubsub",
     "patch-contract": "cp ~/.sharecharge/contract.defs.local.json node_modules/sharecharge-contracts/contract.defs.local.json"
   },
-  "bin": {
-    "sc": "./bin/sc.sh"
-  },
   "author": "MotionWerk GmbH",
   "license": "MIT",
   "dependencies": {
