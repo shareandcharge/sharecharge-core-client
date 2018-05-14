@@ -28,14 +28,6 @@ export default class ShareChargeCoreClient {
         return this.shareChargeProvider.obtain(this.configProvider);
     }
 
-    get evses(): any {
-        return this.stationProvider.getEvses();
-    }
-
-    get stations(): any {
-        return this.stationProvider.getStations();
-    }
-
     get bridge(): IBridge {
         return this.bridgeProvider.obtain();
     }
@@ -54,70 +46,73 @@ export default class ShareChargeCoreClient {
 
     public run() {
 
-        // get scIds either from ExternalStorage contract or stored on device
-        // const ids = await this.sc.store.getLocationsByCPO(this.wallet.keychain[0].address);
-        const scIds = Object.keys(this.evses);
+        this.sc.store.getLocationsByCPO(this.wallet.keychain[0].address).then(locations => {
+        
+            const scIds = locations.map(loc => loc.scId);
 
-        this.sc.on("StartRequested", async (result) => {
-            const id = result.scId;
-            this.logger.debug(`Start requested for evse with scId: ${id}`);
-
-            if (scIds.includes(id)) {
-                try {
-                    await this.bridge.start(result);
-                    const sessionId = '0x01'; // hardcoded for now but should come from bridge
-                    await this.sc.charging.useWallet(this.wallet).confirmStart(id, result.evseId, sessionId);
-                    this.logger.info(`Confirmed start for evse with scId: ${id}`);
-                } catch (err) {
-                    this.logger.error(`Error starting charge on ${id}: ${err.message}`);
-                    await this.sc.charging.useWallet(this.wallet).error(id, result.evseId, 0);
+            this.sc.on("StartRequested", async (result) => {
+                const id = result.scId;
+                this.logger.debug(`Start requested for evse with scId: ${id}`);
+    
+                if (scIds.includes(id)) {
+                    try {
+                        await this.bridge.start(result);
+                        const sessionId = '0x01'; // hardcoded for now but should come from bridge
+                        await this.sc.charging.useWallet(this.wallet).confirmStart(id, result.evseId, sessionId);
+                        this.logger.info(`Confirmed start for evse with scId: ${id}`);
+                    } catch (err) {
+                        this.logger.error(`Error starting charge on ${id}: ${err.message}`);
+                        await this.sc.charging.useWallet(this.wallet).error(id, result.evseId, 0);
+                    }
                 }
-            }
-        });
-
-        this.sc.on("StopRequested", async (result) => {
-            const id = result.scId;
-            this.logger.debug(`Stop requested for evse with uid: ${id}`);
-
-            if (scIds.includes(id)) {
-                try {
-                    await this.bridge.stop(result);
-                    const cdr = await this.bridge.cdr(result);
-                    await this.sc.charging.useWallet(this.wallet).confirmStop(id, result.evseId);
-                    this.logger.info(`Confirmed stop for evse with scId: ${id}`);
-                } catch (err) {
-                    this.logger.error(`Error stopping charge on ${id}: ${err.message}`);
-                    await this.sc.charging.useWallet(this.wallet).error(id, result.evseId, 1);
+            });
+    
+            this.sc.on("StopRequested", async (result) => {
+                const id = result.scId;
+                this.logger.debug(`Stop requested for evse with uid: ${id}`);
+    
+                if (scIds.includes(id)) {
+                    try {
+                        await this.bridge.stop(result);
+                        const cdr = await this.bridge.cdr(result);
+                        await this.sc.charging.useWallet(this.wallet).confirmStop(id, result.evseId);
+                        this.logger.info(`Confirmed stop for evse with scId: ${id}`);
+                    } catch (err) {
+                        this.logger.error(`Error stopping charge on ${id}: ${err.message}`);
+                        await this.sc.charging.useWallet(this.wallet).error(id, result.evseId, 1);
+                    }
                 }
-            }
+            });
+    
+            this.sc.on("StationCreated", async (result) => {
+                this.logger.debug(`Station created with id: ${result.stationId}`);
+            });
+    
+            this.sc.on("StationUpdated", async (result) => {
+                this.logger.debug(`Station updated with id: ${result.stationId}`);
+            });
+    
+            this.sc.on("EvseCreated", async (result) => {
+                this.logger.debug(`Evse created with id: ${result.evseId}`);
+            });
+    
+            this.sc.on("EvseUpdated", async (result) => {
+                this.logger.debug(`Evse updated with id: ${result.evseId}`);
+            });
+    
+            this.bridge.autoStop$.subscribe(async (result) => {
+                const cdr = await this.bridge.cdr();
+                await this.sc.charging.useWallet(this.wallet).confirmStop(result.scId, result.evseId);
+                this.logger.info(`Confirmed stop for evse with scId: ${result.scId}`);
+            });
+    
+            this.sc.startListening();
+            this.logger.info(`Connected to bridge: ${this.bridge.name}`);
+            this.logger.info(`Listening for events`);
+        
         });
-
-        this.sc.on("StationCreated", async (result) => {
-            this.logger.debug(`Station created with id: ${result.stationId}`);
-        });
-
-        this.sc.on("StationUpdated", async (result) => {
-            this.logger.debug(`Station updated with id: ${result.stationId}`);
-        });
-
-        this.sc.on("EvseCreated", async (result) => {
-            this.logger.debug(`Evse created with id: ${result.evseId}`);
-        });
-
-        this.sc.on("EvseUpdated", async (result) => {
-            this.logger.debug(`Evse updated with id: ${result.evseId}`);
-        });
-
-        this.bridge.autoStop$.subscribe(async (result) => {
-            const cdr = await this.bridge.cdr();
-            await this.sc.charging.useWallet(this.wallet).confirmStop(result.scId, result.evseId);
-            this.logger.info(`Confirmed stop for evse with scId: ${result.scId}`);
-        });
-
-        this.sc.startListening();
-        this.logger.info(`Connected to bridge: ${this.bridge.name}`);
-        this.logger.info(`Listening for events`);
     }
+
 
     static getInstance(): ShareChargeCoreClient {
 
