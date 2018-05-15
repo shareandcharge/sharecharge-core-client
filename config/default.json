@@ -1,7 +1,0 @@
-{
-    "jwtPrivateKey": "secretkey",
-    "stage": "local",
-    "ethProvider": "http://localhost:8545",
-    "tokenAddress": "",
-    "gasPrice": 2
-}

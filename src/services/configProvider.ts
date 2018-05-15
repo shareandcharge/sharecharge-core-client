@@ -1,19 +1,29 @@
 import { injectable, inject } from "inversify";
-import * as path from "path";
-import IClientConfig from "../interfaces/iClientConfig";
-import Parser from "../utils/parser";
+import * as fs from "fs";
+import { getConfigDir, IConfig, prepareConfigLocation } from "@motionwerk/sharecharge-config";
+
+prepareConfigLocation();
 
 @injectable()
-export default class ConfigProvider implements IClientConfig {
+export default class ConfigProvider implements IConfig {
 
-    protected config: IClientConfig;
+    protected config: IConfig;
 
-    constructor() {
-        this.config = ConfigProvider.loadConfigFromFile("../../config/config.yaml")
+    static load(file): IConfig {
+
+        return <IConfig>JSON.parse(fs.readFileSync(file, "UTF8"))
     }
 
-    get bridgePath() {
-        return this.config.bridgePath;
+    constructor() {
+        this.config = ConfigProvider.load(getConfigDir() + "config.json");
+    }
+
+    get locationsPath() {
+        return this.config.locationsPath;
+    }
+
+    get tariffsPath() {
+        return this.config.tariffsPath;
     }
 
     get gasPrice() {
@@ -28,25 +38,27 @@ export default class ConfigProvider implements IClientConfig {
         return this.config.stage || "local";
     }
 
-    get ethProvider() {
-        return this.config.ethProvider;
+    get provider() {
+        return this.config.provider;
     }
 
-    public static loadConfigFromFile(filename: string): IClientConfig {
-        const configPath = filename.startsWith("/") ? filename : path.join(__dirname, filename);
-        const parser = new Parser();
-        //console.log("reading config from", configPath);
-        const configString = parser.read(configPath);
-        return <IClientConfig>ConfigProvider.createConfig(parser.translate(configString))
+    get tokenAddress() {
+        return this.config.tokenAddress;
+    }
+
+    public static loadConfigFromFile(configPath: string): IConfig {
+        return <IConfig>ConfigProvider.createConfig(ConfigProvider.load(configPath))
     };
 
-    private static createConfig(argv: any): IClientConfig {
-        return <IClientConfig>{
-            bridgePath: argv.bridgePath,
+    private static createConfig(argv: any): IConfig {
+        return <IConfig>{
+            locationsPath: argv.locationsPath,
+            tariffsPath: argv.tariffsPath,
             stage: argv.stage,
             seed: argv.seed,
             gasPrice: argv.gasPrice,
-            ethProvider: argv.ethProvider,
+            provider: argv.provider,
+            tokenAddress: argv.tokenAddress
         };
     };
 }

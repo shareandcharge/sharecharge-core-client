@@ -1,3 +1,0 @@
-evses = "./evses.json"
-bridge = "./testBridge.ts"
-stage = "local"

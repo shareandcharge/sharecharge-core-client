@@ -1,8 +1,0 @@
---- 
-  bridgePath: ../bridges/MockBridge
-  stationsPath: ../../test/test-stations.json
-  stage: "local"
-  seed: "filter march urge naive sauce distance under copy payment slow just cool"
-  gasPrice: 2
-  test: config
-  provider: "http://localhost:8545"

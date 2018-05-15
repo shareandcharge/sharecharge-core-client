@@ -1,14 +1,14 @@
 import { ShareCharge, Wallet } from "@motionwerk/sharecharge-lib";
+import { IConfig } from "@motionwerk/sharecharge-config";
 import "reflect-metadata";
+import { Container, injectable, inject } from "inversify";
 import LoggingProvider from "./services/loggingProvider";
 import IBridge from "./interfaces/iBridge";
 import { Symbols } from "./symbols"
-import { Container, injectable, inject } from "inversify";
 import ConfigProvider from "./services/configProvider";
 import ShareChargeProvider from "./services/shareChargeProvider";
 import BridgeProvider from "./services/bridgeProvider";
 import WalletProvider from "./services/walletProvider";
-import IClientConfig from "./interfaces/iClientConfig";
 
 @injectable()
 export class CoreClient {
@@ -21,7 +21,7 @@ export class CoreClient {
                 @inject(Symbols.ShareChargeProvider) private shareChargeProvider: ShareChargeProvider,
                 @inject(Symbols.WalletProvider) private walletProvider: WalletProvider,
                 @inject(Symbols.LoggingProvider) private loggingProvider: LoggingProvider) {
-                    this.scIds = [];
+        this.scIds = [];
     }
 
     get sc(): ShareCharge {
@@ -40,23 +40,23 @@ export class CoreClient {
         return this.loggingProvider.obtain();
     }
 
-    get config(): IClientConfig {
+    get config(): IConfig {
         return this.configProvider;
     }
 
     private async getIds(): Promise<void> {
         this.scIds = await this.sc.store.getIdsByCPO(this.wallet.keychain[0].address)
     }
-    
+
     private pollIds(interval: number = 5000): void {
         setInterval(async () => await this.getIds(), interval);
     }
 
     private listen() {
-        
+
         this.sc.on("StartRequested", async (result) => {
             this.logger.debug(`Start requested on ${result.evseId}`);
-            
+
             if (this.scIds.includes(result.scId)) {
                 try {
                     await this.bridge.start(result);
@@ -69,10 +69,10 @@ export class CoreClient {
                 }
             }
         });
-        
+
         this.sc.on("StopRequested", async (result) => {
             this.logger.debug(`Stop requested for evse with uid: ${result.scId}`);
-            
+
             if (this.scIds.includes(result.scId)) {
                 try {
                     await this.bridge.stop(result);
@@ -87,19 +87,19 @@ export class CoreClient {
                 }
             }
         });
-        
+
         this.bridge.autoStop$.subscribe(async (result) => {
             const cdr = await this.bridge.cdr();
             await this.sc.charging.useWallet(this.wallet).confirmStop(result.scId, result.evseId);
             this.logger.info(`Confirmed ${result.evseId} autostop`);
             await this.sc.charging.useWallet(this.wallet).chargeDetailRecord(result.scId, result.evseId, cdr.price);
-            this.logger.info(`Confirmed ${result.evseId} CDR`);            
+            this.logger.info(`Confirmed ${result.evseId} CDR`);
         });
-        
+
         this.sc.startListening();
         this.logger.info(`Connected to bridge: ${this.bridge.name}`);
         this.logger.info(`Listening for events`);
-        this.logger.debug(`Listening for these IDs: ${JSON.stringify(this.scIds)}`);        
+        this.logger.debug(`Listening for these IDs: ${JSON.stringify(this.scIds)}`);
     }
 
     public run() {
@@ -110,7 +110,7 @@ export class CoreClient {
     }
 
     static getInstance(): CoreClient {
-        
+
         if (!CoreClient.container) {
             const container = new Container();
             container.bind<ConfigProvider>(Symbols.ConfigProvider).to(ConfigProvider).inSingletonScope();
