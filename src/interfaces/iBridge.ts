@@ -13,11 +13,5 @@ export default interface IBridge {
 
     stop(parameters: any): Promise<IResult>;
 
-    startUpdater(interval?: number): void;
-
-    stopUpdater(): void;
-
-    evseStatus(id?: string): Promise<any>;
-
     cdr(id?: string): Promise<ICDR>;
 }

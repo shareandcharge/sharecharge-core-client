@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 
-import IBridge from '../models/iBridge';
+import IBridge from '../interfaces/iBridge';
 
 export default class ErrorBridge implements IBridge {
 
@@ -28,22 +28,10 @@ export default class ErrorBridge implements IBridge {
         return {data: 50};
     }
 
-    async evseStatus(id?: string): Promise<any> {
-        return true;
-    }
-
     async cdr(id?: string): Promise<any> {
-        return {};
-    }
-
-    startUpdater(interval?: number): void {
-        this.updater = setInterval(async () => {
-
-        }, interval || 30000);
-    }
-
-    stopUpdater(): void {
-        clearInterval(this.updater);
+        return {
+            price: 0
+        };
     }
 
 }

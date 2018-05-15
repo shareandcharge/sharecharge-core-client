@@ -1,12 +1,10 @@
 --- 
   #bridgePath: ../../../sharecharge-iot-bridge/src/bridge
   bridgePath: ../bridges/MockBridge
-  stationsPath: ../../config/stations.json
   stage: "local"
   ethProvider: "http://localhost:8545"
   # msp seed ending 'cool'; 
   # cpo seed ending 'warm'; 
   # driver seed ending 'cold';
-  seed: "filter march urge naive sauce distance under copy payment slow just cool"
+  seed: "filter march urge naive sauce distance under copy payment slow just warm"
   gasPrice: 2
-  tokenAddress: '0x231148179C36515131B151AF5f34D70739f6bFBA'

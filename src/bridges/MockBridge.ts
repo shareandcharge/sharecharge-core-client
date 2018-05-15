@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 
-import IBridge from '../models/iBridge';
+import IBridge from '../interfaces/iBridge';
 
 export default class MockBridge implements IBridge {
 
@@ -21,6 +21,7 @@ export default class MockBridge implements IBridge {
     }
 
     async start(parameters: any): Promise<any> {
+        setTimeout(() => this.autoStop.next(parameters), 10000);
         return {data: '123'};
     }
 
@@ -28,24 +29,10 @@ export default class MockBridge implements IBridge {
         return {data: 50};
     }
 
-    async evseStatus(id?: string): Promise<any> {
-        return true;
-    }
-
     async cdr(id?: string): Promise<any> {
         return {
             price: 100
         };
-    }
-
-    startUpdater(interval?: number): void {
-        this.updater = setTimeout(async () => {
-
-        }, interval || 30000)
-    }
-
-    stopUpdater(): void {
-        clearTimeout(this.updater);
     }
 
 }

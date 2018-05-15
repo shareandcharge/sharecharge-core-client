@@ -4,16 +4,14 @@
   "description": "Share & Charge Core Client for Charge Point Operators",
   "main": "index.js",
   "scripts": {
-    "client": "ts-node main.ts",
+    "start": "ts-node src/index.ts",
     "test": "mocha --exit -r ts-node/register test/**/*.spec.ts",
-    "test-watch": "mocha --watch --watch-extensions ts,js,json -r ts-node/register test/**/*.spec.ts",
-    "geth-dev": "geth --dev --datadir=../.chaindata --dev.period 1 --rpc --rpcaddr 0.0.0.0 --ws --wsaddr 0.0.0.0 --wsorigins=* --wsapi=eth,personal,net,pubsub",
-    "patch-contract": "cp ~/.sharecharge/contract.defs.local.json node_modules/sharecharge-contracts/contract.defs.local.json"
+    "test-watch": "mocha --watch --watch-extensions ts,js,json -r ts-node/register test/**/*.spec.ts"
   },
   "author": "MotionWerk GmbH",
   "license": "MIT",
   "dependencies": {
-    "@motionwerk/sharecharge-lib": "^0.0.20",
+    "@motionwerk/sharecharge-lib": "^0.0.27",
     "bcrypt": "^2.0.0",
     "body-parser": "^1.18.2",
     "config": "^1.30.0",

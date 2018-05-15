@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import * as path from "path";
-import IClientConfig from "../models/iClientConfig";
+import IClientConfig from "../interfaces/iClientConfig";
 import Parser from "../utils/parser";
 
 @injectable()
@@ -16,10 +16,6 @@ export default class ConfigProvider implements IClientConfig {
         return this.config.bridgePath;
     }
 
-    get stationsPath() {
-        return this.config.stationsPath;
-    }
-
     get gasPrice() {
         return this.config.gasPrice || 2;
     }
@@ -32,12 +28,8 @@ export default class ConfigProvider implements IClientConfig {
         return this.config.stage || "local";
     }
 
-    get provider() {
-        return this.config.provider;
-    }
-
-    get tokenAddress() {
-        return this.config.tokenAddress;
+    get ethProvider() {
+        return this.config.ethProvider;
     }
 
     public static loadConfigFromFile(filename: string): IClientConfig {
@@ -51,13 +43,10 @@ export default class ConfigProvider implements IClientConfig {
     private static createConfig(argv: any): IClientConfig {
         return <IClientConfig>{
             bridgePath: argv.bridgePath,
-            evsesPath: argv.evsesPath,
-            stationsPath: argv.stationsPath,
             stage: argv.stage,
             seed: argv.seed,
             gasPrice: argv.gasPrice,
-            provider: argv.provider,
-            tokenAddress: argv.tokenAddress
+            ethProvider: argv.ethProvider,
         };
     };
 }

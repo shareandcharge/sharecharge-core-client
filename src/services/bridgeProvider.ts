@@ -1,8 +1,8 @@
 import { injectable, inject } from "inversify";
 import * as path from "path";
-import IClientConfig from "../models/iClientConfig";
+import IClientConfig from "../interfaces/iClientConfig";
 import { Symbols } from "../symbols";
-import IBridge from "../models/iBridge";
+import IBridge from "../interfaces/iBridge";
 
 @injectable()
 export default class BridgeProvider {
