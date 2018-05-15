@@ -14,6 +14,7 @@
   "author": "MotionWerk GmbH",
   "license": "MIT",
   "dependencies": {
+    "@motionwerk/sharecharge-api": "^0.1.1",
     "@motionwerk/sharecharge-lib": "^0.0.28",
     "inversify": "^4.13.0",
     "js-yaml": "^3.10.0",
