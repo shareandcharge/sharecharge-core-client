@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import * as fs from "fs";
-import { getConfigDir, IConfig, prepareConfigLocation } from "@motionwerk/sharecharge-config";
+import { getConfigDir, IConfig, prepareConfigLocation } from "@motionwerk/sharecharge-common";
 
 prepareConfigLocation();
 
