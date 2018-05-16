@@ -34,6 +34,10 @@ export default class ConfigProvider implements IConfig {
         return this.config.seed;
     }
 
+    get bridgePath() {
+        return this.config.bridgePath;
+    }
+
     get stage() {
         return this.config.stage || "local";
     }
@@ -54,10 +58,11 @@ export default class ConfigProvider implements IConfig {
         return <IConfig>{
             locationsPath: argv.locationsPath,
             tariffsPath: argv.tariffsPath,
+            bridgePath: argv.bridgePath,
             stage: argv.stage,
             seed: argv.seed,
             gasPrice: argv.gasPrice,
-            provider: argv.provider,
+            ethProvider: argv.ethProvider,
             tokenAddress: argv.tokenAddress
         };
     };
