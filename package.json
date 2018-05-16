@@ -17,7 +17,7 @@
   "dependencies": {
     "@motionwerk/sharecharge-api": "^0.2.3",
     "@motionwerk/sharecharge-common": "^1.0.9",
-    "@motionwerk/sharecharge-lib": "^0.1.5",
+    "@motionwerk/sharecharge-lib": "^0.1.10",
     "inversify": "^4.13.0",
     "reflect-metadata": "^0.1.12",
     "request-promise": "^4.2.2",
