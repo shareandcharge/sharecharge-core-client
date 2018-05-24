@@ -11,10 +11,10 @@ export default class BridgeProvider {
     private bridge;
 
     constructor(@inject(Symbols.ConfigProvider) private configProvider: ConfigProvider) {
-        this.bridge = BridgeProvider.createBrideInstance(this.configProvider.bridgePath);
+        this.bridge = BridgeProvider.createBridgeInstance(this.configProvider.bridgePath);
     }
 
-    private static createBrideInstance(bridgePath: string): IBridge {
+    private static createBridgeInstance(bridgePath: string): IBridge {
 
         const Bridge = require(bridgePath).default;
 
