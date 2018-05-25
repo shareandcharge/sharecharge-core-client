@@ -89,17 +89,22 @@ export class CoreClient {
         });
 
         this.bridge.autoStop$.subscribe(async (result) => {
-            const cdr = await this.bridge.cdr();
-            await this.sc.charging.useWallet(this.wallet).confirmStop(result.scId, result.evseId);
-            this.logger.info(`Confirmed ${result.evseId} autostop`);
-            await this.sc.charging.useWallet(this.wallet).chargeDetailRecord(result.scId, result.evseId, cdr.price);
-            this.logger.info(`Confirmed ${result.evseId} CDR`);
+            try {
+                const cdr = await this.bridge.cdr();
+                await this.sc.charging.useWallet(this.wallet).confirmStop(result.scId, result.evseId);
+                this.logger.info(`Confirmed ${result.evseId} autostop`);
+                await this.sc.charging.useWallet(this.wallet).chargeDetailRecord(result.scId, result.evseId, cdr.price);
+                this.logger.info(`Confirmed ${result.evseId} CDR`);
+            } catch (err) {
+                this.logger.error(`Error confirming ${result.evseId} autostop: ${err.message}`);
+                await this.sc.charging.useWallet(this.wallet).error(result.scId, result.evseId, 2);
+            }
         });
 
         this.sc.startListening();
         this.logger.info(`Connected to bridge: ${this.bridge.name}`);
         this.logger.info(`Listening for events`);
-        this.logger.debug(`Listening for these IDs: ${JSON.stringify(this.scIds)}`);
+        this.logger.info(`Listening for these IDs: ${JSON.stringify(this.scIds)}`);
     }
 
     public run() {

@@ -8,6 +8,7 @@ export default class MockBridge implements IBridge {
 
     private autoStop = new Subject<any>();
     autoStop$ = this.autoStop.asObservable();
+    autostopTimeout: any;
 
     constructor() {
     }
@@ -21,11 +22,14 @@ export default class MockBridge implements IBridge {
     }
 
     async start(parameters: any): Promise<any> {
-        setTimeout(() => this.autoStop.next(parameters), 10000);
+        const timeout = 1000 * 60 * 5;
+        clearTimeout(this.autostopTimeout);
+        this.autostopTimeout = setTimeout(() => this.autoStop.next(parameters), timeout);
         return {data: '123'};
     }
 
     async stop(parameters: any): Promise<any> {
+        clearTimeout(this.autostopTimeout);
         return {data: 50};
     }
 
