@@ -24,11 +24,11 @@ export default class ErrorBridge implements IBridge {
         throw Error('Could not start');
     }
 
-    async stop(parameteres: any): Promise<any> {
+    async stop(parameters: any): Promise<any> {
         return {data: 50};
     }
 
-    async cdr(id?: string): Promise<any> {
+    async cdr(parameters: any): Promise<any> {
         return {
             price: 0
         };

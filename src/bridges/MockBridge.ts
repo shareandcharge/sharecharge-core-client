@@ -33,7 +33,7 @@ export default class MockBridge implements IBridge {
         return {data: 50};
     }
 
-    async cdr(id?: string): Promise<any> {
+    async cdr(parameters: any): Promise<any> {
         return {
             price: 100
         };

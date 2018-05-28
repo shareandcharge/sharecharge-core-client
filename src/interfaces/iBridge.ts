@@ -13,5 +13,5 @@ export default interface IBridge {
 
     stop(parameters: any): Promise<IResult>;
 
-    cdr(id?: string): Promise<ICDR>;
+    cdr(parameters: any): Promise<ICDR>;
 }

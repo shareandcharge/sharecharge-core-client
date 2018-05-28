@@ -15,6 +15,7 @@ export class CoreClient {
 
     private static container: Container;
     private scIds: string[];
+    private tariffs: any;
 
     constructor(@inject(Symbols.ConfigProvider) private configProvider: ConfigProvider,
                 @inject(Symbols.BridgeProvider) private bridgeProvider: BridgeProvider,
@@ -22,10 +23,15 @@ export class CoreClient {
                 @inject(Symbols.WalletProvider) private walletProvider: WalletProvider,
                 @inject(Symbols.LoggingProvider) private loggingProvider: LoggingProvider) {
         this.scIds = [];
+        this.tariffs = {};
     }
 
     get sc(): ShareCharge {
         return this.shareChargeProvider.obtain(this.configProvider);
+    }
+
+    get coinbase(): string {
+        return this.wallet.keychain[0].address;
     }
 
     get bridge(): IBridge {
@@ -45,11 +51,35 @@ export class CoreClient {
     }
 
     private async getIds(): Promise<void> {
-        this.scIds = await this.sc.store.getIdsByCPO(this.wallet.keychain[0].address)
+        this.scIds = await this.sc.store.getIdsByCPO(this.coinbase)
+    }
+
+    private async getTariffs(): Promise<void> {
+        this.tariffs = await this.sc.store.getTariffsByCPO(this.coinbase);
     }
 
     private pollIds(interval: number = 5000): void {
         setInterval(async () => await this.getIds(), interval);
+    }
+
+    private pollTariffs(interval: number = 60000): void {
+        setInterval(async () => await this.getTariffs(), interval);
+    }
+
+    private async createCdrParameters(scId: string, evseId: string): Promise<any> {
+        // could be that the bridge has no way of knowing the base price so we get it here first
+        const location = await this.sc.store.getLocationById(this.coinbase, scId);
+        const evse = location.evses.filter(evse => evse['evse_id'] === evseId);
+        // tariffs exist on connectors but the network currently does not care about which is in use
+        // so we take the first tariff id for now
+        const tariffId = evse[0].connectors[0]['tariff_id'];
+        const tariff = this.tariffs.filter(tariff => tariff.id === tariffId);
+        const price = tariff[0].elements[0]['price_components'][0].price;
+        return {
+            scId,
+            evseId,
+            price,
+        }
     }
 
     private listen() {
@@ -76,7 +106,8 @@ export class CoreClient {
             if (this.scIds.includes(result.scId)) {
                 try {
                     await this.bridge.stop(result);
-                    const cdr = await this.bridge.cdr(result);
+                    const cdrParams = await this.createCdrParameters(result.scId, result.evseId);
+                    const cdr = await this.bridge.cdr(cdrParams);
                     await this.sc.charging.useWallet(this.wallet).confirmStop(result.scId, result.evseId);
                     this.logger.info(`Confirmed ${result.evseId} stop`);
                     await this.sc.charging.useWallet(this.wallet).chargeDetailRecord(result.scId, result.evseId, cdr.price);
@@ -90,7 +121,8 @@ export class CoreClient {
 
         this.bridge.autoStop$.subscribe(async (result) => {
             try {
-                const cdr = await this.bridge.cdr();
+                const cdrParams = await this.createCdrParameters(result.scId, result.evseId);
+                const cdr = await this.bridge.cdr(cdrParams);
                 await this.sc.charging.useWallet(this.wallet).confirmStop(result.scId, result.evseId);
                 this.logger.info(`Confirmed ${result.evseId} autostop`);
                 await this.sc.charging.useWallet(this.wallet).chargeDetailRecord(result.scId, result.evseId, cdr.price);
@@ -108,8 +140,10 @@ export class CoreClient {
     }
 
     public run() {
-        this.getIds().then(() => {
+        this.getIds().then(async () => {
+            await this.getTariffs();
             this.pollIds();
+            this.pollTariffs();
             this.listen();
         });
     }
