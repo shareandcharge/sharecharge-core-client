@@ -134,6 +134,7 @@ export class CoreClient {
         });
 
         this.sc.startListening();
+        this.logger.info(`Coinbase: ${this.coinbase}`);
         this.logger.info(`Connected to bridge: ${this.bridge.name}`);
         this.logger.info(`Listening for events`);
         this.logger.info(`Listening for these IDs: ${JSON.stringify(this.scIds)}`);
