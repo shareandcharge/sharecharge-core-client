@@ -42,8 +42,12 @@ export default class ConfigProvider implements IConfig {
         return this.config.stage || "local";
     }
 
-    get provider() {
-        return this.config.provider;
+    get ethProvider() {
+        return this.config.ethProvider;
+    }
+
+    get ipfsProvider() {
+        return this.config.ipfsProvider;
     }
 
     get tokenAddress() {
@@ -63,6 +67,7 @@ export default class ConfigProvider implements IConfig {
             seed: argv.seed,
             gasPrice: argv.gasPrice,
             ethProvider: argv.ethProvider,
+            ipfsProvider: argv.ipfsProvider,
             tokenAddress: argv.tokenAddress
         };
     };
