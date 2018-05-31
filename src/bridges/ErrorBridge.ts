@@ -1,6 +1,5 @@
 import { Subject } from 'rxjs';
-
-import IBridge from '../interfaces/iBridge';
+import { IBridge } from '@motionwerk/sharecharge-common';
 
 export default class ErrorBridge implements IBridge {
 

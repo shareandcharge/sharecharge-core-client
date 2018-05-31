@@ -1,9 +1,8 @@
 import { ShareCharge, Wallet } from "@motionwerk/sharecharge-lib";
-import { IConfig } from "@motionwerk/sharecharge-common";
+import { IConfig, IBridge } from "@motionwerk/sharecharge-common";
 import "reflect-metadata";
 import { Container, injectable, inject } from "inversify";
 import LoggingProvider from "./services/loggingProvider";
-import IBridge from "./interfaces/iBridge";
 import { Symbols } from "./symbols"
 import ConfigProvider from "./services/configProvider";
 import ShareChargeProvider from "./services/shareChargeProvider";
