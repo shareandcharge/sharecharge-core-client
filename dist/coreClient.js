@@ -82,10 +82,15 @@ let CoreClient = CoreClient_1 = class CoreClient {
             this.logger.debug(`Start requested on ${startRequestedEvent.evseId}`);
             if (this.scIds.includes(startRequestedEvent.scId)) {
                 try {
-                    const startResult = await this.bridge.start(startRequestedEvent);
-                    await this.sc.charging.useWallet(this.wallet)
-                        .confirmStart(startRequestedEvent.scId, startRequestedEvent.evseId, startResult.data.sessionId);
-                    this.logger.info(`Confirmed ${startRequestedEvent.evseId} start`);
+                    const startResult = await this.bridge.start({
+                        scId: startRequestedEvent.scId,
+                        evseId: startRequestedEvent.evseId,
+                    });
+                    if (startResult.success) {
+                        await this.sc.charging.useWallet(this.wallet)
+                            .confirmStart(startRequestedEvent.scId, startRequestedEvent.evseId, startResult.data.sessionId);
+                        this.logger.info(`Confirmed ${startRequestedEvent.evseId} start`);
+                    }
                 }
                 catch (err) {
                     this.logger.error(`Error starting ${startRequestedEvent.evseId}: ${err.message}`);
@@ -97,15 +102,21 @@ let CoreClient = CoreClient_1 = class CoreClient {
             this.logger.debug(`Stop requested for evse with uid: ${stopRequestedEvent.scId}`);
             if (this.scIds.includes(stopRequestedEvent.scId)) {
                 try {
-                    const stopResult = await this.bridge.stop(stopRequestedEvent);
-                    const cdrParams = await this.createCdrParameters(stopRequestedEvent.scId, stopRequestedEvent.evseId);
-                    const cdr = await this.bridge.cdr(cdrParams);
-                    await this.sc.charging.useWallet(this.wallet)
-                        .confirmStop(stopRequestedEvent.scId, stopRequestedEvent.evseId);
-                    this.logger.info(`Confirmed ${stopRequestedEvent.evseId} stop`);
-                    await this.sc.charging.useWallet(this.wallet)
-                        .chargeDetailRecord(stopRequestedEvent.scId, stopRequestedEvent.evseId, cdr.price);
-                    this.logger.info(`Confirmed ${stopRequestedEvent.evseId} CDR`);
+                    const stopResult = await this.bridge.stop({
+                        scId: stopRequestedEvent.scId,
+                        evseId: stopRequestedEvent.evseId,
+                        sessionId: stopRequestedEvent.sessionId
+                    });
+                    if (stopResult.success) {
+                        const cdrParams = await this.createCdrParameters(stopRequestedEvent.scId, stopRequestedEvent.evseId);
+                        const cdr = await this.bridge.cdr(cdrParams);
+                        await this.sc.charging.useWallet(this.wallet)
+                            .confirmStop(stopRequestedEvent.scId, stopRequestedEvent.evseId);
+                        this.logger.info(`Confirmed ${stopRequestedEvent.evseId} stop`);
+                        await this.sc.charging.useWallet(this.wallet)
+                            .chargeDetailRecord(stopRequestedEvent.scId, stopRequestedEvent.evseId, cdr.price);
+                        this.logger.info(`Confirmed ${stopRequestedEvent.evseId} CDR`);
+                    }
                 }
                 catch (err) {
                     this.logger.error(`Error stopping ${stopRequestedEvent.evseId}: ${err.message}`);
