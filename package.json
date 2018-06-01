@@ -15,8 +15,8 @@
   "author": "MotionWerk GmbH",
   "license": "MIT",
   "dependencies": {
-    "@motionwerk/sharecharge-api": "^0.2.1",
-    "@motionwerk/sharecharge-common": "^1.1.1",
+    "@motionwerk/sharecharge-api": "^0.2.15",
+    "@motionwerk/sharecharge-common": "^1.3.0",
     "@motionwerk/sharecharge-lib": "^0.1.21",
     "inversify": "^4.13.0",
     "reflect-metadata": "^0.1.12",
