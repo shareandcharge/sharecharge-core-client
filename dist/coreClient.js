@@ -82,11 +82,14 @@ let CoreClient = CoreClient_1 = class CoreClient {
             this.logger.debug(`Start requested on ${startRequestedEvent.evseId}`);
             if (this.scIds.includes(startRequestedEvent.scId)) {
                 try {
+                    // start the bridge side
                     const startResult = await this.bridge.start({
                         scId: startRequestedEvent.scId,
                         evseId: startRequestedEvent.evseId,
                     });
+                    // started in cpos backend
                     if (startResult.success) {
+                        // register start in ev-network
                         await this.sc.charging.useWallet(this.wallet)
                             .confirmStart(startRequestedEvent.scId, startRequestedEvent.evseId, startResult.data.sessionId);
                         this.logger.info(`Confirmed ${startRequestedEvent.evseId} start`);
@@ -94,25 +97,35 @@ let CoreClient = CoreClient_1 = class CoreClient {
                 }
                 catch (err) {
                     this.logger.error(`Error starting ${startRequestedEvent.evseId}: ${err.message}`);
+                    // reset the charger in the ev-network because we failed to start a charge
+                    await this.sc.charging.useWallet(this.wallet).reset(startRequestedEvent.scId, startRequestedEvent.evseId);
+                    this.logger.info(`Reset session of scId: ${startRequestedEvent.scId} evseId: ${startRequestedEvent.evseId}`);
+                    // invoke error
                     await this.sc.charging.useWallet(this.wallet).error(startRequestedEvent.scId, startRequestedEvent.evseId, 0);
                 }
             }
         });
         this.sc.on("StopRequested", async (stopRequestedEvent) => {
             this.logger.debug(`Stop requested for evse with uid: ${stopRequestedEvent.scId}`);
+            console.log("stop event", stopRequestedEvent);
             if (this.scIds.includes(stopRequestedEvent.scId)) {
                 try {
+                    // stop the bride side
                     const stopResult = await this.bridge.stop({
                         scId: stopRequestedEvent.scId,
                         evseId: stopRequestedEvent.evseId,
                         sessionId: stopRequestedEvent.sessionId
                     });
+                    // stopped in the cpos backend
                     if (stopResult.success) {
+                        // create cdr
                         const cdrParams = await this.createCdrParameters(stopRequestedEvent.scId, stopRequestedEvent.evseId);
                         const cdr = await this.bridge.cdr(cdrParams);
+                        // confirm stop in ev-network
                         await this.sc.charging.useWallet(this.wallet)
                             .confirmStop(stopRequestedEvent.scId, stopRequestedEvent.evseId);
                         this.logger.info(`Confirmed ${stopRequestedEvent.evseId} stop`);
+                        // settle in ev network
                         await this.sc.charging.useWallet(this.wallet)
                             .chargeDetailRecord(stopRequestedEvent.scId, stopRequestedEvent.evseId, cdr.price);
                         this.logger.info(`Confirmed ${stopRequestedEvent.evseId} CDR`);
