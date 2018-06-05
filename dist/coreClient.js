@@ -12,8 +12,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var CoreClient_1;
-"use strict";
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const loggingProvider_1 = require("./services/loggingProvider");
@@ -62,7 +60,7 @@ let CoreClient = CoreClient_1 = class CoreClient {
     pollTariffs(interval = 60000) {
         setInterval(async () => await this.getTariffs(), interval);
     }
-    async createCdrParameters(scId, evseId) {
+    async createCdrParameters(scId, evseId, sessionId) {
         // could be that the bridge has no way of knowing the base price so we get it here first
         const location = await this.sc.store.getLocationById(this.coinbase, scId);
         const evse = location.evses.filter(evse => evse['evse_id'] === evseId);
@@ -71,11 +69,14 @@ let CoreClient = CoreClient_1 = class CoreClient {
         const tariffId = evse[0].connectors[0]['tariff_id'];
         const tariff = this.tariffs.filter(tariff => tariff.id === tariffId);
         const price = tariff[0].elements[0]['price_components'][0].price;
-        return {
+        const cdrParameters = {
             scId,
             evseId,
+            sessionId,
             price,
         };
+        console.log("CDR Parameters", JSON.stringify(cdrParameters, null, 2));
+        return cdrParameters;
     }
     listen() {
         this.sc.on("StartRequested", async (startRequestedEvent) => {
@@ -98,16 +99,17 @@ let CoreClient = CoreClient_1 = class CoreClient {
                 catch (err) {
                     this.logger.error(`Error starting ${startRequestedEvent.evseId}: ${err.message}`);
                     // reset the charger in the ev-network because we failed to start a charge
-                    await this.sc.charging.useWallet(this.wallet).reset(startRequestedEvent.scId, startRequestedEvent.evseId);
+                    await this.sc.charging.useWallet(this.wallet)
+                        .reset(startRequestedEvent.scId, startRequestedEvent.evseId);
                     this.logger.info(`Reset session of scId: ${startRequestedEvent.scId} evseId: ${startRequestedEvent.evseId}`);
                     // invoke error
-                    await this.sc.charging.useWallet(this.wallet).error(startRequestedEvent.scId, startRequestedEvent.evseId, 0);
+                    await this.sc.charging.useWallet(this.wallet)
+                        .error(startRequestedEvent.scId, startRequestedEvent.evseId, 0);
                 }
             }
         });
         this.sc.on("StopRequested", async (stopRequestedEvent) => {
             this.logger.debug(`Stop requested for evse with uid: ${stopRequestedEvent.scId}`);
-            console.log("stop event", stopRequestedEvent);
             if (this.scIds.includes(stopRequestedEvent.scId)) {
                 try {
                     // stop the bride side
@@ -119,7 +121,7 @@ let CoreClient = CoreClient_1 = class CoreClient {
                     // stopped in the cpos backend
                     if (stopResult.success) {
                         // create cdr
-                        const cdrParams = await this.createCdrParameters(stopRequestedEvent.scId, stopRequestedEvent.evseId);
+                        const cdrParams = await this.createCdrParameters(stopRequestedEvent.scId, stopRequestedEvent.evseId, stopRequestedEvent.sessionId);
                         const cdr = await this.bridge.cdr(cdrParams);
                         // confirm stop in ev-network
                         await this.sc.charging.useWallet(this.wallet)
@@ -128,7 +130,7 @@ let CoreClient = CoreClient_1 = class CoreClient {
                         // settle in ev network
                         await this.sc.charging.useWallet(this.wallet)
                             .chargeDetailRecord(stopRequestedEvent.scId, stopRequestedEvent.evseId, cdr.price);
-                        this.logger.info(`Confirmed ${stopRequestedEvent.evseId} CDR`);
+                        this.logger.info(`Wrote ${stopRequestedEvent.evseId}'s CDR to the network`);
                     }
                 }
                 catch (err) {
@@ -139,14 +141,14 @@ let CoreClient = CoreClient_1 = class CoreClient {
         });
         this.bridge.autoStop$.subscribe(async (autoStopEvent) => {
             try {
-                const cdrParams = await this.createCdrParameters(autoStopEvent.scId, autoStopEvent.evseId);
+                const cdrParams = await this.createCdrParameters(autoStopEvent.scId, autoStopEvent.evseId, autoStopEvent.sessionId);
                 const cdr = await this.bridge.cdr(cdrParams);
                 await this.sc.charging.useWallet(this.wallet)
                     .confirmStop(autoStopEvent.scId, autoStopEvent.evseId);
                 this.logger.info(`Confirmed ${autoStopEvent.evseId} autostop`);
                 await this.sc.charging.useWallet(this.wallet)
                     .chargeDetailRecord(autoStopEvent.scId, autoStopEvent.evseId, cdr.price);
-                this.logger.info(`Confirmed ${autoStopEvent.evseId} CDR`);
+                this.logger.info(`Wrote ${autoStopEvent.evseId}'s CDR to the network`);
             }
             catch (err) {
                 this.logger.error(`Error confirming ${autoStopEvent.evseId} autostop: ${err.message}`);
@@ -200,4 +202,5 @@ CoreClient = CoreClient_1 = __decorate([
         loggingProvider_1.default])
 ], CoreClient);
 exports.CoreClient = CoreClient;
+var CoreClient_1;
 //# sourceMappingURL=coreClient.js.map
