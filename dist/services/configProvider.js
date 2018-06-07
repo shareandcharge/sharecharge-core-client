@@ -9,6 +9,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ConfigProvider_1;
+"use strict";
 const inversify_1 = require("inversify");
 const fs = require("fs");
 const sharecharge_common_1 = require("@motionwerk/sharecharge-common");
@@ -71,5 +73,4 @@ ConfigProvider = ConfigProvider_1 = __decorate([
     __metadata("design:paramtypes", [])
 ], ConfigProvider);
 exports.default = ConfigProvider;
-var ConfigProvider_1;
 //# sourceMappingURL=configProvider.js.map
