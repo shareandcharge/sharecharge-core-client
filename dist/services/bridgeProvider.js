@@ -12,8 +12,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var BridgeProvider_1;
-"use strict";
 const inversify_1 = require("inversify");
 const symbols_1 = require("../symbols");
 const configProvider_1 = require("./configProvider");
@@ -36,4 +34,5 @@ BridgeProvider = BridgeProvider_1 = __decorate([
     __metadata("design:paramtypes", [configProvider_1.default])
 ], BridgeProvider);
 exports.default = BridgeProvider;
+var BridgeProvider_1;
 //# sourceMappingURL=bridgeProvider.js.map
