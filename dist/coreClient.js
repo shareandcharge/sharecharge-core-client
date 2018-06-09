@@ -12,6 +12,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var CoreClient_1;
+"use strict";
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const loggingProvider_1 = require("./services/loggingProvider");
@@ -202,5 +204,4 @@ CoreClient = CoreClient_1 = __decorate([
         loggingProvider_1.default])
 ], CoreClient);
 exports.CoreClient = CoreClient;
-var CoreClient_1;
 //# sourceMappingURL=coreClient.js.map
