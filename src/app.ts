@@ -3,4 +3,4 @@ import { CoreClient } from './coreClient';
 const client = CoreClient.getInstance();
 client.run();
 
-import '@motionwerk/sharecharge-api';
+// import '@motionwerk/sharecharge-api';

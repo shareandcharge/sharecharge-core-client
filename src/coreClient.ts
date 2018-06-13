@@ -93,11 +93,13 @@ export class CoreClient {
 
         this.sc.on("StartRequested", async (startRequestedEvent) => {
 
-            this.logger.debug(`Start requested on ${startRequestedEvent.evseId}`);
+            this.logger.info(`Start requested on ${startRequestedEvent.evseId}`);
 
             if (this.scIds.includes(startRequestedEvent.scId)) {
 
                 try {
+
+                    this.logger.info('Attempting to start');
 
                     // start the bridge side
                     const startResult: IResult = await this.bridge.start(<IParameters>{

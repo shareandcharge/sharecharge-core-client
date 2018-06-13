@@ -16,11 +16,19 @@ class MockBridge {
         const timeout = 1000 * 60 * 5;
         clearTimeout(this.autostopTimeout);
         this.autostopTimeout = setTimeout(() => this.autoStop.next(parameters), timeout);
-        return { data: '123' };
+        return {
+            success: true,
+            data: {
+                sessionId: '0x01'
+            }
+        };
     }
     async stop(parameters) {
         clearTimeout(this.autostopTimeout);
-        return { data: 50 };
+        return {
+            success: true,
+            data: {}
+        };
     }
     async cdr(parameters) {
         return {

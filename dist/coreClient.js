@@ -12,8 +12,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var CoreClient_1;
-"use strict";
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const loggingProvider_1 = require("./services/loggingProvider");
@@ -82,9 +80,10 @@ let CoreClient = CoreClient_1 = class CoreClient {
     }
     listen() {
         this.sc.on("StartRequested", async (startRequestedEvent) => {
-            this.logger.debug(`Start requested on ${startRequestedEvent.evseId}`);
+            this.logger.info(`Start requested on ${startRequestedEvent.evseId}`);
             if (this.scIds.includes(startRequestedEvent.scId)) {
                 try {
+                    this.logger.info('Attempting to start');
                     // start the bridge side
                     const startResult = await this.bridge.start({
                         scId: startRequestedEvent.scId,
@@ -204,4 +203,5 @@ CoreClient = CoreClient_1 = __decorate([
         loggingProvider_1.default])
 ], CoreClient);
 exports.CoreClient = CoreClient;
+var CoreClient_1;
 //# sourceMappingURL=coreClient.js.map

@@ -3,20 +3,31 @@
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2
-jobs:
-  build:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:9.11
 
-    working_directory: ~/core-client
+defaults: 
+  - &stage_defaults
+    working_directory: ~/client
+
+  - &docker_defaults
+    image: circleci/node
+
+  
+jobs:
+
+  build:
+
+    <<: *stage_defaults
+
+    docker:
+      - <<: *docker_defaults
 
     steps:
+
+      - checkout
+
       - run:
           name: npm secret
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-
-      - checkout
 
       # Download and cache dependencies
       - restore_cache:
@@ -26,8 +37,8 @@ jobs:
           - v1-dependencies-
 
       - run:
-          name: install
-          command: |
+          name: Install Node Modules
+          command:
             npm install
 
       # update cache if needed
@@ -36,8 +47,56 @@ jobs:
           paths:
             - node_modules
 
-      # run tests
+      - persist_to_workspace:
+          root: ~/lib
+          paths: .
+
+  test:
+
+    <<: *stage_defaults
+
+    docker:
+      - <<: *docker_defaults
+
+    steps:
+
+      - attach_workspace:
+          at: ~/client
+
       - run:
-          name: Run test
-          command: |
-            npm test
+          name: Run tests
+          command: npm test
+
+  transpile:
+    
+    <<: *stage_defaults
+
+    docker:
+      - <<: *docker_defaults
+
+    steps:
+
+      - attach_workspace:
+          at: ~/client
+
+      - run:
+          name: tsc
+          command: ./node_modules/.bin/tsc
+
+      - persist_to_workspace:
+          root: ~/client
+          paths: .
+
+workflows:
+  version: 2
+  build_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - transpile:
+          requires:
+            - build
+
+
