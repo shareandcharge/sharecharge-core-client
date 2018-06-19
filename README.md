@@ -1,6 +1,14 @@
 # Share & Charge Core Client
 
-The Core Client used by Charge Point Operators and Private Charge Point Owners to manage charge sessions on the Share & Charge eMobility Network.
+The Core Client is used by Charge Point Operators and Private Charge Point Owners to manage charge sessions on the Share & Charge e-Mobility Network.
+
+## Setup
+
+```
+npm install -g @motionwerk/sharecharge-core-client
+```
+
+
 
 ## Development
 
