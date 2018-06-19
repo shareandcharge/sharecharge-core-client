@@ -1,6 +1,6 @@
 {
   "name": "@motionwerk/sharecharge-core-client",
-  "version": "0.6.17",
+  "version": "0.6.18",
   "description": "Share & Charge Core Client for Charge Point Operators",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,9 @@
     "test_": "mocha --exit -r ts-node/register test/**/*.spec.ts",
     "test-watch": "mocha --watch --watch-extensions ts,js,json -r ts-node/register test/**/*.spec.ts"
   },
-  "bin": "./dist/app.node.js",
+  "bin": {
+    "scc": "./dist/app.node.js"
+  },
   "author": "MotionWerk GmbH",
   "license": "MIT",
   "dependencies": {
