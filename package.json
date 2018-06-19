@@ -1,6 +1,6 @@
 {
   "name": "@motionwerk/sharecharge-core-client",
-  "version": "0.6.16",
+  "version": "0.6.17",
   "description": "Share & Charge Core Client for Charge Point Operators",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "@motionwerk/sharecharge-common": "^1.4.2",
     "@motionwerk/sharecharge-example-bridge": "0.0.2",
     "@motionwerk/sharecharge-lib": "^0.4.19",
-    "@types/node": "10.0.4",
+    "@types/node": "10.1.4",
     "inversify": "^4.13.0",
     "reflect-metadata": "^0.1.12",
     "request-promise": "^4.2.2",
