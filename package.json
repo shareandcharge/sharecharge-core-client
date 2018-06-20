@@ -1,6 +1,6 @@
 {
   "name": "@motionwerk/sharecharge-core-client",
-  "version": "0.6.19",
+  "version": "0.6.20",
   "description": "Share & Charge Core Client for Charge Point Operators",
   "main": "index.js",
   "scripts": {

@@ -6,7 +6,6 @@ It directly listens to Share & Charge smart contract events and filters based on
 ## Quickstart
 
 Install via NPM:
-
 ```
 npm install -g @motionwerk/sharecharge-core-client
 ```
@@ -14,25 +13,26 @@ npm install -g @motionwerk/sharecharge-core-client
 A default configuration file will be generated in `$HOME/.sharecharge/`. It is important to configure the Core Client to listen on a particular `stage` and `ethProvider` so that the correct contracts are used. Additionally, a funded wallet is necessary to add charge points to the network. These charge points will be filtered automatically by the Core Client, based on the provided wallet `seed` in the configuration file.
 
 The wallet can be created and charge points added by using the Share & Charge command line interface:
-
 ```
 npm install -g @motionwerk/sharecharge-cli
 ```
 
 Create a wallet and follow the instructions to use:
-
 ```
 scli wallet create
 ```
 
 Add charge points to the network:
-
 ```
 scli store add-locations
 ```
 
-Finally, you can run the Core Client using:
+Add tariffs to the network:
+```
+scli store add-tariffs
+```
 
+Finally, you can run the Core Client using:
 ```
 scc
 ```
