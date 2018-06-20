@@ -1,6 +1,7 @@
 # Share & Charge Core Client
 
 The Core Client is used by Charge Point Operators and private Charge Point Owners to manage charge sessions on the Share & Charge e-Mobility Network.
+It directly listens to Share & Charge smart contract events and filters based on EVSEs connected to a wallet configured by the user.  
 
 ## Quickstart
 
@@ -10,24 +11,44 @@ Install via NPM:
 npm install -g @motionwerk/sharecharge-core-client
 ```
 
-Run:
+A default configuration file will be generated in `$HOME/.sharecharge/`. It is important to configure the Core Client to listen on a particular `stage` and `ethProvider` so that the correct contracts are used. Additionally, a funded wallet is necessary to add charge points to the network. These charge points will be filtered automatically by the Core Client, based on the provided wallet `seed` in the configuration file.
+
+The wallet can be created and charge points added by using the Share & Charge command line interface:
+
+```
+npm install -g @motionwerk/sharecharge-cli
+```
+
+Create a wallet and follow the instructions to use:
+
+```
+scli wallet create
+```
+
+Add charge points to the network:
+
+```
+scli store add-locations
+```
+
+Finally, you can run the Core Client using:
 
 ```
 scc
 ```
 
-You will need to provide the correct `stage` and `ethProvider` in your config (see below). By default the bridge points to locally deployed contracts (e.g. using `ganache-cli`). 
+If all has been correctly configured you will be presented with the wallet's coinbase (primary address) and charge points upon start. 
 
 #### Configuration
 
-A `config.json` is provided with default configuration values in the root directory (`$HOME/.sharecharge/`).
+A `config.json` is provided with default configuration values in the home directory (`$HOME/.sharecharge/`).
 
 ```
 {
   "locationsPath": "locations.json",
   "tariffsPath": "tariffs.json",
   "bridgePath": "@motionwerk/sharecharge-example-bridge",
-  "seed": "filter march urge naive sauce distance under copy payment slow just warm",
+  "seed": "",
   "stage": "local",
   "gasPrice": 2,
   "ethProvider": "http://localhost:8545",
