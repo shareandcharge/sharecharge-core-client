@@ -22,7 +22,6 @@ export class CoreClient {
                 @inject(Symbols.WalletProvider) private walletProvider: WalletProvider,
                 @inject(Symbols.LoggingProvider) private loggingProvider: LoggingProvider) {
         this.scIds = [];
-        this.tariffs = {};
     }
 
     get sc(): ShareCharge {
@@ -53,29 +52,17 @@ export class CoreClient {
         this.scIds = await this.sc.store.getIdsByCPO(this.coinbase)
     }
 
-    private async getTariffs(): Promise<void> {
-        this.tariffs = await this.sc.store.getTariffsByCPO(this.coinbase);
-    }
-
     private pollIds(interval: number = 5000): void {
         setInterval(async () => await this.getIds(), interval);
-    }
-
-    private pollTariffs(interval: number = 60000): void {
-        setInterval(async () => await this.getTariffs(), interval);
     }
 
     private async createCdrParameters(scId: string, evseId: string, sessionId: string): Promise<any> {
 
         // could be that the bridge has no way of knowing the base price so we get it here first
-        const location = await this.sc.store.getLocationById(this.coinbase, scId);
-        const evse = location.evses.filter(evse => evse['evse_id'] === evseId);
-
-        // tariffs exist on connectors but the network currently does not care about which is in use
-        // so we take the first tariff id for now
-        const tariffId = evse[0].connectors[0]['tariff_id'];
-        const tariff = this.tariffs.filter(tariff => tariff.id === tariffId);
-        const price = tariff[0].elements[0]['price_components'][0].price;
+        const tariff = await this.sc.store.getTariffByEvse(scId, evseId);
+        const state = await this.sc.charging.getSession(scId, evseId);
+        console.log('tariff:', tariff);
+        const price = tariff.elements[state.tariffId]['price_components'][0].price;
 
         const cdrParameters = {
             scId,
@@ -164,7 +151,7 @@ export class CoreClient {
 
                         // settle in ev network
                         await this.sc.charging.useWallet(this.wallet)
-                            .chargeDetailRecord(stopRequestedEvent.scId, stopRequestedEvent.evseId, cdr.price);
+                            .chargeDetailRecord(stopRequestedEvent.scId, stopRequestedEvent.evseId, cdr.chargedUnits, cdr.price);
                         this.logger.info(`Wrote ${stopRequestedEvent.evseId}'s CDR to the network`);
                     }
 
@@ -186,7 +173,7 @@ export class CoreClient {
                 this.logger.info(`Confirmed ${autoStopEvent.evseId} autostop`);
 
                 await this.sc.charging.useWallet(this.wallet)
-                    .chargeDetailRecord(autoStopEvent.scId, autoStopEvent.evseId, cdr.price);
+                    .chargeDetailRecord(autoStopEvent.scId, autoStopEvent.evseId, cdr.chargedUnits, cdr.price);
                 this.logger.info(`Wrote ${autoStopEvent.evseId}'s CDR to the network`);
 
             } catch (err) {
@@ -204,9 +191,7 @@ export class CoreClient {
 
     public run() {
         this.getIds().then(async () => {
-            await this.getTariffs();
             this.pollIds();
-            this.pollTariffs();
             this.listen();
         });
     }
