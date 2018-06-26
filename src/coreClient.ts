@@ -13,33 +13,26 @@ import WalletProvider from "./services/walletProvider";
 export class CoreClient {
 
     private static container: Container;
-    private scIds: string[];
-    private tariffs: any;
 
     constructor(@inject(Symbols.ConfigProvider) private configProvider: ConfigProvider,
                 @inject(Symbols.BridgeProvider) private bridgeProvider: BridgeProvider,
                 @inject(Symbols.ShareChargeProvider) private shareChargeProvider: ShareChargeProvider,
                 @inject(Symbols.WalletProvider) private walletProvider: WalletProvider,
                 @inject(Symbols.LoggingProvider) private loggingProvider: LoggingProvider) {
-        this.scIds = [];
     }
 
     get sc(): ShareCharge {
         return this.shareChargeProvider.obtain(this.configProvider);
     }
 
-    get coinbase(): string {
-        return this.wallet.keychain[0].address;
-    }
-
     get bridge(): IBridge {
         return this.bridgeProvider.obtain();
     }
-
+    
     get wallet(): Wallet {
         return this.walletProvider.obtain();
     }
-
+    
     get logger() {
         return this.loggingProvider.obtain();
     }
@@ -48,21 +41,33 @@ export class CoreClient {
         return this.configProvider;
     }
 
-    private async getIds(): Promise<void> {
-        this.scIds = await this.sc.store.getIdsByCPO(this.coinbase)
-    }
-
-    private pollIds(interval: number = 5000): void {
-        setInterval(async () => await this.getIds(), interval);
+    async getIds(): Promise<string[]> {
+        return this.sc.store.getIdsByCPO(this.wallet.coinbase);
     }
 
     private async createCdrParameters(scId: string, evseId: string, sessionId: string): Promise<any> {
 
         // could be that the bridge has no way of knowing the base price so we get it here first
+        // should return tariff object from which you can get price given certain parameters
         const tariff = await this.sc.store.getTariffByEvse(scId, evseId);
+        console.log(tariff);
         const state = await this.sc.charging.getSession(scId, evseId);
-        console.log('tariff:', tariff);
-        const price = tariff.elements[state.tariffId]['price_components'][0].price;
+
+        let price;
+        
+        switch (state.tariffId) {
+            case '0':
+                price = tariff.energyRates[0].priceComponents.price;
+                break;
+            case '1':
+                price = tariff.flatRates[0].priceComponents.price;
+                break;
+            case '3':
+                price = tariff.timeRates[0].priceComponents.price;
+                break;
+            default:
+                price = 0;
+        }
 
         const cdrParameters = {
             scId,
@@ -76,13 +81,15 @@ export class CoreClient {
         return cdrParameters;
     }
 
-    private listen() {
+    private run(idsOnStartup: string[]) {
 
         this.sc.on("StartRequested", async (startRequestedEvent) => {
 
             this.logger.info(`Start requested on ${startRequestedEvent.evseId}`);
 
-            if (this.scIds.includes(startRequestedEvent.scId)) {
+            const scIds = await this.getIds();
+
+            if (scIds.includes(startRequestedEvent.scId)) {
 
                 try {
 
@@ -126,7 +133,9 @@ export class CoreClient {
 
             this.logger.debug(`Stop requested for evse with uid: ${stopRequestedEvent.scId}`);
 
-            if (this.scIds.includes(stopRequestedEvent.scId)) {
+            const scIds = await this.getIds();
+
+            if (scIds.includes(stopRequestedEvent.scId)) {
 
                 try {
 
@@ -160,7 +169,6 @@ export class CoreClient {
                     await this.sc.charging.useWallet(this.wallet).error(stopRequestedEvent.scId, stopRequestedEvent.evseId, 1);
                 }
             }
-
         });
 
         this.bridge.autoStop$.subscribe(async (autoStopEvent) => {
@@ -183,17 +191,14 @@ export class CoreClient {
         });
 
         this.sc.startListening();
-        this.logger.info(`Coinbase: ${this.coinbase}`);
+        this.logger.info(`Coinbase: ${this.wallet.coinbase}`);
         this.logger.info(`Connected to bridge: ${this.bridge.name}`);
         this.logger.info(`Listening for events`);
-        this.logger.info(`Listening for these IDs: ${JSON.stringify(this.scIds)}`);
+        this.logger.info(`Listening for these IDs:\n${idsOnStartup.join('\n')}`);
     }
 
-    public run() {
-        this.getIds().then(async () => {
-            this.pollIds();
-            this.listen();
-        });
+    public main() {
+        this.getIds().then(ids => this.run(ids));
     }
 
     static getInstance(): CoreClient {
