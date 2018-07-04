@@ -4,7 +4,7 @@
   "description": "Share & Charge Core Client for Charge Point Operators",
   "main": "index.js",
   "scripts": {
-    "postinstall": "chmod +x ./dist/app.js",
+    "postinstall": "([ -e dist/app.js ] && chmod +x ./dist/app.js) || echo 'No tsc output found. Ignoring.'",
     "start": "./dist/app.js",
     "test": "echo no tests, srsly",
     "test_": "mocha --exit -r ts-node/register test/**/*.spec.ts"
