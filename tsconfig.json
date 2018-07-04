@@ -4,6 +4,7 @@
     "target": "es2017",
     "strict": true,
     "noImplicitAny": false,
+    "strictNullChecks": false,
     "sourceMap": true,
     "outDir": "dist",
     "strictFunctionTypes": false,

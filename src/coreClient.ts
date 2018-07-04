@@ -1,8 +1,7 @@
 import { ShareCharge, Wallet } from "@motionwerk/sharecharge-lib";
-import { IConfig, IBridge, IResult, IParameters, ICDR } from "@motionwerk/sharecharge-common";
+import { IConfig, IBridge, IResult, ISession, IStopParameters, ICDR } from "@motionwerk/sharecharge-common";
 import "reflect-metadata";
 import { Container, injectable, inject } from "inversify";
-import LoggingProvider from "./services/loggingProvider";
 import { Symbols } from "./symbols"
 import ConfigProvider from "./services/configProvider";
 import ShareChargeProvider from "./services/shareChargeProvider";
@@ -17,8 +16,7 @@ export class CoreClient {
     constructor(@inject(Symbols.ConfigProvider) private configProvider: ConfigProvider,
                 @inject(Symbols.BridgeProvider) private bridgeProvider: BridgeProvider,
                 @inject(Symbols.ShareChargeProvider) private shareChargeProvider: ShareChargeProvider,
-                @inject(Symbols.WalletProvider) private walletProvider: WalletProvider,
-                @inject(Symbols.LoggingProvider) private loggingProvider: LoggingProvider) {
+                @inject(Symbols.WalletProvider) private walletProvider: WalletProvider) {
     }
 
     get sc(): ShareCharge {
@@ -32,10 +30,6 @@ export class CoreClient {
     get wallet(): Wallet {
         return this.walletProvider.obtain();
     }
-    
-    get logger() {
-        return this.loggingProvider.obtain();
-    }
 
     get config(): IConfig {
         return this.configProvider;
@@ -45,81 +39,40 @@ export class CoreClient {
         return this.sc.store.getIdsByCPO(this.wallet.coinbase);
     }
 
-    private async createCdrParameters(scId: string, evseId: string, sessionId: string): Promise<any> {
+    private startListening() {
 
-        // could be that the bridge has no way of knowing the base price so we get it here first
-        // should return tariff object from which you can get price given certain parameters
-        const tariff = await this.sc.store.getTariffByEvse(scId, evseId);
-        console.log(tariff);
-        const state = await this.sc.charging.getSession(scId, evseId);
-
-        let price;
-        
-        switch (state.tariffId) {
-            case '0':
-                price = tariff.energyRates[0].priceComponents.price;
-                break;
-            case '1':
-                price = tariff.flatRates[0].priceComponents.price;
-                break;
-            case '3':
-                price = tariff.timeRates[0].priceComponents.price;
-                break;
-            default:
-                price = 0;
-        }
-
-        const cdrParameters = {
-            scId,
-            evseId,
-            sessionId,
-            price,
-        };
-
-        console.log("CDR Parameters", JSON.stringify(cdrParameters, null, 2));
-
-        return cdrParameters;
-    }
-
-    private run(idsOnStartup: string[]) {
-
+        /*
+            LISTEN TO REMOTE START REQUESTS FROM BLOCKCHAIN AND TELL BRIDGE
+        */
         this.sc.on("StartRequested", async (startRequestedEvent) => {
 
-            this.logger.info(`Start requested on ${startRequestedEvent.evseId}`);
+            console.log(`Start requested on ${startRequestedEvent.evseId}`);
 
             const scIds = await this.getIds();
 
             if (scIds.includes(startRequestedEvent.scId)) {
-
                 try {
-
-                    this.logger.info('Attempting to start');
+                    console.log('Attempting to start');
 
                     // start the bridge side
-                    const startResult: IResult = await this.bridge.start(<IParameters>{
+                    const startResult: IResult = await this.bridge.start(<ISession>{
                         scId: startRequestedEvent.scId,
                         evseId: startRequestedEvent.evseId,
+                        tariffId: startRequestedEvent.tariffId,
+                        tariffValue: startRequestedEvent.tariffValue
                     });
 
                     // started in cpos backend
                     if (startResult.success) {
-
                         // register start in ev-network
                         await this.sc.charging.useWallet(this.wallet)
                             .confirmStart(startRequestedEvent.scId, startRequestedEvent.evseId, startResult.data.sessionId);
 
-                        this.logger.info(`Confirmed ${startRequestedEvent.evseId} start`);
+                        console.log(`Confirmed ${startRequestedEvent.evseId} start`);
                     }
 
                 } catch (err) {
-
-                    this.logger.error(`Error starting ${startRequestedEvent.evseId}: ${err.message}`);
-
-                    // reset the charger in the ev-network because we failed to start a charge
-                    await this.sc.charging.useWallet(this.wallet)
-                        .reset(startRequestedEvent.scId, startRequestedEvent.evseId);
-
-                    this.logger.info(`Reset session of scId: ${startRequestedEvent.scId} evseId: ${startRequestedEvent.evseId}`);
+                    console.error(`Error starting ${startRequestedEvent.evseId}: ${err.message}`);
 
                     // invoke error
                     await this.sc.charging.useWallet(this.wallet)
@@ -129,18 +82,20 @@ export class CoreClient {
 
         });
 
+
+        /*
+            LISTEN TO REMOTE STOP REQUESTS FROM BLOCKCHAIN AND TELL BRIDGE
+        */
         this.sc.on("StopRequested", async (stopRequestedEvent) => {
 
-            this.logger.debug(`Stop requested for evse with uid: ${stopRequestedEvent.scId}`);
+            console.log(`Stop requested for evse with uid: ${stopRequestedEvent.scId}`);
 
             const scIds = await this.getIds();
 
             if (scIds.includes(stopRequestedEvent.scId)) {
-
                 try {
-
                     // stop the bride side
-                    const stopResult: IResult = await this.bridge.stop(<IParameters>{
+                    const stopResult: IResult = await this.bridge.stop(<IStopParameters>{
                         scId: stopRequestedEvent.scId,
                         evseId: stopRequestedEvent.evseId,
                         sessionId: stopRequestedEvent.sessionId
@@ -148,57 +103,100 @@ export class CoreClient {
 
                     // stopped in the cpos backend
                     if (stopResult.success) {
-
-                        // create cdr
-                        const cdrParams = await this.createCdrParameters(stopRequestedEvent.scId, stopRequestedEvent.evseId, stopRequestedEvent.sessionId);
-                        const cdr: ICDR = await this.bridge.cdr(cdrParams);
-
                         // confirm stop in ev-network
                         await this.sc.charging.useWallet(this.wallet)
                             .confirmStop(stopRequestedEvent.scId, stopRequestedEvent.evseId);
-                        this.logger.info(`Confirmed ${stopRequestedEvent.evseId} stop`);
 
-                        // settle in ev network
-                        await this.sc.charging.useWallet(this.wallet)
-                            .chargeDetailRecord(stopRequestedEvent.scId, stopRequestedEvent.evseId, cdr.chargedUnits, cdr.price);
-                        this.logger.info(`Wrote ${stopRequestedEvent.evseId}'s CDR to the network`);
+                        console.log(`Confirmed ${stopRequestedEvent.evseId} stop`);
+
+                        // settle in ev network if bridge has already created CDR
+                        if (stopResult.data.cdr.price) {
+                            const cdr = stopResult.data.cdr;
+
+                            await this.sc.charging.useWallet(this.wallet)
+                                .chargeDetailRecord(stopRequestedEvent.scId, stopRequestedEvent.evseId, cdr.chargedUnits, cdr.price);
+        
+                            console.log(`Wrote ${stopRequestedEvent.evseId}'s CDR to the network`);
+                        } else {
+                            console.log(`Awaiting charge detail record for ${stopRequestedEvent.evseId}...`);
+                        }
                     }
 
                 } catch (err) {
-                    this.logger.error(`Error stopping ${stopRequestedEvent.evseId}: ${err.message}`);
+                    console.error(`Error stopping ${stopRequestedEvent.evseId}: ${err.message}`);
                     await this.sc.charging.useWallet(this.wallet).error(stopRequestedEvent.scId, stopRequestedEvent.evseId, 1);
                 }
             }
         });
 
-        this.bridge.autoStop$.subscribe(async (autoStopEvent) => {
+        /*
+            LISTEN TO AUTOSTOP EVENTS FROM BRIDGE AND TELL BLOCKCHAIN
+        */
+        this.bridge.autoStop$.subscribe(async (autoStopEvent: IResult) => {
+            const session = autoStopEvent.data.session;
             try {
-                const cdrParams = await this.createCdrParameters(autoStopEvent.scId, autoStopEvent.evseId, autoStopEvent.sessionId);
-                const cdr: ICDR = await this.bridge.cdr(cdrParams);
-
                 await this.sc.charging.useWallet(this.wallet)
-                    .confirmStop(autoStopEvent.scId, autoStopEvent.evseId);
-                this.logger.info(`Confirmed ${autoStopEvent.evseId} autostop`);
+                    .confirmStop(session.scId, session.evseId);
+                console.log(`Confirmed ${session.evseId} autostop`);
 
-                await this.sc.charging.useWallet(this.wallet)
-                    .chargeDetailRecord(autoStopEvent.scId, autoStopEvent.evseId, cdr.chargedUnits, cdr.price);
-                this.logger.info(`Wrote ${autoStopEvent.evseId}'s CDR to the network`);
+                if (autoStopEvent.data.cdr.price) {
+                    const cdr = autoStopEvent.data.cdr;
+                    await this.sc.charging.useWallet(this.wallet)
+                        .chargeDetailRecord(session.scId, session.evseId, cdr.chargedUnits, cdr.price);
+                    console.log(`Wrote ${session.evseId}'s CDR to the network`);
+                } else {
+                    console.log(`Awaiting charge detail record for ${session.evseId}...`);
+                }
 
             } catch (err) {
-                this.logger.error(`Error confirming ${autoStopEvent.evseId} autostop: ${err.message}`);
-                await this.sc.charging.useWallet(this.wallet).error(autoStopEvent.scId, autoStopEvent.evseId, 2);
+                console.error(`Error confirming ${session.evseId} autostop: ${err.message}`);
+                await this.sc.charging.useWallet(this.wallet).error(session.scId, session.evseId, 2);
             }
         });
 
+        /*
+            LISTEN TO OPTIONAL, ASYNCHRONOUS CHARGE DETAIL RECORD EVENTS FROM BRIDGE AND TELL BLOCKCHAIN
+        */
+        this.bridge.cdr$ && this.bridge.cdr$.subscribe(async (cdr: ICDR) => {
+            try {
+                console.log(`Received charge detail record for ${cdr.evseId}`);
+                await this.sc.charging.useWallet(this.wallet).chargeDetailRecord(cdr.scId, cdr.evseId, cdr.chargedUnits, cdr.price);
+                console.log(`Wrote ${cdr.evseId}'s CDR to the network`);
+            } catch (err) {
+                console.error(`Error confirming ${cdr.evseId} CDR: ${err.message}`);                
+            }
+        });
+
+        /*
+            ACTUALLY TELL THE LIBRARY TO START LISTENING FOR EVENTS
+        */
         this.sc.startListening();
-        this.logger.info(`Coinbase: ${this.wallet.coinbase}`);
-        this.logger.info(`Connected to bridge: ${this.bridge.name}`);
-        this.logger.info(`Listening for events`);
-        this.logger.info(`Listening for these IDs:\n${idsOnStartup.join('\n')}`);
     }
 
     public main() {
-        this.getIds().then(ids => this.run(ids));
+        
+        this.getIds().then(async ids => {
+            this.startListening();
+            console.log(`Coinbase: ${this.wallet.coinbase}`);
+            console.log(`Connected to bridge: ${this.bridge.name}`);
+            
+            if (ids.length) {
+                console.log(`Listening for events on ${ids.length} locations (head: ${ids[0]})`);
+            } else {
+                console.log('No locations owned by this wallet!');
+                process.exit();
+            }
+
+            const tariffs = await this.sc.store.getAllTariffsByCPO(this.wallet.coinbase);
+            if (Object.keys(tariffs).length) {
+                this.bridge.loadTariffs(tariffs);
+            } else {
+                console.log('No tariffs provided by this wallet!');
+                process.exit();
+            }
+            
+        });
+
     }
 
     static getInstance(): CoreClient {
@@ -207,7 +205,6 @@ export class CoreClient {
             const container = new Container();
             container.bind<ConfigProvider>(Symbols.ConfigProvider).to(ConfigProvider).inSingletonScope();
             container.bind<ShareChargeProvider>(Symbols.ShareChargeProvider).to(ShareChargeProvider).inSingletonScope();
-            container.bind<LoggingProvider>(Symbols.LoggingProvider).to(LoggingProvider).inSingletonScope();
             container.bind<BridgeProvider>(Symbols.BridgeProvider).to(BridgeProvider).inSingletonScope();
             container.bind<WalletProvider>(Symbols.WalletProvider).to(WalletProvider).inSingletonScope();
             CoreClient.container = container;
