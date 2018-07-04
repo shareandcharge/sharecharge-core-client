@@ -5,7 +5,7 @@
     "strict": true,
     "noImplicitAny": false,
     "strictNullChecks": false,
-    "sourceMap": true,
+    "sourceMap": false,
     "outDir": "dist",
     "strictFunctionTypes": false,
     "experimentalDecorators": true,

@@ -4,33 +4,27 @@
   "description": "Share & Charge Core Client for Charge Point Operators",
   "main": "index.js",
   "scripts": {
-    "start": "chmod +x ./dist/app.node.js && ./dist/app.node.js",
-    "install": "npm run build",
-    "build": "tsc && echo '#!/usr/bin/env node'| cat - ./dist/app.js > ./dist/app.node.js",
+    "postinstall": "chmod +x ./dist/app.js",
+    "start": "./dist/app.js",
     "test": "echo no tests, srsly",
-    "test_": "mocha --exit -r ts-node/register test/**/*.spec.ts",
-    "test-watch": "mocha --watch --watch-extensions ts,js,json -r ts-node/register test/**/*.spec.ts"
+    "test_": "mocha --exit -r ts-node/register test/**/*.spec.ts"
   },
   "bin": {
-    "scc": "./dist/app.node.js"
+    "sc-cc": "./dist/app.js"
   },
   "author": "MotionWerk GmbH",
   "license": "MIT",
   "dependencies": {
-    "@motionwerk/sharecharge-api": "^0.3.1",
-    "@motionwerk/sharecharge-common": "^1.13.0",
+    "@motionwerk/sharecharge-api": "^0.3.0",
+    "@motionwerk/sharecharge-common": "^1.13.3",
     "@motionwerk/sharecharge-example-bridge": "^0.4.0",
     "@motionwerk/sharecharge-lib": "^0.7.5",
     "inversify": "^4.13.0",
-    "reflect-metadata": "^0.1.12",
-    "request-promise": "^4.2.2",
-    "winston": "^2.4.3"
+    "reflect-metadata": "^0.1.12"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
-    "@types/config": "0.0.34",
     "@types/mocha": "^5.2.2",
-    "@types/winston": "^2.3.9",
     "chai": "^4.1.2",
     "mocha": "^5.1.1",
     "sinon": "^6.0.0",
