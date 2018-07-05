@@ -46,37 +46,46 @@ export class CoreClient {
         */
         this.sc.on("StartRequested", async (startRequestedEvent) => {
 
-            console.log(`Start requested on ${startRequestedEvent.evseId}`);
+            // console.log(`Start requested on ${startRequestedEvent.evseId}`);
 
             const scIds = await this.getIds();
 
             if (scIds.includes(startRequestedEvent.scId)) {
+
+                const scId = startRequestedEvent.scId;
+                const evseId = startRequestedEvent.evseId;
+
                 try {
-                    console.log('Attempting to start');
+                    console.log(`Calling bridge to start session on ${evseId}`);
 
                     // start the bridge side
                     const startResult: IResult = await this.bridge.start(<ISession>{
-                        scId: startRequestedEvent.scId,
-                        evseId: startRequestedEvent.evseId,
+                        scId,
+                        evseId,
                         tariffId: startRequestedEvent.tariffId,
                         tariffValue: startRequestedEvent.tariffValue
                     });
 
                     // started in cpos backend
                     if (startResult.success) {
+                        console.log(`Started ${evseId} session ${startResult.data.sessionId} via bridge`);
                         // register start in ev-network
-                        await this.sc.charging.useWallet(this.wallet)
-                            .confirmStart(startRequestedEvent.scId, startRequestedEvent.evseId, startResult.data.sessionId);
+                        await this.sc.charging.useWallet(this.wallet).confirmStart(scId, evseId, startResult.data.sessionId);
 
-                        console.log(`Confirmed ${startRequestedEvent.evseId} start`);
+                        console.log(`Confirmed ${evseId} start success on network`);
+                    } else {
+                        throw Error(startResult.data.message);
                     }
 
                 } catch (err) {
-                    console.error(`Error starting ${startRequestedEvent.evseId}: ${err.message}`);
+                    console.error(`Error starting ${evseId} via bridge: ${err.message}`);
 
                     // invoke error
                     await this.sc.charging.useWallet(this.wallet)
                         .error(startRequestedEvent.scId, startRequestedEvent.evseId, 0);
+
+                    console.log(`Confirmed ${startRequestedEvent.evseId} start error on network`);
+
                 }
             }
 
@@ -88,43 +97,56 @@ export class CoreClient {
         */
         this.sc.on("StopRequested", async (stopRequestedEvent) => {
 
-            console.log(`Stop requested for evse with uid: ${stopRequestedEvent.scId}`);
+            // console.log(`Stop requested for evse with uid: ${stopRequestedEvent.scId}`);
 
             const scIds = await this.getIds();
 
             if (scIds.includes(stopRequestedEvent.scId)) {
+
+                const scId = stopRequestedEvent.scId;
+                const evseId = stopRequestedEvent.evseId;
+                const sessionId = stopRequestedEvent.sessionId;
+
                 try {
-                    // stop the bride side
+                    console.log(`Calling bridge to stop session on ${evseId}`);
+
+                    // stop the bridge side
                     const stopResult: IResult = await this.bridge.stop(<IStopParameters>{
-                        scId: stopRequestedEvent.scId,
-                        evseId: stopRequestedEvent.evseId,
-                        sessionId: stopRequestedEvent.sessionId
+                        scId,
+                        evseId,
+                        sessionId
                     });
 
                     // stopped in the cpos backend
                     if (stopResult.success) {
-                        // confirm stop in ev-network
-                        await this.sc.charging.useWallet(this.wallet)
-                            .confirmStop(stopRequestedEvent.scId, stopRequestedEvent.evseId);
+                        console.log(`Stopped ${evseId} session ${stopResult.data.session.sessionId} via bridge`);
 
-                        console.log(`Confirmed ${stopRequestedEvent.evseId} stop`);
+                        // confirm stop in ev-network
+                        await this.sc.charging.useWallet(this.wallet).confirmStop(scId, evseId);
+
+                        console.log(`Confirmed ${evseId} stop on network`);
 
                         // settle in ev network if bridge has already created CDR
                         if (stopResult.data.cdr.price) {
                             const cdr = stopResult.data.cdr;
 
-                            await this.sc.charging.useWallet(this.wallet)
-                                .chargeDetailRecord(stopRequestedEvent.scId, stopRequestedEvent.evseId, cdr.chargedUnits, cdr.price);
+                            console.log(`Received ${evseId} CDR from bridge: ${JSON.stringify(cdr, null, 2)}`);
+
+                            await this.sc.charging.useWallet(this.wallet).chargeDetailRecord(scId, evseId, cdr.chargedUnits, cdr.price);
         
-                            console.log(`Wrote ${stopRequestedEvent.evseId}'s CDR to the network`);
+                            console.log(`Confirmed ${evseId} CDR on network`);
                         } else {
-                            console.log(`Awaiting charge detail record for ${stopRequestedEvent.evseId}...`);
+                            console.log(`Awaiting ${evseId} CDR from bridge...`);
                         }
+                    } else {
+                        throw Error(stopResult.data.message);
                     }
 
                 } catch (err) {
-                    console.error(`Error stopping ${stopRequestedEvent.evseId}: ${err.message}`);
-                    await this.sc.charging.useWallet(this.wallet).error(stopRequestedEvent.scId, stopRequestedEvent.evseId, 1);
+                    console.error(`Error stopping ${evseId}: ${err.message}`);
+                    await this.sc.charging.useWallet(this.wallet).error(scId, evseId, 1);
+                    console.log(`Confirmed ${evseId} stop error on network`);
+
                 }
             }
         });
@@ -133,24 +155,31 @@ export class CoreClient {
             LISTEN TO AUTOSTOP EVENTS FROM BRIDGE AND TELL BLOCKCHAIN
         */
         this.bridge.autoStop$.subscribe(async (autoStopEvent: IResult) => {
+
+            const scId = autoStopEvent.data.session.scId;
+            const evseId = autoStopEvent.data.session.evseId;
+
+            console.log(`Received ${evseId} session ${autoStopEvent.data.session.sessionId} autostop from bridge`);
+
             const session = autoStopEvent.data.session;
             try {
-                await this.sc.charging.useWallet(this.wallet)
-                    .confirmStop(session.scId, session.evseId);
+                await this.sc.charging.useWallet(this.wallet).confirmStop(scId, evseId);
                 console.log(`Confirmed ${session.evseId} autostop`);
 
                 if (autoStopEvent.data.cdr.price) {
                     const cdr = autoStopEvent.data.cdr;
+                    console.log(`Received ${evseId} CDR from bridge: ${JSON.stringify(cdr, null, 2)}`);
                     await this.sc.charging.useWallet(this.wallet)
                         .chargeDetailRecord(session.scId, session.evseId, cdr.chargedUnits, cdr.price);
-                    console.log(`Wrote ${session.evseId}'s CDR to the network`);
+                    console.log(`Confirmed ${session.evseId} CDR on network`);
                 } else {
-                    console.log(`Awaiting charge detail record for ${session.evseId}...`);
+                    console.log(`Awaiting ${session.evseId} CDR from bridge...`);
                 }
 
             } catch (err) {
                 console.error(`Error confirming ${session.evseId} autostop: ${err.message}`);
                 await this.sc.charging.useWallet(this.wallet).error(session.scId, session.evseId, 2);
+                console.log(`Confirmed ${evseId} autostop error on network`);
             }
         });
 
@@ -159,9 +188,9 @@ export class CoreClient {
         */
         this.bridge.cdr$ && this.bridge.cdr$.subscribe(async (cdr: ICDR) => {
             try {
-                console.log(`Received charge detail record for ${cdr.evseId}`);
+                console.log(`Received ${cdr.evseId} CDR from bridge: ${JSON.stringify(cdr, null, 2)}`);
                 await this.sc.charging.useWallet(this.wallet).chargeDetailRecord(cdr.scId, cdr.evseId, cdr.chargedUnits, cdr.price);
-                console.log(`Wrote ${cdr.evseId}'s CDR to the network`);
+                console.log(`Confirmed ${cdr.evseId} CDR on network`);
             } catch (err) {
                 console.error(`Error confirming ${cdr.evseId} CDR: ${err.message}`);                
             }

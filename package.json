@@ -16,8 +16,8 @@
   "license": "MIT",
   "dependencies": {
     "@motionwerk/sharecharge-api": "^0.3.0",
-    "@motionwerk/sharecharge-common": "^1.13.3",
-    "@motionwerk/sharecharge-example-bridge": "^0.4.0",
+    "@motionwerk/sharecharge-common": "^1.13.4",
+    "@motionwerk/sharecharge-example-bridge": "^0.4.2",
     "@motionwerk/sharecharge-lib": "^0.7.5",
     "inversify": "^4.13.0",
     "reflect-metadata": "^0.1.12"
@@ -27,7 +27,6 @@
     "@types/mocha": "^5.2.2",
     "chai": "^4.1.2",
     "mocha": "^5.1.1",
-    "sinon": "^6.0.0",
     "ts-node": "^6.1.2",
     "typescript": "^2.9.2"
   }
