@@ -1,11 +1,11 @@
 import { injectable, inject } from "inversify";
-import { ShareCharge } from "@motionwerk/sharecharge-lib"
-import { IConfig } from "@motionwerk/sharecharge-common"
+import { ShareCharge } from "@motionwerk/sharecharge-lib/dist"
+import { IConfig } from "@motionwerk/sharecharge-common/dist/common"
 
-@injectable()
 export default class ShareChargeProvider {
 
     public obtain(config: IConfig): ShareCharge {
         return ShareCharge.getInstance(config);
     }
+
 }

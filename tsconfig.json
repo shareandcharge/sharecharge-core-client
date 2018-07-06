@@ -8,10 +8,9 @@
     "sourceMap": false,
     "outDir": "dist",
     "strictFunctionTypes": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+
     "types": [
-      "node"
+      "node",
     ],
     "typeRoots": [
       "./node_modules/@types"

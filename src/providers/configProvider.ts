@@ -1,16 +1,13 @@
-import { injectable, inject } from "inversify";
 import * as fs from "fs";
-import { getConfigDir, IConfig, prepareConfigLocation } from "@motionwerk/sharecharge-common";
+import { getConfigDir, IConfig, prepareConfigLocation } from "@motionwerk/sharecharge-common/dist/common";
 
 prepareConfigLocation();
 
-@injectable()
 export default class ConfigProvider implements IConfig {
 
     protected config: IConfig;
 
     static load(file): IConfig {
-
         return <IConfig>JSON.parse(fs.readFileSync(file, "UTF8"))
     }
 
@@ -71,4 +68,5 @@ export default class ConfigProvider implements IConfig {
             tokenAddress: argv.tokenAddress
         };
     };
+
 }
