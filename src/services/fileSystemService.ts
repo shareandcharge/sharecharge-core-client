@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ICDR, getConfigDir } from '@motionwerk/sharecharge-common/dist/common';
+import { ICDR, getConfigDir } from '@motionwerk/sharecharge-common';
 
 export default class FileSystemService {
 

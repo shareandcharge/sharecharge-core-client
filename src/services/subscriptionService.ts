@@ -1,5 +1,5 @@
+import { IResult, ISession, IStopParameters, ICDR } from "@motionwerk/sharecharge-common";
 import CoreService from "./coreService";
-import { IResult, ISession, IStopParameters, ICDR } from "@motionwerk/sharecharge-common/dist/common";
 import FileSystemService from "./fileSystemService";
 
 export default class SubscriptionService {

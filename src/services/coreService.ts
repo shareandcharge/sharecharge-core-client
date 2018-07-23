@@ -1,5 +1,5 @@
-import { ShareCharge, Wallet } from "@motionwerk/sharecharge-lib/dist";
-import { IConfig, IBridge, IResult, ISession, IStopParameters, ICDR, getConfigDir } from "@motionwerk/sharecharge-common/dist/common";
+import { ShareCharge, Wallet } from "@motionwerk/sharecharge-lib";
+import { IConfig, IBridge } from "@motionwerk/sharecharge-common";
 import ConfigProvider from "../providers/configProvider";
 import ShareChargeProvider from "../providers/shareChargeProvider";
 import BridgeProvider from "../providers/bridgeProvider";
