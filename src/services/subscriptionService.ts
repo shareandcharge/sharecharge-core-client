@@ -62,6 +62,7 @@ export default class SubscriptionService {
                 const startResult: IResult = await this.coreService.bridge.start(<ISession>{
                     scId,
                     evseId,
+                    controller: startRequestedEvent.controller,
                     tariffId: startRequestedEvent.tariffId,
                     tariffValue: startRequestedEvent.tariffValue
                 });
@@ -99,6 +100,7 @@ export default class SubscriptionService {
                 const stopResult: IResult = await this.coreService.bridge.stop(<IStopParameters>{
                     scId,
                     evseId,
+                    controller: stopRequestedEvent.controller,
                     sessionId
                 });
                 // Handle remote stop session success (confirm start or error on network)
