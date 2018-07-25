@@ -1,7 +1,5 @@
 import * as fs from "fs";
-import { getConfigDir, IConfig, prepareConfigLocation } from "@motionwerk/sharecharge-common/dist/common";
-
-prepareConfigLocation();
+import { getConfigDir, IConfig } from "@motionwerk/sharecharge-common";
 
 export default class ConfigProvider implements IConfig {
 

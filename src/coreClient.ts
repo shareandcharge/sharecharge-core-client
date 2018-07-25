@@ -26,7 +26,7 @@ export class CoreClient {
             // Check wallet has provided tariffs on network
             const tariffs = await this.coreService.sc.store.getAllTariffsByCPO(this.coreService.wallet.coinbase);
             if (Object.keys(tariffs).length) {
-                this.coreService.bridge.loadTariffs(tariffs);
+                this.coreService.bridge.loadTariffs(tariffs); 
             } else {
                 console.log('No tariffs provided by this wallet!');
                 process.exit();
