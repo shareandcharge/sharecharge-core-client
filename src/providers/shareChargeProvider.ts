@@ -1,4 +1,3 @@
-import { injectable, inject } from "inversify";
 import { ShareCharge } from "@motionwerk/sharecharge-lib/dist"
 import { IConfig } from "@motionwerk/sharecharge-common/dist/common"
 

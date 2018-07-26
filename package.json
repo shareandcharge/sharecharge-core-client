@@ -14,7 +14,7 @@
   "author": "MotionWerk GmbH",
   "license": "MIT",
   "dependencies": {
-    "@motionwerk/sharecharge-api": "^0.4.0",
+    "@motionwerk/sharecharge-api": "^0.5.0",
     "@motionwerk/sharecharge-common": "^1.15.0",
     "@motionwerk/sharecharge-example-bridge": "^0.4.2",
     "@motionwerk/sharecharge-lib": "^0.8.0",
