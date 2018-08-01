@@ -21,6 +21,13 @@ export default class SubscriptionService {
     }
 
     /*
+        ONLY HANDLE EVENTS CONCERNING WALLET
+    */
+    private isMyEvent(eventParameters: any): boolean {
+        return eventParameters.cpo.toLowerCase() === this.coreService.wallet.coinbase;
+    }
+
+    /*
         COMPLETE FINAL SETTLEMENT ON NETWORK AND PERSIST DETAILS TO FILE SYSTEM
     */
     private async settle(sessionId: string, cdr: ICDR): Promise<void> {
@@ -169,7 +176,44 @@ export default class SubscriptionService {
         });   
     }
 
+    private locationsHandler() {
+        this.coreService.sc.on('LocationAdded', (locationEvent) => {
+            if (this.isMyEvent(locationEvent)) {
+                console.log('New location added:', locationEvent.scId);
+            }
+        });
+        this.coreService.sc.on('LocationUpdated', (locationEvent) => {
+            if (this.isMyEvent(locationEvent)) {
+                console.log('Location updated:', locationEvent.scId);
+            }
+        });
+        this.coreService.sc.on('LocationDeleted', (locationEvent) => {
+            if (this.isMyEvent(locationEvent)) {
+                console.log('Location deleted:', locationEvent.scId);
+            }
+        });
+    }
+
+    private tariffsHandler() {
+        this.coreService.sc.on('TariffsAdded', async (tariffsEvent) => {
+            if (this.isMyEvent(tariffsEvent)) {
+                console.log('Tariffs added');
+                const tariffs = await this.coreService.sc.store.getAllTariffsByCPO(this.coreService.wallet.coinbase);
+                this.coreService.bridge.loadTariffs(tariffs)
+            }
+        });
+        this.coreService.sc.on('TariffsUpdated', async (tariffsEvent) => {
+            if (this.isMyEvent(tariffsEvent)) {
+                console.log('Tariffs updated');
+                const tariffs = await this.coreService.sc.store.getAllTariffsByCPO(this.coreService.wallet.coinbase);
+                this.coreService.bridge.loadTariffs(tariffs);
+            }
+        });
+    }
+
     public startSubscriptions() {
+        this.locationsHandler();
+        this.tariffsHandler();
         this.remoteStartHandler();
         this.remoteStopHandler();
         this.bridgeAutoStopHandler();

@@ -20,14 +20,14 @@ export class CoreClient {
             if (ids.length) {
                 console.log(`Listening for events on ${ids.length} locations (head: ${ids[0]})`);
             } else {
-                console.log('No locations owned by this wallet!');
+                console.log('Warning: No locations owned by this wallet!');
             }
             // Check wallet has provided tariffs on network
             const tariffs = await this.coreService.sc.store.getAllTariffsByCPO(this.coreService.wallet.coinbase);
             if (Object.keys(tariffs).length) {
                 this.coreService.bridge.loadTariffs(tariffs); 
             } else {
-                console.log('No tariffs provided by this wallet!');
+                console.log('Warning: No tariffs provided by this wallet!');
             }
             this.subscriptionService.startSubscriptions();
         });

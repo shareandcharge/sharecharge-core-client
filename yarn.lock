@@ -19,8 +19,8 @@
     uuid "^3.3.2"
 
 "@motionwerk/sharecharge-contracts@^0.5.0":
-  version "0.5.9"
-  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-contracts/-/sharecharge-contracts-0.5.9.tgz#d6c7c8db8187259eb5705581ca8c996d45373a69"
+  version "0.5.10"
+  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-contracts/-/sharecharge-contracts-0.5.10.tgz#506b09a309718bc469879e048851a66fb247e4b4"
   dependencies:
     ganache-cli "^6.1.0"
     mkdirp "^0.5.1"
