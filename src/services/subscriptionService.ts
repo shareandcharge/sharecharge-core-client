@@ -179,17 +179,17 @@ export default class SubscriptionService {
     private locationsHandler() {
         this.coreService.sc.on('LocationAdded', (locationEvent) => {
             if (this.isMyEvent(locationEvent)) {
-                console.log('New location added:', locationEvent.scId);
+                console.log('New location added by wallet:', locationEvent.scId);
             }
         });
         this.coreService.sc.on('LocationUpdated', (locationEvent) => {
             if (this.isMyEvent(locationEvent)) {
-                console.log('Location updated:', locationEvent.scId);
+                console.log('Location updated by wallet:', locationEvent.scId);
             }
         });
         this.coreService.sc.on('LocationDeleted', (locationEvent) => {
             if (this.isMyEvent(locationEvent)) {
-                console.log('Location deleted:', locationEvent.scId);
+                console.log('Location deleted by wallet:', locationEvent.scId);
             }
         });
     }
@@ -197,14 +197,14 @@ export default class SubscriptionService {
     private tariffsHandler() {
         this.coreService.sc.on('TariffsAdded', async (tariffsEvent) => {
             if (this.isMyEvent(tariffsEvent)) {
-                console.log('Tariffs added');
+                console.log('Tariffs added by wallet');
                 const tariffs = await this.coreService.sc.store.getAllTariffsByCPO(this.coreService.wallet.coinbase);
                 this.coreService.bridge.loadTariffs(tariffs)
             }
         });
         this.coreService.sc.on('TariffsUpdated', async (tariffsEvent) => {
             if (this.isMyEvent(tariffsEvent)) {
-                console.log('Tariffs updated');
+                console.log('Tariffs updated by wallet');
                 const tariffs = await this.coreService.sc.store.getAllTariffsByCPO(this.coreService.wallet.coinbase);
                 this.coreService.bridge.loadTariffs(tariffs);
             }
