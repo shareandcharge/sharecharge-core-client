@@ -14,14 +14,13 @@ export class CoreClient {
 
     public main() {
         this.coreService.getIds().then(async ids => {
-            console.log(`Coinbase: ${this.coreService.wallet.coinbase}`);
             console.log(`Connected to bridge: ${this.coreService.bridge.name}`);
+            console.log(`Coinbase: ${this.coreService.wallet.coinbase}`);
             // Check wallet owns locations on network
             if (ids.length) {
                 console.log(`Listening for events on ${ids.length} locations (head: ${ids[0]})`);
             } else {
                 console.log('No locations owned by this wallet!');
-                process.exit();
             }
             // Check wallet has provided tariffs on network
             const tariffs = await this.coreService.sc.store.getAllTariffsByCPO(this.coreService.wallet.coinbase);
@@ -29,7 +28,6 @@ export class CoreClient {
                 this.coreService.bridge.loadTariffs(tariffs); 
             } else {
                 console.log('No tariffs provided by this wallet!');
-                process.exit();
             }
             this.subscriptionService.startSubscriptions();
         });
