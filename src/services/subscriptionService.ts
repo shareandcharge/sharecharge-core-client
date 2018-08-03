@@ -141,14 +141,15 @@ export default class SubscriptionService {
         this.coreService.bridge.autoStop$.subscribe(async (autoStopEvent: IResult) => {
             const scId = autoStopEvent.data.session.scId;
             const evseId = autoStopEvent.data.session.evseId;
-            const sessionId = autoStopEvent.data.session.sessionId;
+            const sessionId = autoStopEvent.data.session.sessionId || autoStopEvent.data.sessionId;
             const session = autoStopEvent.data.session;
             console.log(`Received ${evseId} session ${sessionId} autostop from bridge`);
             try {
                 await this.coreService.sc.charging.useWallet(this.coreService.wallet).confirmStop(scId, evseId);
                 console.log(`Confirmed ${session.evseId} autostop`);
                 // Settle session on network if bridge has already created CDR
-                if (autoStopEvent.data.cdr.price) {
+                console.log('autoStopEvent', autoStopEvent)
+                if (autoStopEvent.data.cdr) {
                     const cdr = autoStopEvent.data.cdr;
                     console.log(`Received ${evseId} CDR from bridge: ${JSON.stringify(cdr, null, 2)}`);
                     await this.settle(sessionId, cdr);
