@@ -2,3 +2,4 @@
 /.chaindata/
 secrets
 dist
+yarn.lock
