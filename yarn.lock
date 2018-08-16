@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@motionwerk/sharecharge-api@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-api/-/sharecharge-api-0.7.0.tgz#4e80e8e4a9dae40228154281d78e375ae08c3967"
+"@motionwerk/sharecharge-api@^0.8.0":
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-api/-/sharecharge-api-0.8.3.tgz#a7b5f93a432fbcb85d2b2ce73654c1c161b3aa86"
   dependencies:
     "@motionwerk/sharecharge-common" "^1.15.0"
     "@motionwerk/sharecharge-lib" "^0.8.0"

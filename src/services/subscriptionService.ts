@@ -96,7 +96,7 @@ export default class SubscriptionService {
         this.coreService.sc.on("StopRequested", async (stopRequestedEvent) => {
             const owned = await this.isOwnedByMe(stopRequestedEvent);
             if (!owned) {
-                return;
+                return; 
             }
             const scId = stopRequestedEvent.scId;
             const evseId = stopRequestedEvent.evseId;
