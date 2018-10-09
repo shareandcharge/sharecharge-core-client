@@ -62,6 +62,7 @@ export default class SubscriptionService {
                 const startResult: IResult = await this.coreService.bridge.start(<ISession>{
                     scId,
                     evseId,
+                    connectorId: startRequestedEvent.connectorId,
                     controller: startRequestedEvent.controller,
                     tariffType: startRequestedEvent.tariffId,
                     chargeUnits: startRequestedEvent.tariffValue,
