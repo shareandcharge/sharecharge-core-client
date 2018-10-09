@@ -31,7 +31,6 @@ export default class SubscriptionService {
     private async settle(sessionId: string, cdr: ICDR): Promise<void> {
         const scId = cdr.scId;
         const evseId = cdr.evseId;
-        let settled: boolean;
         // Attempt to complete settlement on network
         try {
             const tx = this.coreService.sc.charging.useWallet(this.coreService.wallet).chargeDetailRecord();
@@ -41,10 +40,8 @@ export default class SubscriptionService {
             tx.finalPrice = cdr.price;
             await tx.send();
             console.log(`Confirmed ${evseId} CDR on network`);
-            settled = true;
         } catch (err) {
             console.error(`Error confirming ${evseId} CDR on network: ${err.message}`);
-            settled = false;
         }
     }
 
