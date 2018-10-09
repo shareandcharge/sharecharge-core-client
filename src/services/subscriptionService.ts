@@ -1,11 +1,9 @@
 import { IResult, ISession, IStopParameters, ICDR } from "@motionwerk/sharecharge-common";
 import CoreService from "./coreService";
-import FileSystemService from "./fileSystemService";
 
 export default class SubscriptionService {
 
-    constructor(private coreService: CoreService,
-        private fsService: FileSystemService) {
+    constructor(private coreService: CoreService) {
         /*
             ACTUALLY TELL THE LIBRARY TO START LISTENING FOR EVENTS
         */
@@ -36,19 +34,17 @@ export default class SubscriptionService {
         let settled: boolean;
         // Attempt to complete settlement on network
         try {
-            await this.coreService.sc.charging.useWallet(this.coreService.wallet).chargeDetailRecord(scId, evseId, cdr.chargedUnits, cdr.price);
+            const tx = this.coreService.sc.charging.useWallet(this.coreService.wallet).chargeDetailRecord();
+            tx.scId = scId;
+            tx.evse = evseId;
+            tx.chargedUnits = cdr.chargedUnits;
+            tx.finalPrice = cdr.price;
+            await tx.send();
             console.log(`Confirmed ${evseId} CDR on network`);
             settled = true;
         } catch (err) {
             console.error(`Error confirming ${evseId} CDR on network: ${err.message}`);
             settled = false;
-        }
-        // Write complete or pending CDR to file system
-        try {
-            await this.fsService.writeChargeDetailRecord(sessionId, cdr, settled);
-            console.log(`Wrote ${evseId} CDR to file system`);
-        } catch (err) {
-            console.error(`Error writing ${evseId} CDR to file system: ${err.message}`);
         }
     }
 
@@ -71,19 +67,28 @@ export default class SubscriptionService {
                     evseId,
                     controller: startRequestedEvent.controller,
                     tariffId: startRequestedEvent.tariffId,
-                    tariffValue: startRequestedEvent.tariffValue
+                    tariffValue: startRequestedEvent.tariffValue,
+                    estimatedPrice: startRequestedEvent.estimatedPrice
                 });
                 // Handle remote start session success (confirm start or error on network)
                 if (startResult.success) {
                     console.log(`Started ${evseId} session ${startResult.data.sessionId} via bridge`);
-                    await this.coreService.sc.charging.useWallet(this.coreService.wallet).confirmStart(scId, evseId, startResult.data.sessionId);
+                    const tx = this.coreService.sc.charging.useWallet(this.coreService.wallet).confirmStart();
+                    tx.scId = scId;
+                    tx.evse = evseId;
+                    tx.sessionId = startResult.data.sessionId;
+                    await tx.send();
                     console.log(`Confirmed ${evseId} start success on network`);
                 } else {
                     throw Error(startResult.data.message);
                 }
             } catch (err) {
                 console.error(`Error starting ${evseId} via bridge: ${err.message}`);
-                await this.coreService.sc.charging.useWallet(this.coreService.wallet).error(scId, evseId, 0);
+                const tx = this.coreService.sc.charging.useWallet(this.coreService.wallet).logError();
+                tx.scId = scId;
+                tx.evse = evseId;
+                tx.code = 0;
+                await tx.send();
                 console.log(`Confirmed ${evseId} start error on network`);
             }
         });
@@ -113,7 +118,10 @@ export default class SubscriptionService {
                 // Handle remote stop session success (confirm start or error on network)
                 if (stopResult.success) {
                     console.log(`Stopped ${evseId} session ${sessionId} via bridge`);
-                    await this.coreService.sc.charging.useWallet(this.coreService.wallet).confirmStop(scId, evseId);
+                    const tx = this.coreService.sc.charging.useWallet(this.coreService.wallet).confirmStop();
+                    tx.scId = scId;
+                    tx.evse = evseId;
+                    await tx.send();
                     console.log(`Confirmed ${evseId} stop on network`);
                     // Settle session on network if bridge has already created CDR
                     if (stopResult.data.cdr) {
@@ -124,11 +132,15 @@ export default class SubscriptionService {
                         console.log(`Awaiting ${evseId} CDR from bridge...`);
                     }
                 } else {
-                    throw Error(stopResult.data.message);
+                    console.log(stopResult.data.message);
                 }
             } catch (err) {
                 console.error(`Error stopping ${evseId}: ${err.message}`);
-                await this.coreService.sc.charging.useWallet(this.coreService.wallet).error(scId, evseId, 1);
+                const tx = this.coreService.sc.charging.useWallet(this.coreService.wallet).logError();
+                tx.scId = scId;
+                tx.evse = evseId;
+                tx.code = 1;
+                await tx.send();
                 console.log(`Confirmed ${evseId} stop error on network`);
             }
         });
@@ -145,7 +157,10 @@ export default class SubscriptionService {
             const session = autoStopEvent.data.session;
             console.log(`Received ${evseId} session ${sessionId} autostop from bridge`);
             try {
-                await this.coreService.sc.charging.useWallet(this.coreService.wallet).confirmStop(scId, evseId);
+                const tx = this.coreService.sc.charging.useWallet(this.coreService.wallet).confirmStop();
+                tx.scId = scId;
+                tx.evse = evseId;
+                await tx.send();
                 console.log(`Confirmed ${session.evseId} autostop`);
                 // Settle session on network if bridge has already created CDR
                 console.log('autoStopEvent', autoStopEvent)
@@ -158,7 +173,11 @@ export default class SubscriptionService {
                 }
             } catch (err) {
                 console.error(`Error confirming ${session.evseId} autostop: ${err.message}`);
-                await this.coreService.sc.charging.useWallet(this.coreService.wallet).error(session.scId, session.evseId, 2);
+                const tx = this.coreService.sc.charging.useWallet(this.coreService.wallet).logError();
+                tx.scId = scId;
+                tx.evse = evseId;
+                tx.code = 2;
+                await tx.send();
                 console.log(`Confirmed ${evseId} autostop error on network`);
             }
         });

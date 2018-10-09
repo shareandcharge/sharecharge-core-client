@@ -12,7 +12,7 @@ npm install -g @motionwerk/sharecharge-core-client
 
 A default configuration file will be generated in `$HOME/.sharecharge/`. It is important to configure the Core Client to listen on a particular `stage` and `ethProvider` so that the correct contracts are used. Additionally, a funded wallet is necessary to add charge points to the network. These charge points will be filtered automatically by the Core Client, based on the provided wallet `seed` in the configuration file.
 
-Running the `init` command will setup the Core Client to listen to the S&C pilot network.
+Running the `init` command will setup the Core Client to listen to the S&C test network.
 ```
 sc-cc init
 ```
@@ -39,7 +39,7 @@ sc-cli store add-tariffs
 
 Finally, you can run the Core Client using:
 ```
-sc-cc
+sc-cc start
 ```
 
 If all has been correctly configured you will be presented with the wallet's coinbase (primary address) and charge points upon start. 

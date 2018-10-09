@@ -1,5 +1,4 @@
 import SubscriptionService from "./services/subscriptionService";
-import FileSystemService from "./services/fileSystemService";
 import CoreService from "./services/coreService";
 import ConfigProvider from "./providers/configProvider";
 import BridgeProvider from "./providers/bridgeProvider";
@@ -42,8 +41,7 @@ export class CoreClient {
             const scProvider = new ShareChargeProvider();
             const walletProvider = new WalletProvider(configProvider);
             const coreService = new CoreService(configProvider, bridgeProvider, scProvider, walletProvider);
-            const fsService = new FileSystemService();
-            const subService = new SubscriptionService(coreService, fsService);
+            const subService = new SubscriptionService(coreService);
             CoreClient.instance = new CoreClient(coreService, subService);   
         }
         return CoreClient.instance;
