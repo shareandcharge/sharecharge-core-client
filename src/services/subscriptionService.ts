@@ -66,8 +66,8 @@ export default class SubscriptionService {
                     scId,
                     evseId,
                     controller: startRequestedEvent.controller,
-                    tariffId: startRequestedEvent.tariffId,
-                    tariffValue: startRequestedEvent.tariffValue,
+                    tariffType: startRequestedEvent.tariffId,
+                    chargeUnits: startRequestedEvent.tariffValue,
                     estimatedPrice: startRequestedEvent.estimatedPrice
                 });
                 // Handle remote start session success (confirm start or error on network)

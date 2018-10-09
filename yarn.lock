@@ -19,9 +19,9 @@
     better-sqlite3 "^4.1.4"
 
 "@motionwerk/sharecharge-common@^1.16.0":
-  version "1.16.3"
-  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-common/-/sharecharge-common-1.16.3.tgz#fcbfedc7e993723bd9c2205420cada9bbdd35605"
-  integrity sha512-LyhQwZGjiUrF+H0odzu6YVkSFlDK9H4UxVNDczipDFg6zUGvYRwfAQ/CW9ykavRGXgS/ctpbfjkZ+S82b5zz7g==
+  version "1.16.8"
+  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-common/-/sharecharge-common-1.16.8.tgz#c6a5e6a802b962453db79489a1213a284faaf8b6"
+  integrity sha512-3xQ93jWgcCfVNB0AAAs6IYh30hP6Lse9lS7/TBe7PLeOFSwO+xG8PWnBeottXEkVqrcWDjZRwp2R/a8TrJvu5w==
   dependencies:
     ganache-cli "^6.0.3"
     rxjs "^6.2.0"
