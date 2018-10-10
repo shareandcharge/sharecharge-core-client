@@ -2,13 +2,13 @@
 # yarn lockfile v1
 
 
-"@motionwerk/sharecharge-api@^0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-api/-/sharecharge-api-0.10.0.tgz#440070bc8c419e7e4b9e19c6c5d1460a4ff78ec0"
-  integrity sha512-TvpOHVdzc97VzaClJnJBWz89/S1wAVl1edSg9nph1PHyJh6hcqCUMHkyEgrtN2kAAM3iAAmNE8bv9cYdyNmD8w==
+"@motionwerk/sharecharge-api@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-api/-/sharecharge-api-0.11.0.tgz#cecf960dc77e5216ae357c52225343407f1c6e44"
+  integrity sha512-ou+jo+a5p9zy5tVUysujv/u1QePQB04oW7+B0KM82OTUrLPvqRu8T1iqN4CiqvZ0Hsl5GBkP40urCtxHcucUwA==
   dependencies:
     "@motionwerk/sharecharge-common" "^1.16.0"
-    "@motionwerk/sharecharge-lib" "^0.12.0"
+    "@motionwerk/sharecharge-lib" "^0.13.0"
 
 "@motionwerk/sharecharge-bridge-tools@0.1.0":
   version "0.1.0"
@@ -36,10 +36,10 @@
     rxjs "^6.2.0"
     uuid "^3.3.2"
 
-"@motionwerk/sharecharge-contracts@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-contracts/-/sharecharge-contracts-0.7.0.tgz#41cf4797bb09eb3914ee9a8b3d4f71ea47eb8314"
-  integrity sha512-NlQh65D10Ujx34NjgXLmZJX/d6NGNhZ4gzKSM+w/IRDtg6ISAdjL3uuBBcyFiA2s1TfIrz/1ygHY597ocz/GwA==
+"@motionwerk/sharecharge-contracts@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-contracts/-/sharecharge-contracts-0.8.0.tgz#3531ec4b09f7f4ac9afaea75ca4e09624ac26591"
+  integrity sha512-Eh0rreuDuAaRuGm0NbycaOKIFuEr7BPma4VOaKSvXL/5eVFXYhW/jB/7tT8Ol8miVJIN3artxYZ1Qhre6CCOSg==
   dependencies:
     ganache-cli "^6.1.0"
     mkdirp "^0.5.1"
@@ -54,13 +54,13 @@
     better-sqlite3 "^4.1.4"
     rxjs "^6.2.1"
 
-"@motionwerk/sharecharge-lib@^0.12.0":
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-lib/-/sharecharge-lib-0.12.1.tgz#e04c2d31600d07378eb30c05dcb2240961c4f6fd"
-  integrity sha512-4QQ5tO6CLFXgdkumbH1o9ERFCwXtjuj0+TC4j9nCoFO0EvxKTsVzLmRV0RJ8UN1xWqYgHnFHB/9aw91CEA8J7w==
+"@motionwerk/sharecharge-lib@^0.13.0":
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/@motionwerk/sharecharge-lib/-/sharecharge-lib-0.13.0.tgz#ed15530b4b89ad5e025ee09f979340859db74bd8"
+  integrity sha512-pZkHjFmfOzKkWAAJISnAeOSjlJ6Id28aIJ4qI4WglWMMGkCKK5M0ZyXJcvumI9SYJ/UAKlM5vLKECoxJyBrTYA==
   dependencies:
     "@motionwerk/sharecharge-common" "^1.16.0"
-    "@motionwerk/sharecharge-contracts" "^0.7.0"
+    "@motionwerk/sharecharge-contracts" "^0.8.0"
     bip39 "^2.5.0"
     bs58 "^4.0.1"
     ethereumjs-tx "^1.3.4"
