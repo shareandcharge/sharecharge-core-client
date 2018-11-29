@@ -1,4 +1,4 @@
-import { Wallet } from "@motionwerk/sharecharge-lib";
+import { Wallet } from "@shareandcharge/sharecharge-lib";
 import ConfigProvider from "./configProvider";
 
 export default class WalletProvider {

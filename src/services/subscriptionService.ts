@@ -1,4 +1,4 @@
-import { IResult, ISession, IStopParameters, ICDR } from "@motionwerk/sharecharge-common";
+import { IResult, ISession, IStopParameters, ICDR } from "@shareandcharge/sharecharge-common";
 import CoreService from "./coreService";
 
 export default class SubscriptionService {
@@ -28,7 +28,7 @@ export default class SubscriptionService {
     /*
         COMPLETE FINAL SETTLEMENT ON NETWORK AND PERSIST DETAILS TO FILE SYSTEM
     */
-    private async settle(sessionId: string, cdr: ICDR): Promise<void> {
+    private async settle(cdr: ICDR): Promise<void> {
         const scId = cdr.scId;
         const evseId = cdr.evseId;
         // Attempt to complete settlement on network
@@ -125,7 +125,7 @@ export default class SubscriptionService {
                     if (stopResult.data.cdr) {
                         const cdr = stopResult.data.cdr;
                         console.log(`Received ${evseId} CDR from bridge: ${JSON.stringify(cdr, null, 2)}`);
-                        await this.settle(sessionId, cdr);
+                        await this.settle(cdr);
                     } else {
                         console.log(`Awaiting ${evseId} CDR from bridge...`);
                     }
@@ -165,7 +165,7 @@ export default class SubscriptionService {
                 if (autoStopEvent.data.cdr) {
                     const cdr = autoStopEvent.data.cdr;
                     console.log(`Received ${evseId} CDR from bridge: ${JSON.stringify(cdr, null, 2)}`);
-                    await this.settle(sessionId, cdr);
+                    await this.settle(cdr);
                 } else {
                     console.log(`Awaiting ${session.evseId} CDR from bridge...`);
                 }
@@ -190,7 +190,7 @@ export default class SubscriptionService {
             const evseId = cdr.evseId;
             const session = await this.coreService.sc.charging.getSession(scId, evseId);
             const sessionId = session.id;
-            this.settle(sessionId, cdr);
+            this.settle(cdr);
         });   
     }
 

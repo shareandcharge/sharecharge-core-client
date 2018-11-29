@@ -1,5 +1,5 @@
 import CoreService from "./coreService";
-import { IResult } from "@motionwerk/sharecharge-common";
+import { IResult } from "@shareandcharge/sharecharge-common";
 
 export default class StatusTrackingService {
 

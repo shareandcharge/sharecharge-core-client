@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { getConfigDir, IConfig } from "@motionwerk/sharecharge-common";
+import { getConfigDir, IConfig } from "@shareandcharge/sharecharge-common";
 
 export default class ConfigProvider implements IConfig {
 

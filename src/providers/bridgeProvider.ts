@@ -1,4 +1,4 @@
-import { IConfig, IBridge } from "@motionwerk/sharecharge-common/dist/common"
+import { IConfig, IBridge } from "@shareandcharge/sharecharge-common"
 import ConfigProvider from "./configProvider"
 
 export default class BridgeProvider {

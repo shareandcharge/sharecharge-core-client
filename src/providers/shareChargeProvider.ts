@@ -1,5 +1,5 @@
-import { ShareCharge } from "@motionwerk/sharecharge-lib/dist"
-import { IConfig } from "@motionwerk/sharecharge-common/dist/common"
+import { ShareCharge } from "@shareandcharge/sharecharge-lib"
+import { IConfig } from "@shareandcharge/sharecharge-common"
 
 export default class ShareChargeProvider {
 

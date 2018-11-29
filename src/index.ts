@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import * as yargs from 'yargs';
-import { prepareConfigLocation, getConfigDir } from '@motionwerk/sharecharge-common';
-import api from '@motionwerk/sharecharge-api';
+import { prepareConfigLocation, getConfigDir } from '@shareandcharge/sharecharge-common';
+import api from '@shareandcharge/sharecharge-api';
 import { CoreClient } from './coreClient';
 
 
